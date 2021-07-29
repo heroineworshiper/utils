@@ -57,7 +57,7 @@ void append_vector(vector_t *vector, char *string)
 void listdir(char *dir, vector_t *dst)
 {
     int i;
-    sprintf(string2, "find \"%s\" -type d", dir);
+    sprintf(string2, "find -L \"%s\" -type d", dir);
 
     FILE *fd = popen(string2, "r");
     int got_line = 0;
