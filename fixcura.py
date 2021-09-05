@@ -182,6 +182,7 @@ strippedName = filename2[len(filename2) - 1]
 print "Operations to be performed:"
 print "TIMELAPSE=" + str(DO_TIMELAPSE)
 print "BED LEVELING=" + str(DO_LEVELING)
+print '-----------------------------------------------'
 print 'displayed name:', strippedName
 print 'replacing temperature lines:', tempLine1, ' -', tempLine2
 print 'bed temp:', bedTemp, ' nozzle temp:', nozzleTemp
