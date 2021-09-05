@@ -18,4 +18,19 @@
  * 
  */
 
-Random programs.
+Random programs & CAD models.
+
+3dtouch.FCStd: Bracket for a 3D touch.
+
+fixcura.py: Add timelapse, bed leveling gcode.
+
+
+ARduinoISP: Arduino ISP hacked for 115200 baud.
+
+/root/arduino-1.8.15/hardware/tools/avr/bin/avrdude \
+-C/root/arduino-1.8.15/hardware/tools/avr/etc/avrdude.conf \
+-patmega1284p \
+-cstk500v1 \
+-P/dev/ttyACM0 \
+-b115200 \
+-Uflash:w:/tmp/arduino_build_915141/Marlin.ino.hex:i 
