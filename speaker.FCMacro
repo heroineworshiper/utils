@@ -1,0 +1,199 @@
+# models for speaker.FCSTD
+
+# modules broke in .19
+#import libhexgrid
+#import importlib
+#importlib.reload(libhexgrid)
+
+
+import FreeCAD as App
+import FreeCADGui as Gui
+import Sketcher
+import Part
+import math
+
+
+doc = App.activeDocument()
+gui = Gui.activeDocument()
+
+def toRad(angle):
+    return angle * math.pi * 2.0 / 360.0
+
+# make a closed polygon
+def makePoly(sketch, coords, closeIt = True):
+    prevLine = None
+    for i in range(0, len(coords) - 1):
+        sketch.addGeometry(Part.LineSegment(coords[i],
+            coords[i + 1]),
+            False)
+
+    if closeIt:
+        sketch.addGeometry(Part.LineSegment(coords[len(coords) - 1],
+            coords[0]),
+            False)
+
+
+
+# hex grid
+def makeGrid(w, h, x_slices, y_slices, x_borders, y_borders, line_w):
+    slice_h = (h - y_borders[0] - y_borders[1]) / y_slices
+    slice_w = (w - x_borders[0] - x_borders[1]) / x_slices
+
+    sketch = doc.addObject('Sketcher::SketchObject','gridsketch')
+    sketch.Placement = App.Placement(
+        App.Vector(0.0, 0.0, 0.0),
+        App.Rotation(App.Vector(0, 0, 1), 0.0))
+
+# radius of the triangle with faces equal to line_w
+    radius = line_w / 2 / math.sin(toRad(60.0))
+# offsets of 3 hex corners around each intersection
+# 0 - top center
+# 1 - bottom left
+# 2 - bottom right
+    corners1 = []
+    for i in range(3):
+        corner = App.Vector( \
+            radius * math.cos(toRad(i * 120.0 + 90.0)), \
+            radius * math.sin(toRad(i * 120.0 + 90.0)), \
+            0.0)
+        print("corner1 %d: %f %f %f" % (i, corner.x, corner.y, corner.z))
+        corners1.append(corner)
+# 0 - bottom center
+# 1 - top left
+# 2 - top right
+    corners2 = []
+    for i in range(3):
+        corner = App.Vector( \
+            radius * math.cos(toRad(-i * 120.0 - 90.0)), \
+            radius * math.sin(toRad(-i * 120.0 - 90.0)), \
+            0.0)
+        print("corner2 %d: %f %f %f" % (i, corner.x, corner.y, corner.z))
+        corners2.append(corner)
+
+# bottom row
+    for x in range(0, x_slices):
+        center_y = -.33
+        y2 = y_borders[0]
+        y3 = y_borders[0] + (center_y + .67) * slice_h
+        y4 = y_borders[0] + (center_y + 1) * slice_h
+        x1 = x_borders[0] + x * slice_w
+        x2 = x_borders[0] + (x + .5) * slice_w
+        x3 = x_borders[0] + (x + 1) * slice_w
+
+        coords = [
+            App.Vector(x1, y2, 0.0) + App.Vector(corners2[2].x, 0.0, 0.0), # bottom left
+            App.Vector(x1, y3, 0.0) + corners1[2], # top left
+            App.Vector(x2, y4, 0.0) + corners2[0], # top center
+            App.Vector(x3, y3, 0.0) + corners1[1], # top right
+            App.Vector(x3, y2, 0.0) + App.Vector(corners2[1].x, 0.0, 0.0)] # bottom right
+        makePoly(sketch, coords)
+
+# top row
+    for x in range(-1, x_slices):
+        x_offset = 0.0
+        if (y_slices % 2) > 0:
+            x_offset += slice_w / 2
+        elif x < 0:
+            continue
+        center_y = (y_slices -.33)
+        y1 = y_borders[0] + (center_y - .33) * slice_h
+        y2 = y_borders[0] + center_y * slice_h
+        y3 = h - y_borders[1]
+        x1 = x_borders[0] + x * slice_w + x_offset
+        x2 = x_borders[0] + (x + .5) * slice_w + x_offset
+        x3 = x_borders[0] + (x + 1) * slice_w + x_offset
+        
+        coords = []
+# top right cell
+        if (y_slices % 2) > 0 and x == x_slices - 1:
+            coords = [
+                App.Vector(x2, y1, 0.0) + corners1[0], # bottom center
+                App.Vector(x1, y2, 0.0) + corners2[2], # bottom left
+                App.Vector(x1, y3, 0.0) + 
+                    App.Vector(corners1[2].x, 0.0, 0.0), # top left
+                App.Vector(x2, y3, 0.0) + 
+                    App.Vector(corners1[0].x, 0.0, 0.0)] # top right
+# top left cell
+        elif x < 0:
+            coords = [
+                App.Vector(x2, y1, 0.0) + corners1[0], # bottom center
+                App.Vector(x2, y3, 0.0) + 
+                    App.Vector(corners1[0].x, 0.0, 0.0), # top center
+                App.Vector(x3, y3, 0.0) + App.Vector(corners2[1].x, 0.0, 0.0), # top right
+                App.Vector(x3, y2, 0.0) + corners2[1]] # bottom right
+        else:
+            coords = [
+                App.Vector(x2, y1, 0.0) + corners1[0], # bottom center
+                App.Vector(x1, y2, 0.0) + corners2[2], # bottom left
+                App.Vector(x1, y3, 0.0) + App.Vector(corners2[2].x, 0, 0), # top left
+                App.Vector(x3, y3, 0.0) + App.Vector(corners2[1].x, 0, 0), # top right
+                App.Vector(x3, y2, 0.0) + corners2[1]] # bottom right
+        makePoly(sketch, coords)
+
+# middle rows
+    for y in range(1, y_slices):
+        for x in range(-1, x_slices):
+            x_offset = 0.0
+# shift odd row
+            if (y % 2) > 0:
+                x_offset += slice_w / 2
+            elif x < 0:
+                continue
+
+            center_y = (y - .33)
+            y1 = y_borders[0] + (center_y - 0.33) * slice_h
+            y2 = y_borders[0] + center_y * slice_h
+            y3 = y_borders[0] + (center_y + 0.67) * slice_h
+            y4 = y_borders[0] + (center_y + 1) * slice_h
+            x1 = x_borders[0] + x * slice_w + x_offset
+            x2 = x_borders[0] + (x + .5) * slice_w + x_offset
+            x3 = x_borders[0] + (x + 1) * slice_w + x_offset
+
+            coords = []
+            
+# half a cell if odd row
+            if (y % 2) > 0 and x == x_slices - 1:
+                coords = [
+                    App.Vector(x2, y1, 0.0) + corners1[0], # bottom center
+                    App.Vector(x1, y2, 0.0) + corners2[2], # bottom left
+                    App.Vector(x1, y3, 0.0) + corners1[2], # top left
+                    App.Vector(x2, y4, 0.0) + corners2[0]] # top center
+            elif (y % 2) > 0 and x < 0:
+                coords = [
+                    App.Vector(x2, y1, 0.0) + corners1[0], # bottom center
+                    App.Vector(x2, y4, 0.0) + corners2[0], # top center
+                    App.Vector(x3, y3, 0.0) + corners1[1], # top right
+                    App.Vector(x3, y2, 0.0) + corners2[1]] # bottom right
+            else:
+                coords = [
+                    App.Vector(x2, y1, 0.0) + corners1[0], # bottom center
+                    App.Vector(x1, y2, 0.0) + corners2[2], # bottom left
+                    App.Vector(x1, y3, 0.0) + corners1[2], # top left
+                    App.Vector(x2, y4, 0.0) + corners2[0], # top center
+                    App.Vector(x3, y3, 0.0) + corners1[1], # top right
+                    App.Vector(x3, y2, 0.0) + corners2[1]] # bottom right
+            makePoly(sketch, coords)
+
+# border
+    if True:
+        coords = [
+            App.Vector(0.0, 0.0, 0.0),
+            App.Vector(0.0, h, 0.0),
+            App.Vector(w, h, 0.0),
+            App.Vector(w, 0.0, 0.0),
+            ]
+        makePoly(sketch, coords)
+
+
+
+
+
+
+extrude = makeGrid(462,
+    72,
+    46,
+    5,
+    [ 1.5, 1.5 ],
+    [ 2.0, 2.0 ],
+    2.0)
+
