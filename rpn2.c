@@ -20,7 +20,7 @@
 
 
 // Using VT100 formatting codes
-
+// gcc -O3 -o rpn rpn2.c -lm
 
 #include <ctype.h>
 #include <math.h>
@@ -36,7 +36,6 @@
 #define STACK_ROWS 256
 #define VIEW_ROWS 10
 #define STRLEN 1024
-#define ESC 0x1b
 
 // the command line
 char command_line[ROW_SIZE];
@@ -177,8 +176,7 @@ void cursor_left(int number)
 {
 	if(number > 0)
 	{
-		putc(ESC, stdout);
-		printf("[%dD", number);
+		printf("\e[%dD", number);
 	}
 }
 
@@ -186,8 +184,7 @@ void cursor_right(int number)
 {
 	if(number > 0)
 	{
-		putc(ESC, stdout);
-		printf("[%dC", number);
+		printf("\e[%dC", number);
 	}
 }
 
@@ -195,8 +192,7 @@ void cursor_up(int number)
 {
 	if(number > 0)
 	{
-		putc(ESC, stdout);
-		printf("[%dA", number);
+		printf("\e[%dA", number);
 	}
 }
 
@@ -204,45 +200,38 @@ void cursor_down(int number)
 {
 	if(number > 0)
 	{
-		putc(ESC, stdout);
-		printf("[%dB", number);
+		printf("\e[%dB", number);
 	}
 }
 
 void reverse_video()
 {
-	putc(ESC, stdout);
-	printf("[7m");
+	printf("\e[7m");
 }
 
 void reset_style()
 {
-	putc(ESC, stdout);
-	printf("[m");
+	printf("\e[m");
 }
 
 void save_position()
 {
-	putc(ESC, stdout);
-	printf("7");
+	printf("\e7");
 }
 
 void load_position()
 {
-	putc(ESC, stdout);
-	printf("8");
+	printf("\e8");
 }
 
 void erase_to_end()
 {
-	putc(ESC, stdout);
-	printf("[K");
+	printf("\e[K");
 }
 
 void erase_line()
 {
-	putc(ESC, stdout);
-	printf("[2K");
+	printf("\e[2K");
 }
 
 void copy_stack(char **dst, char **src)
@@ -1274,7 +1263,7 @@ void process_line(char *string)
 // remove leading garbage
 	while(string[0] != 0 && string[0] ==' ')
 	{
-		memcpy(string, string + 1, strlen(string + 1) + 1);
+		memmove(string, string + 1, strlen(string + 1) + 1);
 	}
 
 // detect invalid characters
@@ -1812,10 +1801,13 @@ void delete_char(int after)
 	char *string = working_line();
 	int len = strlen(string);
 
+// delete key
 	if(after)
 	{
+// deleted before end of string    
 		if(len > x_offset)
 		{
+// shift later characters forward
 			for(i = x_offset; i < len; i++)
 			{
 				string[i] = string[i + 1];
@@ -1824,16 +1816,21 @@ void delete_char(int after)
 			{
 				reverse_video();
 			}
+// reprint shifted chars
 			printf("%s", string + x_offset);
 			if(rewind_row >= 0)
 			{
 				reset_style();
 			}
-			printf(" ");
-			cursor_left(len - x_offset);
+// erase extra character
+            erase_to_end();
+// rewind over extra characters
+			cursor_left(len - x_offset - 1);
+//printf("delete_char %d\n", __LINE__);
 		}
 	}
 	else
+// backspace deleted last char
 	if(x_offset > 0)
 	{
 		x_offset--;
@@ -1852,8 +1849,9 @@ void delete_char(int after)
 		{
 			reset_style();
 		}
-		printf(" ");
-		cursor_left(len - x_offset);
+        erase_to_end();
+		cursor_left(len - x_offset - 1);
+//printf("delete_char %d\n", __LINE__);
 	}
 	fflush(stdout);
 }
@@ -2077,7 +2075,7 @@ int main(int argc, char *argv[])
 		else
 		if(escape_state == ESCAPE_START)
 		{
-//printf("main %d\n", __LINE__);
+//printf("main %d c=%d\n", __LINE__, c);
 			if(c == 91)
 			{
 				escape_state = ESCAPE_ARROW;
@@ -2151,6 +2149,7 @@ int main(int argc, char *argv[])
 		else
 		if(escape_state == ESCAPE_ARROW)
 		{
+//printf("main %d c=%d\n", __LINE__, c);
 			escape_state = ESCAPE_NONE;
 			switch(c)
 			{
@@ -2215,6 +2214,7 @@ int main(int argc, char *argv[])
 
 // delete
 				case 51:
+//printf("main %d\n", __LINE__);
 					delete_char(1);
 					break;
 			}
@@ -2232,6 +2232,7 @@ int main(int argc, char *argv[])
 				break;
 
 // backspace
+            case 8:
 			case 127:
 				delete_char(0);
 				break;

@@ -5,23 +5,23 @@ importlib.reload(libisogrid)
 
 
 # side panel
-if False:
+if True:
     extrudeTris, extrudeSubs = libisogrid.makeGrid(33, \
-        71, \
+        81, \
         2, \
         4, \
         [ 1.0, 1.0 ], \
         [ 1.0, 1.0 ], \
         0, \
         0, \
-        3, \
+        2.4, \
         1)
     extrudeTris.Placement = App.Placement(
-        App.Vector(8, -35.50, 37.00),
+        App.Vector(8.6, -40.50, 37.00),
         App.Rotation(App.Vector(0, -1, 0), 270))
 
 # front panel
-if True:
+if False:
     extrudeTris, extrudeSubs = libisogrid.makeGrid(33, \
         47, \
         2, \
@@ -30,32 +30,32 @@ if True:
         [ 1.0, 1.0 ], \
         0, \
         0, \
-        3, \
+        2.4, \
         1)
     extrudeTris.Placement = App.Placement(
-        App.Vector(-23.50, -20.00, 37.00),
+        App.Vector(-23.50, -25.60, 37.00),
         App.Rotation(App.Vector(.58, .58, -.58), 120))
 
 # top
 if False:
-    extrudeTris, extrudeSubs = libisogrid.makeGrid(79, \
-        55, \
+    extrudeTris, extrudeSubs = libisogrid.makeGrid(90.2, \
+        56.2, \
         6, \
         3, \
         [ .5, .5 ], \
         [ .5, .5 ], \
         0, \
         0, \
-        3, \
+        2.4, \
         1)
     extrudeTris.Placement = App.Placement(
-        App.Vector(-27.50, 39.50, 17.00),
+        App.Vector(-28.10, 45.10, 17.00),
         App.Rotation(App.Vector(0, 0, 1), 270.00))
 
 
 # bottom
 if False:
-    extrudeTris, extrudeSubs = libisogrid.makeGrid(86, \
+    extrudeTris, extrudeSubs = libisogrid.makeGrid(96, \
         62, \
         6, \
         3, \
@@ -63,9 +63,9 @@ if False:
         [ 1, 1 ], \
         0, \
         0, \
-        4, \
+        2.6, \
         1)
     extrudeTris.Placement = App.Placement(
-        App.Vector(-31, 43, -20.00),
+        App.Vector(-31, 48, -19),
         App.Rotation(App.Vector(0, 0, 1), 270.00))
 
