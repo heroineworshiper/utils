@@ -22,8 +22,24 @@ Random programs & CAD models.
 
 3dtouch.FCStd: Bracket for a 3D touch.
 
+bandwidth.c: show network usage
+
 fixcura.py: Add timelapse, bed leveling gcode.
 
+headset2.FCStd
+headset3.sch
+headset.pcb: self monitoring headset
+
+logcat.c: debug android programs from the command line
+
+scale.FCStd: switch enclosure for bathroom scale
+
+speaker3.FCStd: speaker stand for a desk
+
+tampon3.FCStd: adjustible thing for standing a solar panel up in a car
+
+timelapse.FCStd: shutter protrusion which bolts on the Ender 3 hot end
+in place of the cooling fan
 
 ARduinoISP: Arduino ISP hacked for 115200 baud.
 
