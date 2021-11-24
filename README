@@ -24,7 +24,9 @@ Random programs & CAD models.
 
 bandwidth.c: show network usage
 
-fixcura.py: Add timelapse, bed leveling gcode.
+fixcura.py: Add timelapse, bed leveling to Cura's gcode.
+
+goog-hotas.c: Use the T flight Hotas with Goog Earth flight simulator
 
 headset2.FCStd
 headset3.sch
@@ -32,9 +34,13 @@ headset.pcb: self monitoring headset
 
 logcat.c: debug android programs from the command line
 
+rpn2.c: HP48 style RPN calculator for command line
+
 scale.FCStd: switch enclosure for bathroom scale
 
 speaker3.FCStd: speaker stand for a desk
+
+switch.FCStd: generic cap for a MHPP switch
 
 tampon3.FCStd: adjustible thing for standing a solar panel up in a car
 
