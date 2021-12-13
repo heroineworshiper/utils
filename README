@@ -24,17 +24,36 @@ Random programs & CAD models.
 
 bandwidth.c: show network usage
 
+catbps.c: print bits per second of stdin
+
+chall.c: replacement for chown & chgrp which fixes some bugs
+
+catnums.c: cat files based on numbers in the filenames.  Used with segments2.c to
+    reconstruct segmented video files.
+
+diffdir.c: find changed files in 2 directories
+
 fixcura.py: Add timelapse, bed leveling to Cura's gcode.
+
+grapher.c: Graph data from a file with continuous polling
 
 goog-hotas.c: Use the T flight Hotas with Goog Earth flight simulator
 
 headset2.FCStd
 headset3.sch
-headset.pcb: self monitoring headset
+headset.pcb: self monitoring headset enclosure
 
-logcat.c: debug android programs from the command line
+hextube.py: create hex cylinders in blender
+
+ipcclean.c: delete all the IPC objects Goog chrome leaves behind.
+
+logcat.c: print debug output from android programs on the command line
+
+push.c: push multiple files to an android directory
 
 rpn2.c: HP48 style RPN calculator for command line
+
+segments2.c: download segmented video files by number
 
 scale.FCStd: switch enclosure for bathroom scale
 
@@ -42,12 +61,23 @@ soap.FCStd: extract the last of the soap
 
 speaker3.FCStd: speaker stand for a desk
 
+stopwatch2.c: command line stopwatch
+
 switch.FCStd: generic cap for a MHPS switch
+
+symbol.c: find a symbol in a bunch of ELF files
 
 tampon3.FCStd: adjustible thing for standing a solar panel up in a car
 
+terminal.c: dumber terminal program which always saves a log & doesn't 
+    convert any formatting codes
+
 timelapse.FCStd: shutter protrusion which bolts on the Ender 3 hot end
 in place of the cooling fan
+
+tube.py: wrapper for youtube-dl/yt-dlp which automates the format selection
+
+udptest.c: transfer a file over UDP
 
 ARduinoISP: Arduino ISP hacked for 115200 baud.
 
