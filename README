@@ -38,6 +38,8 @@ rpn2.c: HP48 style RPN calculator for command line
 
 scale.FCStd: switch enclosure for bathroom scale
 
+soap.FCStd: extract the last of the soap
+
 speaker3.FCStd: speaker stand for a desk
 
 switch.FCStd: generic cap for a MHPS switch

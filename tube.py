@@ -42,7 +42,8 @@ class Movie:
         
 
 
-EXE = 'youtube-dl'
+#EXE = 'youtube-dl'
+EXE = '/root/yt-dlp/yt-dlp'
 VCODEC = 'avc1'
 # use VP9 only for highest resolution, since it's not seekable
 VCODEC_H = 'vp9@'
@@ -82,6 +83,7 @@ def words_contain(array, text):
 argc = len(sys.argv)
 if argc < 3:
     print('Usage: tube <lmha> <URL>')
+    print('tube s <URL>   download 426x240 quality');
     print('tube l <URL>   download 854x480 quality');
     print('tube m <URL>   download 1920x1080 quality');
     print('tube h <URL>   download best quality');
@@ -91,6 +93,8 @@ if argc < 3:
 quality = sys.argv[1]
 url = sys.argv[2]
 
+if quality == 's':
+    want_res = 426
 if quality == 'l':
     want_res = 854
 elif quality == 'm':

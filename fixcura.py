@@ -37,9 +37,9 @@ RETRACT_DIST = 5
 
 # temperature changes
 # this promotes TPU layer adhesion without destroying the bed
-NOZZLE_TEMP2 = 250
+NOZZLE_TEMP2 = 230
 # this lowers the bed temperature without causing shrinkage
-BED_TEMP2 = 50
+BED_TEMP2 = 0
 
 
 
@@ -124,11 +124,7 @@ def printTemps2():
 # overwrite 'bed heating'
     dst.append('M117 %s\n' % strippedName)
 
-# wait for temps before printing
-    if BED_TEMP2 > 0:
-        dst.append('M190 S%d ; wait for bed temp\n' % BED_TEMP2)
-    if NOZZLE_TEMP2 > 0:
-        dst.append('M109 S%d ; wait for nozzle temp\n' % NOZZLE_TEMP2)
+# don't wait for temps before printing because it'll cook the filament
 
 
 
