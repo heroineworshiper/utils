@@ -25,7 +25,7 @@ void main(int argc, char *argv[])
         char *ptr = strrchr(path, '.');
 
 // test file extension
-        if(ptr && strcmp(ptr, ".o"))
+        if(ptr /* && strcmp(ptr, ".o") */)
         {
             sprintf(string, "bash -c 'nm %s |& grep %s'\n", path, symbol);
             //printf("Running %s", string);

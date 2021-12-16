@@ -1,0 +1,1370 @@
+
+
+Microchip Technology PIC LITE Macro Assembler V1.45 build -152302408 
+                                                                                               Tue Nov 23 19:48:46 2021
+
+Microchip Technology Omniscient Code Generator v1.45 (Free mode) build 201711160504
+     1                           	processor	16F877A
+     2                           	opt	pw 120
+     3                           	opt	lm
+     4                           	psect	idataBANK0,global,class=CODE,delta=2
+     5                           	psect	idataBANK3,global,class=CODE,delta=2
+     6                           	psect	strings,global,class=STRING,delta=2
+     7                           	psect	cinit,global,class=CODE,merge=1,delta=2
+     8                           	psect	bssCOMMON,global,class=COMMON,space=1,delta=1
+     9                           	psect	bssBANK0,global,class=BANK0,space=1,delta=1
+    10                           	psect	dataBANK0,global,class=BANK0,space=1,delta=1
+    11                           	psect	dataBANK3,global,class=BANK3,space=1,delta=1
+    12                           	psect	inittext,global,class=CODE,delta=2
+    13                           	psect	clrtext,global,class=CODE,delta=2
+    14                           	psect	cstackCOMMON,global,class=COMMON,space=1,delta=1
+    15                           	psect	maintext,global,class=CODE,split=1,delta=2
+    16                           	psect	text1,local,class=CODE,merge=1,delta=2
+    17                           	psect	text2,local,class=CODE,merge=1,delta=2
+    18                           	psect	text3,local,class=CODE,merge=1,delta=2
+    19                           	psect	text4,local,class=CODE,merge=1,delta=2,group=2
+    20                           	psect	functab,global,class=ENTRY,delta=2
+    21                           	dabs	1,0x7E,2
+    22  0000                     
+    23                           ; Version 1.45
+    24                           ; Generated 16/11/2017 GMT
+    25                           ; 
+    26                           ; Copyright © 2017, Microchip Technology Inc. and its subsidiaries ("Microchip")
+    27                           ; All rights reserved.
+    28                           ; 
+    29                           ; This software is developed by Microchip Technology Inc. and its subsidiaries ("Microch
+      +                          ip").
+    30                           ; 
+    31                           ; Redistribution and use in source and binary forms, with or without modification, are
+    32                           ; permitted provided that the following conditions are met:
+    33                           ; 
+    34                           ;     1. Redistributions of source code must retain the above copyright notice, this lis
+      +                          t of
+    35                           ;        conditions and the following disclaimer.
+    36                           ; 
+    37                           ;     2. Redistributions in binary form must reproduce the above copyright notice, this 
+      +                          list
+    38                           ;        of conditions and the following disclaimer in the documentation and/or other
+    39                           ;        materials provided with the distribution.
+    40                           ; 
+    41                           ;     3. Microchip's name may not be used to endorse or promote products derived from th
+      +                          is
+    42                           ;        software without specific prior written permission.
+    43                           ; 
+    44                           ; THIS SOFTWARE IS PROVIDED BY MICROCHIP "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+    45                           ; INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS F
+      +                          OR
+    46                           ; PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL MICROCHIP BE LIABLE FOR ANY DIRECT, INDIREC
+      +                          T,
+    47                           ; INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING BUT NOT LIMITED TO
+    48                           ; PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA OR PROFITS; OR BUSINESS
+    49                           ; INTERRUPTION) HOWSOEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, ST
+      +                          RICT
+    50                           ; LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE U
+      +                          SE OF
+    51                           ; THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    52                           ; 
+    53                           ; 
+    54                           ; Code-generator required, PIC16F877A Definitions
+    55                           ; 
+    56                           ; SFR Addresses
+    57  0000                     	;# 
+    58  0001                     	;# 
+    59  0002                     	;# 
+    60  0003                     	;# 
+    61  0004                     	;# 
+    62  0005                     	;# 
+    63  0006                     	;# 
+    64  0007                     	;# 
+    65  0008                     	;# 
+    66  0009                     	;# 
+    67  000A                     	;# 
+    68  000B                     	;# 
+    69  000C                     	;# 
+    70  000D                     	;# 
+    71  000E                     	;# 
+    72  000E                     	;# 
+    73  000F                     	;# 
+    74  0010                     	;# 
+    75  0011                     	;# 
+    76  0012                     	;# 
+    77  0013                     	;# 
+    78  0014                     	;# 
+    79  0015                     	;# 
+    80  0015                     	;# 
+    81  0016                     	;# 
+    82  0017                     	;# 
+    83  0018                     	;# 
+    84  0019                     	;# 
+    85  001A                     	;# 
+    86  001B                     	;# 
+    87  001B                     	;# 
+    88  001C                     	;# 
+    89  001D                     	;# 
+    90  001E                     	;# 
+    91  001F                     	;# 
+    92  0081                     	;# 
+    93  0085                     	;# 
+    94  0086                     	;# 
+    95  0087                     	;# 
+    96  0088                     	;# 
+    97  0089                     	;# 
+    98  008C                     	;# 
+    99  008D                     	;# 
+   100  008E                     	;# 
+   101  0091                     	;# 
+   102  0092                     	;# 
+   103  0093                     	;# 
+   104  0094                     	;# 
+   105  0098                     	;# 
+   106  0099                     	;# 
+   107  009C                     	;# 
+   108  009D                     	;# 
+   109  009E                     	;# 
+   110  009F                     	;# 
+   111  010C                     	;# 
+   112  010D                     	;# 
+   113  010E                     	;# 
+   114  010F                     	;# 
+   115  018C                     	;# 
+   116  018D                     	;# 
+   117                           
+   118                           	psect	idataBANK0
+   119  05C4                     __pidataBANK0:	
+   120                           
+   121                           ;initializer for _led_state
+   122  05C4  3404               	retlw	low (fp__show_leds-fpbase)
+   123                           
+   124                           	psect	idataBANK3
+   125  0671                     __pidataBANK3:	
+   126                           
+   127                           ;initializer for _sequence
+   128  0671  3403               	retlw	3
+   129  0672  3400               	retlw	0
+   130  0673  34C0               	retlw	192
+   131  0674  3400               	retlw	0
+   132  0675  3402               	retlw	2
+   133  0676  3406               	retlw	6
+   134  0677  3405               	retlw	5
+   135  0678  3400               	retlw	0
+   136  0679  34C0               	retlw	192
+   137  067A  3400               	retlw	0
+   138  067B  3401               	retlw	1
+   139  067C  3406               	retlw	6
+   140  067D  3409               	retlw	9
+   141  067E  3400               	retlw	0
+   142  067F  34C0               	retlw	192
+   143  0680  3400               	retlw	0
+   144  0681  3401               	retlw	1
+   145  0682  3406               	retlw	6
+   146  0683  3409               	retlw	9
+   147  0684  3408               	retlw	8
+   148  0685  34C1               	retlw	193
+   149  0686  3480               	retlw	128
+   150  0687  3400               	retlw	0
+   151  0688  3406               	retlw	6
+   152  0689  3409               	retlw	9
+   153  068A  3408               	retlw	8
+   154  068B  34C0               	retlw	192
+   155  068C  3480               	retlw	128
+   156  068D  3400               	retlw	0
+   157  068E  3406               	retlw	6
+   158  068F  3409               	retlw	9
+   159  0690  3408               	retlw	8
+   160  0691  34C1               	retlw	193
+   161  0692  3480               	retlw	128
+   162  0693  3400               	retlw	0
+   163  0694  3406               	retlw	6
+   164  0695  3409               	retlw	9
+   165  0696  3408               	retlw	8
+   166  0697  34C0               	retlw	192
+   167  0698  3480               	retlw	128
+   168  0699  3400               	retlw	0
+   169  069A  3406               	retlw	6
+   170  069B  3408               	retlw	8
+   171  069C  34B8               	retlw	184
+   172  069D  34B1               	retlw	177
+   173  069E  3480               	retlw	128
+   174  069F  3400               	retlw	0
+   175  06A0  3406               	retlw	6
+   176  06A1  3408               	retlw	8
+   177  06A2  34B8               	retlw	184
+   178  06A3  34B0               	retlw	176
+   179  06A4  3480               	retlw	128
+   180  06A5  3400               	retlw	0
+   181  06A6  3406               	retlw	6
+   182  06A7  3408               	retlw	8
+   183  06A8  3498               	retlw	152
+   184  06A9  34AD               	retlw	173
+   185  06AA  3480               	retlw	128
+   186  06AB  3400               	retlw	0
+   187  06AC  3406               	retlw	6
+   188  06AD  3408               	retlw	8
+   189  06AE  3498               	retlw	152
+   190  06AF  34AC               	retlw	172
+   191  06B0  3480               	retlw	128
+   192  06B1  3400               	retlw	0
+   193  06B2  3406               	retlw	6
+   194  06B3  3408               	retlw	8
+   195  06B4  3428               	retlw	40
+   196  06B5  3447               	retlw	71
+   197  06B6  3480               	retlw	128
+   198  06B7  3400               	retlw	0
+   199  06B8  3406               	retlw	6
+   200  06B9  3408               	retlw	8
+   201  06BA  3428               	retlw	40
+   202  06BB  3446               	retlw	70
+   203  06BC  3480               	retlw	128
+   204  06BD  3400               	retlw	0
+   205  06BE  3406               	retlw	6
+   206  06BF  3408               	retlw	8
+   207  06C0  3428               	retlw	40
+   208  06C1  3447               	retlw	71
+   209  06C2  3480               	retlw	128
+   210  06C3  3400               	retlw	0
+   211  06C4  3406               	retlw	6
+   212  06C5  3408               	retlw	8
+   213  06C6  3420               	retlw	32
+   214  06C7  3446               	retlw	70
+   215  06C8  3400               	retlw	0
+   216  06C9  3404               	retlw	4
+   217  06CA  3409               	retlw	9
+   218                           
+   219                           	psect	strings
+   220  0012                     __pstrings:	
+   221  0012                     stringtab:	
+   222  0012                     __stringtab:	
+   223  0012                     stringcode:	
+   224                           ;	String table - string pointers are 1 byte each
+   225                           
+   226  0012                     stringdir:	
+   227  0012  3000               	movlw	high stringdir
+   228  0013  008A               	movwf	10
+   229  0014  0804               	movf	4,w
+   230  0015  0A84               	incf	4,f
+   231  0016  0782               	addwf	2,f
+   232  0017                     __stringbase:	
+   233  0017  3400               	retlw	0
+   234  0018                     __end_of__stringtab:	
+   235  0018                     _hex_table:	
+   236  0018  3430               	retlw	48
+   237  0019  3431               	retlw	49
+   238  001A  3432               	retlw	50
+   239  001B  3433               	retlw	51
+   240  001C  3434               	retlw	52
+   241  001D  3435               	retlw	53
+   242  001E  3436               	retlw	54
+   243  001F  3437               	retlw	55
+   244  0020  3438               	retlw	56
+   245  0021  3439               	retlw	57
+   246  0022  3461               	retlw	97
+   247  0023  3462               	retlw	98
+   248  0024  3463               	retlw	99
+   249  0025  3464               	retlw	100
+   250  0026  3465               	retlw	101
+   251  0027  3466               	retlw	102
+   252  0028                     __end_of_hex_table:	
+   253  0012                     _T2CON	set	18
+   254  0011                     _TMR2	set	17
+   255  0008                     _PORTD	set	8
+   256  0007                     _PORTC	set	7
+   257  0005                     _PORTA	set	5
+   258  0019                     _TXREG	set	25
+   259  000C                     _PIR1bits	set	12
+   260  0087                     _TRISCbits	set	135
+   261  0088                     _TRISDbits	set	136
+   262  0085                     _TRISAbits	set	133
+   263  0092                     _PR2	set	146
+   264  009F                     _ADCON1	set	159
+   265                           
+   266                           ; #config settings
+   267  0000                     
+   268                           	psect	cinit
+   269  07E0                     start_initialization:	
+   270  07E0                     __initialization:	
+   271                           
+   272                           ; Initialize objects allocated to BANK3
+   273  07E0  1783               	bsf	3,7	;select IRP bank2
+   274  07E1  30EA               	movlw	low (__pdataBANK3+90)
+   275  07E2  00FD               	movwf	btemp+-1
+   276  07E3  3006               	movlw	high __pidataBANK3
+   277  07E4  00FE               	movwf	btemp
+   278  07E5  3071               	movlw	low __pidataBANK3
+   279  07E6  00FF               	movwf	btemp+1
+   280  07E7  3090               	movlw	low __pdataBANK3
+   281  07E8  0084               	movwf	4
+   282  07E9  120A  118A  25E2  120A  118A  	fcall	init_ram0
+   283                           
+   284                           ; Initialize objects allocated to BANK0
+   285  07EE  120A  118A  25C4  120A  118A  	fcall	__pidataBANK0	;fetch initializer
+   286  07F3  00EC               	movwf	__pdataBANK0& (0+127)
+   287                           
+   288                           ; Clear objects allocated to BANK0
+   289  07F4  1383               	bcf	3,7	;select IRP bank0
+   290  07F5  3020               	movlw	low __pbssBANK0
+   291  07F6  0084               	movwf	4
+   292  07F7  306C               	movlw	low (__pbssBANK0+76)
+   293  07F8  120A  118A  25C5   	fcall	clear_ram0
+   294                           
+   295                           ; Clear objects allocated to COMMON
+   296  07FB  01FB               	clrf	__pbssCOMMON& (0+127)
+   297  07FC                     end_of_initialization:	
+   298                           ;End of C runtime variable initialization code
+   299                           
+   300  07FC                     __end_of__initialization:	
+   301  07FC  0183               	clrf	3
+   302  07FD  120A  118A  2E2B   	ljmp	_main	;jump to C main() function
+   303                           
+   304                           	psect	bssCOMMON
+   305  007B                     __pbssCOMMON:	
+   306  007B                     _current_line:	
+   307  007B                     	ds	1
+   308                           
+   309                           	psect	bssBANK0
+   310  0020                     __pbssBANK0:	
+   311  0020                     _uart_buffer:	
+   312  0020                     	ds	64
+   313  0060                     _current_delay:	
+   314  0060                     	ds	2
+   315  0062                     _dissolve_ticks:	
+   316  0062                     	ds	2
+   317  0064                     _duty:	
+   318  0064                     	ds	2
+   319  0066                     _tick:	
+   320  0066                     	ds	2
+   321  0068                     _prev_line:	
+   322  0068                     	ds	1
+   323  0069                     _uart_position2:	
+   324  0069                     	ds	1
+   325  006A                     _uart_position1:	
+   326  006A                     	ds	1
+   327  006B                     _uart_size:	
+   328  006B                     	ds	1
+   329                           
+   330                           	psect	dataBANK0
+   331  006C                     __pdataBANK0:	
+   332  006C                     _led_state:	
+   333  006C                     	ds	1
+   334                           
+   335                           	psect	dataBANK3
+   336  0190                     __pdataBANK3:	
+   337  0190                     _sequence:	
+   338  0190                     	ds	90
+   339                           
+   340                           	psect	inittext
+   341  05DE                     init_fetch0:	
+   342                           ;	Called with low address in FSR and high address in W
+   343                           
+   344  05DE  087E               	movf	126,w
+   345  05DF  008A               	movwf	10
+   346  05E0  087F               	movf	127,w
+   347  05E1  0082               	movwf	2
+   348  05E2                     init_ram0:	
+   349                           ;Called with:
+   350                           ;	high address of idata address in btemp 
+   351                           ;	low address of idata address in btemp+1 
+   352                           ;	low address of data in FSR
+   353                           ;	high address + 1 of data in btemp-1
+   354                           
+   355  05E2  25DE  120A  118A   	fcall	init_fetch0
+   356  05E5  0080               	movwf	0
+   357  05E6  0A84               	incf	4,f
+   358  05E7  0804               	movf	4,w
+   359  05E8  067D               	xorwf	125,w
+   360  05E9  1903               	btfsc	3,2
+   361  05EA  3400               	retlw	0
+   362  05EB  0AFF               	incf	127,f
+   363  05EC  1903               	btfsc	3,2
+   364  05ED  0AFE               	incf	126,f
+   365  05EE  2DE2               	goto	init_ram0
+   366                           
+   367                           	psect	clrtext
+   368  05C5                     clear_ram0:	
+   369                           ;	Called with FSR containing the base address, and
+   370                           ;	W with the last address+1
+   371                           
+   372  05C5  0064               	clrwdt	;clear the watchdog before getting into this loop
+   373  05C6                     clrloop0:	
+   374  05C6  0180               	clrf	0	;clear RAM location pointed to by FSR
+   375  05C7  0A84               	incf	4,f	;increment pointer
+   376  05C8  0604               	xorwf	4,w	;XOR with final address
+   377  05C9  1903               	btfsc	3,2	;have we reached the end yet?
+   378  05CA  3400               	retlw	0	;all done for this memory range, return
+   379  05CB  0604               	xorwf	4,w	;XOR again to restore value
+   380  05CC  2DC6               	goto	clrloop0	;do the next byte
+   381                           
+   382                           	psect	cstackCOMMON
+   383  0070                     __pcstackCOMMON:	
+   384  0070                     ?_show_leds:	
+   385  0070                     ?_dissolve1:	
+   386                           ; 1 bytes @ 0x0
+   387                           
+   388  0070                     ?_dissolve2:	
+   389                           ; 1 bytes @ 0x0
+   390                           
+   391  0070                     ?_main:	
+   392                           ; 1 bytes @ 0x0
+   393                           
+   394  0070                     ?___bmul:	
+   395                           ; 1 bytes @ 0x0
+   396                           
+   397  0070                     ___bmul@multiplicand:	
+   398                           ; 1 bytes @ 0x0
+   399                           
+   400                           
+   401                           ; 1 bytes @ 0x0
+   402  0070                     	ds	1
+   403  0071                     ??___bmul:	
+   404                           
+   405                           ; 1 bytes @ 0x1
+   406  0071                     	ds	1
+   407  0072                     ___bmul@product:	
+   408                           
+   409                           ; 1 bytes @ 0x2
+   410  0072                     	ds	1
+   411  0073                     ___bmul@multiplier:	
+   412                           
+   413                           ; 1 bytes @ 0x3
+   414  0073                     	ds	1
+   415  0074                     ??_show_leds:	
+   416  0074                     ??_dissolve1:	
+   417                           ; 1 bytes @ 0x4
+   418                           
+   419  0074                     ??_dissolve2:	
+   420                           ; 1 bytes @ 0x4
+   421                           
+   422                           
+   423                           ; 1 bytes @ 0x4
+   424  0074                     	ds	4
+   425  0078                     dissolve1@dissolve:	
+   426                           
+   427                           ; 1 bytes @ 0x8
+   428  0078                     	ds	1
+   429  0079                     dissolve1@tick2:	
+   430  0079                     show_leds@next_dissolve_ticks:	
+   431                           ; 2 bytes @ 0x9
+   432                           
+   433                           
+   434                           ; 2 bytes @ 0x9
+   435  0079                     	ds	2
+   436  007B                     ??_main:	
+   437                           
+   438                           	psect	maintext
+   439  062B                     __pmaintext:	
+   440                           ; 1 bytes @ 0xB
+   441 ;;
+   442 ;;Main: autosize = 0, tempsize = 0, incstack = 0, save=0
+   443 ;;
+   444 ;; *************** function _main *****************
+   445 ;; Defined at:
+   446 ;;		line 390 in file "leds.c"
+   447 ;; Parameters:    Size  Location     Type
+   448 ;;		None
+   449 ;; Auto vars:     Size  Location     Type
+   450 ;;  i               1    0        unsigned char 
+   451 ;; Return value:  Size  Location     Type
+   452 ;;                  1    wreg      void 
+   453 ;; Registers used:
+   454 ;;		wreg, fsr0l, fsr0h, status,2, status,0, pclath, cstack
+   455 ;; Tracked objects:
+   456 ;;		On entry : B00/0
+   457 ;;		On exit  : 0/0
+   458 ;;		Unchanged: 0/0
+   459 ;; Data sizes:     COMMON   BANK0   BANK1   BANK3   BANK2
+   460 ;;      Params:         0       0       0       0       0
+   461 ;;      Locals:         0       0       0       0       0
+   462 ;;      Temps:          0       0       0       0       0
+   463 ;;      Totals:         0       0       0       0       0
+   464 ;;Total ram usage:        0 bytes
+   465 ;; Hardware stack levels required when called:    2
+   466 ;; This function calls:
+   467 ;;		_dissolve1
+   468 ;;		_dissolve2
+   469 ;;		_show_leds
+   470 ;; This function is called by:
+   471 ;;		Startup code after reset
+   472 ;; This function uses a non-reentrant model
+   473 ;;
+   474                           
+   475                           
+   476                           ;psect for function _main
+   477  062B                     _main:	
+   478                           
+   479                           ;leds.c: 392: uint8_t i;
+   480                           ;leds.c: 406: ADCON1 = 0b01000110;
+   481                           
+   482                           ;incstack = 0
+   483                           ; Regs used in _main: [wreg-fsr0h+status,2+status,0+pclath+cstack]
+   484  062B  3046               	movlw	70
+   485  062C  1683               	bsf	3,5	;RP0=1, select bank1
+   486  062D  1303               	bcf	3,6	;RP1=0, select bank1
+   487  062E  009F               	movwf	31	;volatile
+   488                           
+   489                           ;leds.c: 410: T2CON = 0b00000111;
+   490  062F  3007               	movlw	7
+   491  0630  1283               	bcf	3,5	;RP0=0, select bank0
+   492  0631  1303               	bcf	3,6	;RP1=0, select bank0
+   493  0632  0092               	movwf	18	;volatile
+   494                           
+   495                           ;leds.c: 411: PR2 = 0xff;
+   496  0633  30FF               	movlw	255
+   497  0634  1683               	bsf	3,5	;RP0=1, select bank1
+   498  0635  1303               	bcf	3,6	;RP1=0, select bank1
+   499  0636  0092               	movwf	18	;volatile
+   500                           
+   501                           ;leds.c: 412: PIR1bits.TMR2IF = 0;
+   502  0637  1283               	bcf	3,5	;RP0=0, select bank0
+   503  0638  1303               	bcf	3,6	;RP1=0, select bank0
+   504  0639  108C               	bcf	12,1	;volatile
+   505                           
+   506                           ;leds.c: 433: TRISAbits.TRISA3 = 0;
+   507  063A  1683               	bsf	3,5	;RP0=1, select bank1
+   508  063B  1303               	bcf	3,6	;RP1=0, select bank1
+   509  063C  1185               	bcf	5,3	;volatile
+   510                           
+   511                           ;leds.c: 434: TRISAbits.TRISA2 = 0;
+   512  063D  1105               	bcf	5,2	;volatile
+   513                           
+   514                           ;leds.c: 435: TRISAbits.TRISA1 = 0;
+   515  063E  1085               	bcf	5,1	;volatile
+   516                           
+   517                           ;leds.c: 436: TRISAbits.TRISA0 = 0;
+   518  063F  1005               	bcf	5,0	;volatile
+   519                           
+   520                           ;leds.c: 438: TRISDbits.TRISD7 = 0;
+   521  0640  1388               	bcf	8,7	;volatile
+   522                           
+   523                           ;leds.c: 439: TRISDbits.TRISD6 = 0;
+   524  0641  1308               	bcf	8,6	;volatile
+   525                           
+   526                           ;leds.c: 440: TRISDbits.TRISD5 = 0;
+   527  0642  1288               	bcf	8,5	;volatile
+   528                           
+   529                           ;leds.c: 441: TRISDbits.TRISD4 = 0;
+   530  0643  1208               	bcf	8,4	;volatile
+   531                           
+   532                           ;leds.c: 442: TRISCbits.TRISC7 = 0;
+   533  0644  1387               	bcf	7,7	;volatile
+   534                           
+   535                           ;leds.c: 444: TRISCbits.TRISC5 = 0;
+   536  0645  1287               	bcf	7,5	;volatile
+   537                           
+   538                           ;leds.c: 445: TRISCbits.TRISC4 = 0;
+   539  0646  1207               	bcf	7,4	;volatile
+   540                           
+   541                           ;leds.c: 446: TRISDbits.TRISD3 = 0;
+   542  0647  1188               	bcf	8,3	;volatile
+   543                           
+   544                           ;leds.c: 447: TRISDbits.TRISD2 = 0;
+   545  0648  1108               	bcf	8,2	;volatile
+   546                           
+   547                           ;leds.c: 448: TRISDbits.TRISD1 = 0;
+   548  0649  1088               	bcf	8,1	;volatile
+   549                           
+   550                           ;leds.c: 449: TRISDbits.TRISD0 = 0;
+   551  064A  1008               	bcf	8,0	;volatile
+   552                           
+   553                           ;leds.c: 450: TRISCbits.TRISC3 = 0;
+   554  064B  1187               	bcf	7,3	;volatile
+   555                           
+   556                           ;leds.c: 454: { PORTA = sequence[0].porta; PORTC = sequence[0].portc; PORTD = sequence[0
+      +                          ].portd; };
+   557  064C  1683               	bsf	3,5	;RP0=1, select bank3
+   558  064D  1703               	bsf	3,6	;RP1=1, select bank3
+   559  064E  0810               	movf	_sequence^(0+384),w
+   560  064F  1283               	bcf	3,5	;RP0=0, select bank0
+   561  0650  1303               	bcf	3,6	;RP1=0, select bank0
+   562  0651  0085               	movwf	5	;volatile
+   563  0652  1683               	bsf	3,5	;RP0=1, select bank3
+   564  0653  1703               	bsf	3,6	;RP1=1, select bank3
+   565  0654  0811               	movf	(_sequence^(0+384)+1),w
+   566  0655  1283               	bcf	3,5	;RP0=0, select bank0
+   567  0656  1303               	bcf	3,6	;RP1=0, select bank0
+   568  0657  0087               	movwf	7	;volatile
+   569  0658  1683               	bsf	3,5	;RP0=1, select bank3
+   570  0659  1703               	bsf	3,6	;RP1=1, select bank3
+   571  065A  0812               	movf	(_sequence^(0+384)+2),w
+   572  065B  1283               	bcf	3,5	;RP0=0, select bank0
+   573  065C  1303               	bcf	3,6	;RP1=0, select bank0
+   574  065D  0088               	movwf	8	;volatile
+   575  065E                     l1162:	
+   576                           ;leds.c: 456: while(1)
+   577                           
+   578                           
+   579                           ;leds.c: 457: {
+   580                           ;leds.c: 458: if(PIR1bits.TMR2IF)
+   581  065E  1283               	bcf	3,5	;RP0=0, select bank0
+   582  065F  1303               	bcf	3,6	;RP1=0, select bank0
+   583  0660  1C8C               	btfss	12,1	;volatile
+   584  0661  2E5E               	goto	l1162
+   585                           
+   586                           ;leds.c: 459: {
+   587                           ;leds.c: 460: PIR1bits.TMR2IF = 0;
+   588  0662  108C               	bcf	12,1	;volatile
+   589                           
+   590                           ;leds.c: 461: tick++;
+   591  0663  3001               	movlw	1
+   592  0664  07E6               	addwf	_tick,f
+   593  0665  1803               	skipnc
+   594  0666  0AE7               	incf	_tick+1,f
+   595  0667  3000               	movlw	0
+   596  0668  07E7               	addwf	_tick+1,f
+   597                           
+   598                           ;leds.c: 462: led_state();
+   599  0669  086C               	movf	_led_state,w
+   600  066A  120A  118A  2003  120A  118A  	fcall	fptable
+   601  066F  0064               	clrwdt	;# 
+   602  0670  2E5E               	goto	l1162
+   603  0671                     __end_of_main:	
+   604                           
+   605                           	psect	text1
+   606  05EF                     __ptext1:	
+   607 ;; *************** function _dissolve2 *****************
+   608 ;; Defined at:
+   609 ;;		line 325 in file "leds.c"
+   610 ;; Parameters:    Size  Location     Type
+   611 ;;		None
+   612 ;; Auto vars:     Size  Location     Type
+   613 ;;		None
+   614 ;; Return value:  Size  Location     Type
+   615 ;;                  1    wreg      void 
+   616 ;; Registers used:
+   617 ;;		wreg, fsr0l, fsr0h, status,2, status,0, pclath, cstack
+   618 ;; Tracked objects:
+   619 ;;		On entry : 0/0
+   620 ;;		On exit  : 0/0
+   621 ;;		Unchanged: 0/0
+   622 ;; Data sizes:     COMMON   BANK0   BANK1   BANK3   BANK2
+   623 ;;      Params:         0       0       0       0       0
+   624 ;;      Locals:         0       0       0       0       0
+   625 ;;      Temps:          1       0       0       0       0
+   626 ;;      Totals:         1       0       0       0       0
+   627 ;;Total ram usage:        1 bytes
+   628 ;; Hardware stack levels used:    1
+   629 ;; Hardware stack levels required when called:    1
+   630 ;; This function calls:
+   631 ;;		___bmul
+   632 ;; This function is called by:
+   633 ;;		_dissolve1
+   634 ;;		_main
+   635 ;; This function uses a non-reentrant model
+   636 ;;
+   637                           
+   638                           
+   639                           ;psect for function _dissolve2
+   640  05EF                     _dissolve2:	
+   641                           
+   642                           ;leds.c: 329: { PORTA = sequence[prev_line].porta; PORTC = sequence[prev_line].portc; PO
+      +                          RTD = sequence[prev_line].portd; };
+   643                           
+   644                           ;incstack = 0
+   645                           ; Regs used in _dissolve2: [wreg-fsr0h+status,2+status,0+pclath+cstack]
+   646  05EF  3006               	movlw	6
+   647  05F0  00F4               	movwf	??_dissolve2
+   648  05F1  0874               	movf	??_dissolve2,w
+   649  05F2  00F0               	movwf	___bmul@multiplicand
+   650  05F3  1283               	bcf	3,5	;RP0=0, select bank0
+   651  05F4  1303               	bcf	3,6	;RP1=0, select bank0
+   652  05F5  0868               	movf	_prev_line,w
+   653  05F6  120A  118A  25CD  120A  118A  	fcall	___bmul
+   654  05FB  3E90               	addlw	(low (_sequence| (0+256)))& (0+255)
+   655  05FC  0084               	movwf	4
+   656  05FD  1783               	bsf	3,7	;select IRP bank3
+   657  05FE  0800               	movf	0,w
+   658  05FF  1283               	bcf	3,5	;RP0=0, select bank0
+   659  0600  1303               	bcf	3,6	;RP1=0, select bank0
+   660  0601  0085               	movwf	5	;volatile
+   661  0602  3006               	movlw	6
+   662  0603  00F4               	movwf	??_dissolve2
+   663  0604  0874               	movf	??_dissolve2,w
+   664  0605  00F0               	movwf	___bmul@multiplicand
+   665  0606  0868               	movf	_prev_line,w
+   666  0607  120A  118A  25CD  120A  118A  	fcall	___bmul
+   667  060C  3E01               	addlw	1
+   668  060D  3E90               	addlw	(low (_sequence| (0+256)))& (0+255)
+   669  060E  0084               	movwf	4
+   670  060F  1783               	bsf	3,7	;select IRP bank3
+   671  0610  0800               	movf	0,w
+   672  0611  1283               	bcf	3,5	;RP0=0, select bank0
+   673  0612  1303               	bcf	3,6	;RP1=0, select bank0
+   674  0613  0087               	movwf	7	;volatile
+   675  0614  3006               	movlw	6
+   676  0615  00F4               	movwf	??_dissolve2
+   677  0616  0874               	movf	??_dissolve2,w
+   678  0617  00F0               	movwf	___bmul@multiplicand
+   679  0618  0868               	movf	_prev_line,w
+   680  0619  120A  118A  25CD   	fcall	___bmul
+   681  061C  3E02               	addlw	2
+   682  061D  3E90               	addlw	(low (_sequence| (0+256)))& (0+255)
+   683  061E  0084               	movwf	4
+   684  061F  1783               	bsf	3,7	;select IRP bank3
+   685  0620  0800               	movf	0,w
+   686  0621  1283               	bcf	3,5	;RP0=0, select bank0
+   687  0622  1303               	bcf	3,6	;RP1=0, select bank0
+   688  0623  0088               	movwf	8	;volatile
+   689                           
+   690                           ;leds.c: 332: TMR2 = duty;
+   691  0624  0864               	movf	_duty,w
+   692  0625  0091               	movwf	17	;volatile
+   693                           
+   694                           ;leds.c: 333: led_state = dissolve1;
+   695  0626  3001               	movlw	(low (fp__dissolve1-fpbase))& (0+255)
+   696  0627  00F4               	movwf	??_dissolve2
+   697  0628  0874               	movf	??_dissolve2,w
+   698  0629  00EC               	movwf	_led_state
+   699  062A  0008               	return
+   700  062B                     __end_of_dissolve2:	
+   701                           
+   702                           	psect	text2
+   703  0748                     __ptext2:	
+   704 ;; *************** function _dissolve1 *****************
+   705 ;; Defined at:
+   706 ;;		line 337 in file "leds.c"
+   707 ;; Parameters:    Size  Location     Type
+   708 ;;		None
+   709 ;; Auto vars:     Size  Location     Type
+   710 ;;  tick2           2    9[COMMON] unsigned int 
+   711 ;;  dissolve        1    8[COMMON] unsigned char 
+   712 ;; Return value:  Size  Location     Type
+   713 ;;                  1    wreg      void 
+   714 ;; Registers used:
+   715 ;;		wreg, fsr0l, fsr0h, status,2, status,0, pclath, cstack
+   716 ;; Tracked objects:
+   717 ;;		On entry : 0/0
+   718 ;;		On exit  : 0/0
+   719 ;;		Unchanged: 0/0
+   720 ;; Data sizes:     COMMON   BANK0   BANK1   BANK3   BANK2
+   721 ;;      Params:         0       0       0       0       0
+   722 ;;      Locals:         3       0       0       0       0
+   723 ;;      Temps:          4       0       0       0       0
+   724 ;;      Totals:         7       0       0       0       0
+   725 ;;Total ram usage:        7 bytes
+   726 ;; Hardware stack levels used:    1
+   727 ;; Hardware stack levels required when called:    1
+   728 ;; This function calls:
+   729 ;;		___bmul
+   730 ;; This function is called by:
+   731 ;;		_dissolve2
+   732 ;;		_show_leds
+   733 ;;		_main
+   734 ;; This function uses a non-reentrant model
+   735 ;;
+   736                           
+   737                           
+   738                           ;psect for function _dissolve1
+   739  0748                     _dissolve1:	
+   740                           
+   741                           ;leds.c: 339: uint8_t dissolve = sequence[prev_line].dissolve;
+   742                           
+   743                           ;incstack = 0
+   744                           ; Regs used in _dissolve1: [wreg-fsr0h+status,2+status,0+pclath+cstack]
+   745  0748  3006               	movlw	6
+   746  0749  00F4               	movwf	??_dissolve1
+   747  074A  0874               	movf	??_dissolve1,w
+   748  074B  00F0               	movwf	___bmul@multiplicand
+   749  074C  1283               	bcf	3,5	;RP0=0, select bank0
+   750  074D  1303               	bcf	3,6	;RP1=0, select bank0
+   751  074E  0868               	movf	_prev_line,w
+   752  074F  120A  118A  25CD  120A  118A  	fcall	___bmul
+   753  0754  3E05               	addlw	5
+   754  0755  3E90               	addlw	(low (_sequence| (0+256)))& (0+255)
+   755  0756  0084               	movwf	4
+   756  0757  1783               	bsf	3,7	;select IRP bank3
+   757  0758  0800               	movf	0,w
+   758  0759  00F5               	movwf	??_dissolve1+1
+   759  075A  0875               	movf	??_dissolve1+1,w
+   760  075B  00F8               	movwf	dissolve1@dissolve
+   761                           
+   762                           ;leds.c: 340: uint16_t tick2 = tick / 2;
+   763  075C  1283               	bcf	3,5	;RP0=0, select bank0
+   764  075D  1303               	bcf	3,6	;RP1=0, select bank0
+   765  075E  0867               	movf	_tick+1,w
+   766  075F  00F5               	movwf	??_dissolve1+1
+   767  0760  0866               	movf	_tick,w
+   768  0761  00F4               	movwf	??_dissolve1
+   769  0762  1003               	clrc
+   770  0763  0CF5               	rrf	??_dissolve1+1,f
+   771  0764  0CF4               	rrf	??_dissolve1,f
+   772  0765  0874               	movf	??_dissolve1,w
+   773  0766  00F9               	movwf	dissolve1@tick2
+   774  0767  0875               	movf	??_dissolve1+1,w
+   775  0768  00FA               	movwf	dissolve1@tick2+1
+   776                           
+   777                           ;leds.c: 341: if(tick2 >= dissolve_ticks)
+   778  0769  0863               	movf	_dissolve_ticks+1,w
+   779  076A  027A               	subwf	dissolve1@tick2+1,w
+   780  076B  1D03               	skipz
+   781  076C  2F6F               	goto	u455
+   782  076D  0862               	movf	_dissolve_ticks,w
+   783  076E  0279               	subwf	dissolve1@tick2,w
+   784  076F                     u455:	
+   785  076F  1C03               	skipc
+   786  0770  2F75               	goto	l948
+   787                           
+   788                           ;leds.c: 342: {
+   789                           ;leds.c: 343: tick = 0;
+   790  0771  01E6               	clrf	_tick
+   791  0772  01E7               	clrf	_tick+1
+   792                           
+   793                           ;leds.c: 344: led_state = show_leds;
+   794  0773  3004               	movlw	(low (fp__show_leds-fpbase))& (0+255)
+   795  0774  2FA9               	goto	L1
+   796  0775                     l948:	
+   797                           ;leds.c: 346: }
+   798                           
+   799                           
+   800                           ;leds.c: 347: else
+   801                           ;leds.c: 348: {
+   802                           ;leds.c: 350: duty = (((uint32_t)tick2) << 8) >> dissolve;
+   803  0775  0879               	movf	dissolve1@tick2,w
+   804  0776  00F4               	movwf	??_dissolve1
+   805  0777  087A               	movf	dissolve1@tick2+1,w
+   806  0778  00F5               	movwf	??_dissolve1+1
+   807  0779  01F6               	clrf	??_dissolve1+2
+   808  077A  01F7               	clrf	??_dissolve1+3
+   809  077B  3008               	movlw	8
+   810  077C                     u465:	
+   811  077C  1003               	clrc
+   812  077D  0DF4               	rlf	??_dissolve1,f
+   813  077E  0DF5               	rlf	??_dissolve1+1,f
+   814  077F  0DF6               	rlf	??_dissolve1+2,f
+   815  0780  0DF7               	rlf	??_dissolve1+3,f
+   816  0781  3EFF               	addlw	-1
+   817  0782  1D03               	skipz
+   818  0783  2F7C               	goto	u465
+   819  0784  0A78               	incf	dissolve1@dissolve,w
+   820  0785  2F8B               	goto	u470
+   821  0786                     u475:	
+   822  0786  1003               	clrc
+   823  0787  0CF7               	rrf	??_dissolve1+3,f
+   824  0788  0CF6               	rrf	??_dissolve1+2,f
+   825  0789  0CF5               	rrf	??_dissolve1+1,f
+   826  078A  0CF4               	rrf	??_dissolve1,f
+   827  078B                     u470:	
+   828  078B  3EFF               	addlw	-1
+   829  078C  1D03               	skipz
+   830  078D  2F86               	goto	u475
+   831  078E  0875               	movf	??_dissolve1+1,w
+   832  078F  00E5               	movwf	_duty+1
+   833  0790  0874               	movf	??_dissolve1,w
+   834  0791  00E4               	movwf	_duty
+   835                           
+   836                           ;leds.c: 351: if(duty > 255)
+   837  0792  3001               	movlw	1
+   838  0793  0265               	subwf	_duty+1,w
+   839  0794  3000               	movlw	0
+   840  0795  1903               	skipnz
+   841  0796  0264               	subwf	_duty,w
+   842  0797  1C03               	skipc
+   843  0798  2F9D               	goto	l954
+   844                           
+   845                           ;leds.c: 352: {
+   846                           ;leds.c: 353: duty = 255;
+   847  0799  30FF               	movlw	255
+   848  079A  00E4               	movwf	_duty
+   849  079B  3000               	movlw	0
+   850  079C  00E5               	movwf	_duty+1
+   851  079D                     l954:	
+   852                           
+   853                           ;leds.c: 354: }
+   854                           ;leds.c: 355: if(duty < 1)
+   855  079D  0864               	movf	_duty,w
+   856  079E  0465               	iorwf	_duty+1,w
+   857  079F  1D03               	btfss	3,2
+   858  07A0  2FA5               	goto	l958
+   859                           
+   860                           ;leds.c: 356: {
+   861                           ;leds.c: 357: duty = 1;
+   862  07A1  3001               	movlw	1
+   863  07A2  00E4               	movwf	_duty
+   864  07A3  3000               	movlw	0
+   865  07A4  00E5               	movwf	_duty+1
+   866  07A5                     l958:	
+   867                           
+   868                           ;leds.c: 358: }
+   869                           ;leds.c: 360: TMR2 = -duty;
+   870  07A5  0364               	decf	_duty,w
+   871  07A6  3AFF               	xorlw	255
+   872  07A7  0091               	movwf	17	;volatile
+   873                           
+   874                           ;leds.c: 361: led_state = dissolve2;
+   875  07A8  3007               	movlw	(low (fp__dissolve2-fpbase))& (0+255)
+   876  07A9                     L1:	
+   877  07A9  00F4               	movwf	??_dissolve1
+   878  07AA  0874               	movf	??_dissolve1,w
+   879  07AB  00EC               	movwf	_led_state
+   880                           
+   881                           ;leds.c: 362: }
+   882                           ;leds.c: 364: { PORTA = sequence[current_line].porta; PORTC = sequence[current_line].por
+      +                          tc; PORTD = sequence[current_line].portd; };
+   883  07AC  3006               	movlw	6
+   884  07AD  00F4               	movwf	??_dissolve1
+   885  07AE  0874               	movf	??_dissolve1,w
+   886  07AF  00F0               	movwf	___bmul@multiplicand
+   887  07B0  087B               	movf	_current_line,w
+   888  07B1  120A  118A  25CD  120A  118A  	fcall	___bmul
+   889  07B6  3E90               	addlw	(low (_sequence| (0+256)))& (0+255)
+   890  07B7  0084               	movwf	4
+   891  07B8  1783               	bsf	3,7	;select IRP bank3
+   892  07B9  0800               	movf	0,w
+   893  07BA  1283               	bcf	3,5	;RP0=0, select bank0
+   894  07BB  1303               	bcf	3,6	;RP1=0, select bank0
+   895  07BC  0085               	movwf	5	;volatile
+   896  07BD  3006               	movlw	6
+   897  07BE  00F4               	movwf	??_dissolve1
+   898  07BF  0874               	movf	??_dissolve1,w
+   899  07C0  00F0               	movwf	___bmul@multiplicand
+   900  07C1  087B               	movf	_current_line,w
+   901  07C2  120A  118A  25CD  120A  118A  	fcall	___bmul
+   902  07C7  3E01               	addlw	1
+   903  07C8  3E90               	addlw	(low (_sequence| (0+256)))& (0+255)
+   904  07C9  0084               	movwf	4
+   905  07CA  1783               	bsf	3,7	;select IRP bank3
+   906  07CB  0800               	movf	0,w
+   907  07CC  1283               	bcf	3,5	;RP0=0, select bank0
+   908  07CD  1303               	bcf	3,6	;RP1=0, select bank0
+   909  07CE  0087               	movwf	7	;volatile
+   910  07CF  3006               	movlw	6
+   911  07D0  00F4               	movwf	??_dissolve1
+   912  07D1  0874               	movf	??_dissolve1,w
+   913  07D2  00F0               	movwf	___bmul@multiplicand
+   914  07D3  087B               	movf	_current_line,w
+   915  07D4  120A  118A  25CD   	fcall	___bmul
+   916  07D7  3E02               	addlw	2
+   917  07D8  3E90               	addlw	(low (_sequence| (0+256)))& (0+255)
+   918  07D9  0084               	movwf	4
+   919  07DA  1783               	bsf	3,7	;select IRP bank3
+   920  07DB  0800               	movf	0,w
+   921  07DC  1283               	bcf	3,5	;RP0=0, select bank0
+   922  07DD  1303               	bcf	3,6	;RP1=0, select bank0
+   923  07DE  0088               	movwf	8	;volatile
+   924  07DF  0008               	return
+   925  07E0                     __end_of_dissolve1:	
+   926                           
+   927                           	psect	text3
+   928  06CB                     __ptext3:	
+   929 ;; *************** function _show_leds *****************
+   930 ;; Defined at:
+   931 ;;		line 367 in file "leds.c"
+   932 ;; Parameters:    Size  Location     Type
+   933 ;;		None
+   934 ;; Auto vars:     Size  Location     Type
+   935 ;;  next_dissolv    2    9[COMMON] unsigned int 
+   936 ;; Return value:  Size  Location     Type
+   937 ;;                  1    wreg      void 
+   938 ;; Registers used:
+   939 ;;		wreg, fsr0l, fsr0h, status,2, status,0, pclath, cstack
+   940 ;; Tracked objects:
+   941 ;;		On entry : 0/0
+   942 ;;		On exit  : 0/0
+   943 ;;		Unchanged: 0/0
+   944 ;; Data sizes:     COMMON   BANK0   BANK1   BANK3   BANK2
+   945 ;;      Params:         0       0       0       0       0
+   946 ;;      Locals:         2       0       0       0       0
+   947 ;;      Temps:          5       0       0       0       0
+   948 ;;      Totals:         7       0       0       0       0
+   949 ;;Total ram usage:        7 bytes
+   950 ;; Hardware stack levels used:    1
+   951 ;; Hardware stack levels required when called:    1
+   952 ;; This function calls:
+   953 ;;		___bmul
+   954 ;; This function is called by:
+   955 ;;		_dissolve1
+   956 ;;		_main
+   957 ;; This function uses a non-reentrant model
+   958 ;;
+   959                           
+   960                           
+   961                           ;psect for function _show_leds
+   962  06CB                     _show_leds:	
+   963                           
+   964                           ;leds.c: 370: if(tick >= current_delay)
+   965                           
+   966                           ;incstack = 0
+   967                           ; Regs used in _show_leds: [wreg-fsr0h+status,2+status,0+pclath+cstack]
+   968  06CB  1283               	bcf	3,5	;RP0=0, select bank0
+   969  06CC  1303               	bcf	3,6	;RP1=0, select bank0
+   970  06CD  0861               	movf	_current_delay+1,w
+   971  06CE  0267               	subwf	_tick+1,w
+   972  06CF  1D03               	skipz
+   973  06D0  2ED3               	goto	u505
+   974  06D1  0860               	movf	_current_delay,w
+   975  06D2  0266               	subwf	_tick,w
+   976  06D3                     u505:	
+   977  06D3  1C03               	skipc
+   978  06D4  0008               	return
+   979                           
+   980                           ;leds.c: 371: {
+   981                           ;leds.c: 372: prev_line = current_line;
+   982  06D5  087B               	movf	_current_line,w
+   983  06D6  00F4               	movwf	??_show_leds
+   984  06D7  0874               	movf	??_show_leds,w
+   985  06D8  00E8               	movwf	_prev_line
+   986                           
+   987                           ;leds.c: 373: dissolve_ticks = 1 << sequence[current_line].dissolve;
+   988  06D9  3006               	movlw	6
+   989  06DA  00F4               	movwf	??_show_leds
+   990  06DB  0874               	movf	??_show_leds,w
+   991  06DC  00F0               	movwf	___bmul@multiplicand
+   992  06DD  087B               	movf	_current_line,w
+   993  06DE  120A  118A  25CD  120A  118A  	fcall	___bmul
+   994  06E3  3E05               	addlw	5
+   995  06E4  3E90               	addlw	(low (_sequence| (0+256)))& (0+255)
+   996  06E5  0084               	movwf	4
+   997  06E6  1783               	bsf	3,7	;select IRP bank3
+   998  06E7  0A00               	incf	0,w
+   999  06E8  00F5               	movwf	??_show_leds+1
+  1000  06E9  3001               	movlw	1
+  1001  06EA  00F6               	movwf	??_show_leds+2
+  1002  06EB  3000               	movlw	0
+  1003  06EC  00F7               	movwf	??_show_leds+3
+  1004  06ED  2EF1               	goto	u514
+  1005  06EE                     u515:	
+  1006  06EE  1003               	clrc
+  1007  06EF  0DF6               	rlf	??_show_leds+2,f
+  1008  06F0  0DF7               	rlf	??_show_leds+3,f
+  1009  06F1                     u514:	
+  1010  06F1  0BF5               	decfsz	??_show_leds+1,f
+  1011  06F2  2EEE               	goto	u515
+  1012  06F3  0876               	movf	??_show_leds+2,w
+  1013  06F4  1283               	bcf	3,5	;RP0=0, select bank0
+  1014  06F5  1303               	bcf	3,6	;RP1=0, select bank0
+  1015  06F6  00E2               	movwf	_dissolve_ticks
+  1016  06F7  0877               	movf	??_show_leds+3,w
+  1017  06F8  00E3               	movwf	_dissolve_ticks+1
+  1018                           
+  1019                           ;leds.c: 374: current_line++;
+  1020  06F9  3001               	movlw	1
+  1021  06FA  00F4               	movwf	??_show_leds
+  1022  06FB  0874               	movf	??_show_leds,w
+  1023  06FC  07FB               	addwf	_current_line,f
+  1024                           
+  1025                           ;leds.c: 375: if(current_line >= (sizeof(sequence) / sizeof(sequence_t)))
+  1026  06FD  300F               	movlw	15
+  1027  06FE  027B               	subwf	_current_line,w
+  1028  06FF  1803               	btfsc	3,0
+  1029                           
+  1030                           ;leds.c: 376: {
+  1031                           ;leds.c: 377: current_line = 0;
+  1032  0700  01FB               	clrf	_current_line
+  1033                           
+  1034                           ;leds.c: 378: }
+  1035                           ;leds.c: 380: tick = 0;
+  1036  0701  01E6               	clrf	_tick
+  1037  0702  01E7               	clrf	_tick+1
+  1038                           
+  1039                           ;leds.c: 381: uint16_t next_dissolve_ticks = 1 << sequence[current_line].dissolve;
+  1040  0703  3006               	movlw	6
+  1041  0704  00F4               	movwf	??_show_leds
+  1042  0705  0874               	movf	??_show_leds,w
+  1043  0706  00F0               	movwf	___bmul@multiplicand
+  1044  0707  087B               	movf	_current_line,w
+  1045  0708  120A  118A  25CD  120A  118A  	fcall	___bmul
+  1046  070D  3E05               	addlw	5
+  1047  070E  3E90               	addlw	(low (_sequence| (0+256)))& (0+255)
+  1048  070F  0084               	movwf	4
+  1049  0710  1783               	bsf	3,7	;select IRP bank3
+  1050  0711  0A00               	incf	0,w
+  1051  0712  00F5               	movwf	??_show_leds+1
+  1052  0713  3001               	movlw	1
+  1053  0714  00F6               	movwf	??_show_leds+2
+  1054  0715  3000               	movlw	0
+  1055  0716  00F7               	movwf	??_show_leds+3
+  1056  0717  2F1B               	goto	u534
+  1057  0718                     u535:	
+  1058  0718  1003               	clrc
+  1059  0719  0DF6               	rlf	??_show_leds+2,f
+  1060  071A  0DF7               	rlf	??_show_leds+3,f
+  1061  071B                     u534:	
+  1062  071B  0BF5               	decfsz	??_show_leds+1,f
+  1063  071C  2F18               	goto	u535
+  1064  071D  0876               	movf	??_show_leds+2,w
+  1065  071E  00F9               	movwf	show_leds@next_dissolve_ticks
+  1066  071F  0877               	movf	??_show_leds+3,w
+  1067  0720  00FA               	movwf	show_leds@next_dissolve_ticks+1
+  1068                           
+  1069                           ;leds.c: 382: current_delay = sequence[current_line].ticks - next_dissolve_ticks;
+  1070  0721  3006               	movlw	6
+  1071  0722  00F4               	movwf	??_show_leds
+  1072  0723  0874               	movf	??_show_leds,w
+  1073  0724  00F0               	movwf	___bmul@multiplicand
+  1074  0725  087B               	movf	_current_line,w
+  1075  0726  120A  118A  25CD   	fcall	___bmul
+  1076  0729  3E03               	addlw	3
+  1077  072A  3E90               	addlw	(low (_sequence| (0+256)))& (0+255)
+  1078  072B  0084               	movwf	4
+  1079  072C  1783               	bsf	3,7	;select IRP bank3
+  1080  072D  0800               	movf	0,w
+  1081  072E  00F5               	movwf	??_show_leds+1
+  1082  072F  0A84               	incf	4,f
+  1083  0730  0800               	movf	0,w
+  1084  0731  00F6               	movwf	??_show_leds+2
+  1085  0732  0979               	comf	show_leds@next_dissolve_ticks,w
+  1086  0733  00F7               	movwf	??_show_leds+3
+  1087  0734  097A               	comf	show_leds@next_dissolve_ticks+1,w
+  1088  0735  00F8               	movwf	??_show_leds+4
+  1089  0736  0AF7               	incf	??_show_leds+3,f
+  1090  0737  1903               	skipnz
+  1091  0738  0AF8               	incf	??_show_leds+4,f
+  1092  0739  0875               	movf	??_show_leds+1,w
+  1093  073A  0777               	addwf	??_show_leds+3,w
+  1094  073B  1283               	bcf	3,5	;RP0=0, select bank0
+  1095  073C  1303               	bcf	3,6	;RP1=0, select bank0
+  1096  073D  00E0               	movwf	_current_delay
+  1097  073E  0876               	movf	??_show_leds+2,w
+  1098  073F  1803               	skipnc
+  1099  0740  0A76               	incf	??_show_leds+2,w
+  1100  0741  0778               	addwf	??_show_leds+4,w
+  1101  0742  00E1               	movwf	_current_delay+1
+  1102                           
+  1103                           ;leds.c: 384: led_state = dissolve1;
+  1104  0743  3001               	movlw	(low (fp__dissolve1-fpbase))& (0+255)
+  1105  0744  00F4               	movwf	??_show_leds
+  1106  0745  0874               	movf	??_show_leds,w
+  1107  0746  00EC               	movwf	_led_state
+  1108  0747  0008               	return
+  1109  0748                     __end_of_show_leds:	
+  1110                           
+  1111                           	psect	text4
+  1112  05CD                     __ptext4:	
+  1113 ;; *************** function ___bmul *****************
+  1114 ;; Defined at:
+  1115 ;;		line 4 in file "/opt/microchip/xc8/v1.45/sources/common/Umul8.c"
+  1116 ;; Parameters:    Size  Location     Type
+  1117 ;;  multiplier      1    wreg     unsigned char 
+  1118 ;;  multiplicand    1    0[COMMON] unsigned char 
+  1119 ;; Auto vars:     Size  Location     Type
+  1120 ;;  multiplier      1    3[COMMON] unsigned char 
+  1121 ;;  product         1    2[COMMON] unsigned char 
+  1122 ;; Return value:  Size  Location     Type
+  1123 ;;                  1    wreg      unsigned char 
+  1124 ;; Registers used:
+  1125 ;;		wreg, status,2, status,0
+  1126 ;; Tracked objects:
+  1127 ;;		On entry : 0/0
+  1128 ;;		On exit  : 0/0
+  1129 ;;		Unchanged: 0/0
+  1130 ;; Data sizes:     COMMON   BANK0   BANK1   BANK3   BANK2
+  1131 ;;      Params:         1       0       0       0       0
+  1132 ;;      Locals:         2       0       0       0       0
+  1133 ;;      Temps:          1       0       0       0       0
+  1134 ;;      Totals:         4       0       0       0       0
+  1135 ;;Total ram usage:        4 bytes
+  1136 ;; Hardware stack levels used:    1
+  1137 ;; This function calls:
+  1138 ;;		Nothing
+  1139 ;; This function is called by:
+  1140 ;;		_dissolve2
+  1141 ;;		_dissolve1
+  1142 ;;		_show_leds
+  1143 ;; This function uses a non-reentrant model
+  1144 ;;
+  1145                           
+  1146                           
+  1147                           ;psect for function ___bmul
+  1148  05CD                     ___bmul:	
+  1149                           
+  1150                           ;incstack = 0
+  1151                           ; Regs used in ___bmul: [wreg+status,2+status,0]
+  1152                           ;___bmul@multiplier stored from wreg
+  1153  05CD  00F3               	movwf	___bmul@multiplier
+  1154  05CE  01F2               	clrf	___bmul@product
+  1155  05CF                     l876:	
+  1156  05CF  1C73               	btfss	___bmul@multiplier,0
+  1157  05D0  2DD5               	goto	l880
+  1158  05D1  0870               	movf	___bmul@multiplicand,w
+  1159  05D2  00F1               	movwf	??___bmul
+  1160  05D3  0871               	movf	??___bmul,w
+  1161  05D4  07F2               	addwf	___bmul@product,f
+  1162  05D5                     l880:	
+  1163  05D5  1003               	clrc
+  1164  05D6  0DF0               	rlf	___bmul@multiplicand,f
+  1165  05D7  1003               	clrc
+  1166  05D8  0CF3               	rrf	___bmul@multiplier,f
+  1167  05D9  0873               	movf	___bmul@multiplier,w
+  1168  05DA  1D03               	btfss	3,2
+  1169  05DB  2DCF               	goto	l876
+  1170  05DC  0872               	movf	___bmul@product,w
+  1171  05DD  0008               	return
+  1172  05DE                     __end_of___bmul:	
+  1173  0008                     
+  1174                           	psect	functab
+  1175  0003                     __pfunctab:	
+  1176  0003                     __fptable:	
+  1177  0003                     fptable:	
+  1178  0003  00FF               	movwf	(btemp+1)& (0+127)
+  1179  0004  3000               	movlw	high fptable
+  1180  0005  008A               	movwf	10
+  1181  0006  087F               	movf	(btemp+1)& (0+127),w
+  1182  0007  0782               	addwf	2,f
+  1183  0008                     fpbase:	
+  1184  0008  2808               	goto	fpbase	; Call via a null pointer and you will get stuck here.
+  1185  0009                     fp__dissolve1:	
+  1186  0009  120A  118A  2F48   	ljmp	_dissolve1
+  1187  000C                     fp__show_leds:	
+  1188  000C  120A  118A  2ECB   	ljmp	_show_leds
+  1189  000F                     fp__dissolve2:	
+  1190  000F  120A  118A  2DEF   	ljmp	_dissolve2
+  1191  0012                     __end_of__fptable:	
+  1192  007E                     btemp	set	126	;btemp
+  1193  007E                     wtemp0	set	126
+
+
+Data Sizes:
+    Strings     0
+    Constant    16
+    Data        91
+    BSS         77
+    Persistent  0
+    Stack       0
+
+Auto Spaces:
+    Space          Size  Autos    Used
+    COMMON           14     11      12
+    BANK0            80      0      77
+    BANK1            80      0       0
+    BANK3            96      0      90
+    BANK2            96      0       0
+
+Pointer List with Targets:
+
+    led_state	PTR FTN()void  size(1) Largest target is 1
+		 -> dissolve1(), dissolve2(), show_leds(), 
+
+
+Critical Paths under _main in COMMON
+
+    _main->_dissolve1
+    _main->_show_leds
+    _show_leds->___bmul
+    _dissolve2->___bmul
+    _dissolve1->___bmul
+
+Critical Paths under _main in BANK0
+
+    None.
+
+Critical Paths under _main in BANK1
+
+    None.
+
+Critical Paths under _main in BANK3
+
+    None.
+
+Critical Paths under _main in BANK2
+
+    None.
+
+Call Graph Tables:
+
+ ---------------------------------------------------------------------------------
+ (Depth) Function   	        Calls       Base Space   Used Autos Params    Refs
+ ---------------------------------------------------------------------------------
+ (0) _main                                                 1     1      0    1147
+                          _dissolve1 *
+                          _dissolve2 *
+                          _show_leds *
+ ---------------------------------------------------------------------------------
+ (1) _show_leds                                            7     7      0     375
+                                              4 COMMON     7     7      0
+                             ___bmul
+ ---------------------------------------------------------------------------------
+ (1) _dissolve2                                            1     1      0     352
+                                              4 COMMON     1     1      0
+                             ___bmul
+ ---------------------------------------------------------------------------------
+ (1) _dissolve1                                            7     7      0     420
+                                              4 COMMON     7     7      0
+                             ___bmul
+ ---------------------------------------------------------------------------------
+ (2) ___bmul                                               4     3      1     352
+                                              0 COMMON     4     3      1
+ ---------------------------------------------------------------------------------
+ Estimated maximum stack depth 2
+ ---------------------------------------------------------------------------------
+
+ Call Graph Graphs:
+
+ _main (ROOT)
+   _dissolve1 *
+     ___bmul
+   _dissolve2 *
+     ___bmul
+   _show_leds *
+     ___bmul
+
+ Address spaces:
+Name               Size   Autos  Total    Cost      Usage
+BANK3               60      0      5A       9       93.8%
+BITBANK3            60      0       0       8        0.0%
+SFR3                 0      0       0       4        0.0%
+BITSFR3              0      0       0       4        0.0%
+BANK2               60      0       0      11        0.0%
+BITBANK2            60      0       0      10        0.0%
+SFR2                 0      0       0       5        0.0%
+BITSFR2              0      0       0       5        0.0%
+BANK1               50      0       0       7        0.0%
+BITBANK1            50      0       0       6        0.0%
+SFR1                 0      0       0       2        0.0%
+BITSFR1              0      0       0       2        0.0%
+BANK0               50      0      4D       5       96.2%
+BITBANK0            50      0       0       4        0.0%
+SFR0                 0      0       0       1        0.0%
+BITSFR0              0      0       0       1        0.0%
+COMMON               E      B       C       1       85.7%
+BITCOMMON            E      0       0       0        0.0%
+CODE                 0      0       0       0        0.0%
+DATA                 0      0      B3      12        0.0%
+ABS                  0      0      B3       3        0.0%
+NULL                 0      0       0       0        0.0%
+STACK                0      0       0       2        0.0%
+EEDATA             100      0       0       0        0.0%
+
+
+Microchip Technology PIC Macro Assembler V1.45 build -152302408 
+Symbol Table                                                                                   Tue Nov 23 19:48:46 2021
+
+                           pc 0002                ___bmul@product 0072                   __CFG_CP$OFF 0000  
+                          fsr 0004                           l880 05D5                           l954 079D  
+                         l876 05CF                           l948 0775                           l958 07A5  
+                         _PR2 0092                           u505 06D3                           u514 06F1  
+                __CFG_CPD$OFF 0000                           u515 06EE                           u534 071B  
+                         u470 078B                           u535 0718                           u455 076F  
+                         u465 077C                           u475 0786                           fsr0 0004  
+                         indf 0000                  __CFG_FOSC$HS 0000                  __CFG_LVP$OFF 0000  
+                        l1162 065E             dissolve1@dissolve 0078                  __CFG_WDTE$ON 0000  
+                        _TMR2 0011                  __CFG_WRT$OFF 0000                  fp__show_leds 000C  
+                        _main 062B                          _duty 0064                          _tick 0066  
+                        btemp 007E                 __CFG_BOREN$ON 0000                          start 0000  
+           ___bmul@multiplier 0073                _dissolve_ticks 0062                         ?_main 0070  
+                       _T2CON 0012                         _PORTA 0005                         _PORTC 0007  
+                       _PORTD 0008                         _TXREG 0019                         fpbase 0008  
+                       pclath 000A                         status 0003                         wtemp0 007E  
+             __initialization 07E0                  __end_of_main 0671                        ??_main 007B  
+                      _ADCON1 009F              __end_of__fptable 0012                __CFG_PWRTE$OFF 0000  
+                      ___bmul 05CD                        fptable 0003                        fptotal 0008  
+     __end_of__initialization 07FC           ___bmul@multiplicand 0070                __pcstackCOMMON 0070  
+                __pidataBANK0 05C4                  __pidataBANK3 0671            __size_of_dissolve1 0098  
+          __size_of_dissolve2 003C                 _current_delay 0060                    __pbssBANK0 0020  
+                  __pmaintext 062B                       ?___bmul 0070            __size_of_show_leds 007D  
+                  __stringtab 0012               __size_of___bmul 0011             __end_of_dissolve1 07E0  
+           __end_of_dissolve2 062B             __end_of_hex_table 0028                       __ptext1 05EF  
+                     __ptext2 0748                       __ptext3 06CB                       __ptext4 05CD  
+                     clrloop0 05C6          end_of_initialization 07FC             __end_of_show_leds 0748  
+                   _TRISAbits 0085                     _TRISCbits 0087                     _TRISDbits 0088  
+              __end_of___bmul 05DE           start_initialization 07E0                      ??___bmul 0071  
+                  init_fetch0 05DE                   __pdataBANK0 006C                   __pdataBANK3 0190  
+                 __pbssCOMMON 007B                     ___latbits 0002                dissolve1@tick2 0079  
+           __size_of__fptable 000F                  _current_line 007B                     __pfunctab 0003  
+                   __pstrings 0012                     _dissolve1 0748                     _dissolve2 05EF  
+                   _led_state 006C                     _hex_table 0018                _uart_position1 006A  
+              _uart_position2 0069                     clear_ram0 05C5                      _PIR1bits 000C  
+                   _uart_size 006B                     _prev_line 0068                     _show_leds 06CB  
+                 __stringbase 0017                    ?_dissolve1 0070                    ?_dissolve2 0070  
+                  ?_show_leds 0070            __end_of__stringtab 0018                      __fptable 0003  
+               __size_of_main 0046                      _sequence 0190                   ??_dissolve1 0074  
+                 ??_dissolve2 0074                      init_ram0 05E2  show_leds@next_dissolve_ticks 0079  
+                   stringcode 0012                   ??_show_leds 0074                   _uart_buffer 0020  
+                    stringdir 0012                      stringtab 0012                  fp__dissolve1 0009  
+                fp__dissolve2 000F  

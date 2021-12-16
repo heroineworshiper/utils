@@ -1,7 +1,7 @@
 // download a segmented video file using a formatting code for the number
 
 
-// gcc -o segments2 segments2.c
+// gcc -O2 -o segments2 segments2.c
 
 #include <stdio.h>
 #include <stdlib.h>

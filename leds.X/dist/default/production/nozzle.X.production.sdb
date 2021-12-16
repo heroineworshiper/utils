@@ -1,0 +1,656 @@
+[p LITE_MODE AUTOSTATIC PIC14 PICREGULAR PICMID ]
+[d version 1.1 ]
+[d edition pro ]
+[d chip 16F877A ]
+[d frameptr 6 ]
+"6 /opt/microchip/xc8/v1.45/sources/common/awdiv.c
+[v ___awdiv __awdiv `(i  1 e 2 0 ]
+"6 /opt/microchip/xc8/v1.45/sources/common/awmod.c
+[v ___awmod __awmod `(i  1 e 2 0 ]
+"62 /opt/microchip/xc8/v1.45/sources/common/float.c
+[v ___ftpack __ftpack `(f  1 e 3 0 ]
+"86 /opt/microchip/xc8/v1.45/sources/common/ftadd.c
+[v ___ftadd __ftadd `(f  1 e 3 0 ]
+"6 /opt/microchip/xc8/v1.45/sources/common/lwdiv.c
+[v ___lwdiv __lwdiv `(ui  1 e 2 0 ]
+"6 /opt/microchip/xc8/v1.45/sources/common/lwmod.c
+[v ___lwmod __lwmod `(ui  1 e 2 0 ]
+"8 /opt/microchip/xc8/v1.45/sources/common/memset.c
+[v _memset memset `(*.4v  1 e 1 0 ]
+"4 /opt/microchip/xc8/v1.45/sources/common/Umul8.c
+[v ___bmul __bmul `(uc  1 e 1 0 ]
+"6 /opt/microchip/xc8/v1.45/sources/pic/eeprom.c
+[v _eecpymem eecpymem `(v  1 e 1 0 ]
+"39
+[v _memcpyee memcpyee `(v  1 e 1 0 ]
+"330 /amazon/root/nozzle/nozzle.X/nozzle.c
+[v _print_byte print_byte `(v  1 e 1 0 ]
+"343
+[v _print_text print_text `(v  1 e 1 0 ]
+"353
+[v _print_number_nospace print_number_nospace `(v  1 e 1 0 ]
+"414
+[v _handle_uart handle_uart `(v  1 e 1 0 ]
+"460
+[v _motor_tracking motor_tracking `(v  1 e 1 0 ]
+"541
+[v _motor_home6 motor_home6 `(v  1 e 1 0 ]
+"574
+[v _motor_home5 motor_home5 `(v  1 e 1 0 ]
+"598
+[v _motor_home4 motor_home4 `(v  1 e 1 0 ]
+"613
+[v _motor_home3 motor_home3 `(v  1 e 1 0 ]
+"625
+[v _motor_home2 motor_home2 `(v  1 e 1 0 ]
+"640
+[v _motor_home1 motor_home1 `(v  1 e 1 0 ]
+"659
+[v _motor_idle motor_idle `(v  1 e 1 0 ]
+"663
+[v _arm_motors arm_motors `(v  1 e 1 0 ]
+"683
+[v _disarm_motors disarm_motors `(v  1 e 1 0 ]
+"691
+[v _update_motors update_motors `(v  1 e 1 0 ]
+"769
+[v _motors_tracking motors_tracking `(uc  1 e 1 0 ]
+"780
+[v _do_preset_pitch do_preset_pitch `(v  1 e 1 0 ]
+"805
+[v _do_preset_delay2 do_preset_delay2 `(v  1 e 1 0 ]
+"813
+[v _do_preset_angle do_preset_angle `(v  1 e 1 0 ]
+"839
+[v _do_preset_delay1 do_preset_delay1 `(v  1 e 1 0 ]
+"847
+[v _do_preset_center do_preset_center `(v  1 e 1 0 ]
+"865
+[v _do_preset_save2 do_preset_save2 `(v  1 e 1 0 ]
+"875
+[v _do_preset_save1 do_preset_save1 `(v  1 e 1 0 ]
+"884
+[v _read_presets read_presets `(v  1 e 1 0 ]
+"897
+[v _write_presets write_presets `(v  1 e 1 0 ]
+"926
+[v _handle_preset_button handle_preset_button `(v  1 e 1 0 ]
+"1028
+[v _handle_ir_code handle_ir_code `(v  1 e 1 0 ]
+"1154
+[v _handle_ir2 handle_ir2 `(v  1 e 1 0 ]
+"1242
+[v _handle_ir handle_ir `(v  1 e 1 0 ]
+"1304
+[v _capture_adc capture_adc `(v  1 e 1 0 ]
+"1375
+[v _charge_adc charge_adc `(v  1 e 1 0 ]
+"1599
+[v _pwm_on pwm_on `(v  1 e 1 0 ]
+"1638
+[v _pwm_off pwm_off `(v  1 e 1 0 ]
+"1665
+[v _isr isr `II(v  1 e 1 0 ]
+"1740
+[v _main main `(v  1 e 1 0 ]
+"57 /opt/microchip/xc8/v1.45/include/pic16f877a.h
+[v _TMR0 TMR0 `VEuc  1 e 1 @1 ]
+"338
+[v _PORTD PORTD `VEuc  1 e 1 @8 ]
+[s S76 . 1 `uc 1 RD0 1 0 :1:0 
+`uc 1 RD1 1 0 :1:1 
+`uc 1 RD2 1 0 :1:2 
+`uc 1 RD3 1 0 :1:3 
+`uc 1 RD4 1 0 :1:4 
+`uc 1 RD5 1 0 :1:5 
+`uc 1 RD6 1 0 :1:6 
+`uc 1 RD7 1 0 :1:7 
+]
+"355
+[u S85 . 1 `S76 1 . 1 0 ]
+[v _PORTDbits PORTDbits `VES85  1 e 1 @8 ]
+[s S117 . 1 `uc 1 RBIF 1 0 :1:0 
+`uc 1 INTF 1 0 :1:1 
+`uc 1 TMR0IF 1 0 :1:2 
+`uc 1 RBIE 1 0 :1:3 
+`uc 1 INTE 1 0 :1:4 
+`uc 1 TMR0IE 1 0 :1:5 
+`uc 1 PEIE 1 0 :1:6 
+`uc 1 GIE 1 0 :1:7 
+]
+"475
+[s S126 . 1 `uc 1 . 1 0 :2:0 
+`uc 1 T0IF 1 0 :1:2 
+`uc 1 . 1 0 :2:3 
+`uc 1 T0IE 1 0 :1:5 
+]
+[u S131 . 1 `S117 1 . 1 0 `S126 1 . 1 0 ]
+[v _INTCONbits INTCONbits `VES131  1 e 1 @11 ]
+[s S45 . 1 `uc 1 TMR1IF 1 0 :1:0 
+`uc 1 TMR2IF 1 0 :1:1 
+`uc 1 CCP1IF 1 0 :1:2 
+`uc 1 SSPIF 1 0 :1:3 
+`uc 1 TXIF 1 0 :1:4 
+`uc 1 RCIF 1 0 :1:5 
+`uc 1 ADIF 1 0 :1:6 
+`uc 1 PSPIF 1 0 :1:7 
+]
+"547
+[u S54 . 1 `S45 1 . 1 0 ]
+[v _PIR1bits PIR1bits `VES54  1 e 1 @12 ]
+[s S149 . 1 `uc 1 CCP2IF 1 0 :1:0 
+`uc 1 . 1 0 :2:1 
+`uc 1 BCLIF 1 0 :1:3 
+`uc 1 EEIF 1 0 :1:4 
+`uc 1 . 1 0 :1:5 
+`uc 1 CMIF 1 0 :1:6 
+]
+"607
+[u S156 . 1 `S149 1 . 1 0 ]
+[v _PIR2bits PIR2bits `VES156  1 e 1 @13 ]
+"632
+[v _TMR1 TMR1 `VEus  1 e 2 @14 ]
+"653
+[v _T1CON T1CON `VEuc  1 e 1 @16 ]
+"728
+[v _TMR2 TMR2 `VEuc  1 e 1 @17 ]
+"735
+[v _T2CON T2CON `VEuc  1 e 1 @18 ]
+"962
+[v _RCSTA RCSTA `VEuc  1 e 1 @24 ]
+"1057
+[v _TXREG TXREG `VEuc  1 e 1 @25 ]
+"1064
+[v _RCREG RCREG `VEuc  1 e 1 @26 ]
+"1150
+[v _ADRESH ADRESH `VEuc  1 e 1 @30 ]
+"1157
+[v _ADCON0 ADCON0 `VEuc  1 e 1 @31 ]
+[s S201 . 1 `uc 1 ADON 1 0 :1:0 
+`uc 1 . 1 0 :1:1 
+`uc 1 GO_nDONE 1 0 :1:2 
+`uc 1 CHS 1 0 :3:3 
+`uc 1 ADCS 1 0 :2:6 
+]
+"1188
+[s S207 . 1 `uc 1 . 1 0 :2:0 
+`uc 1 GO 1 0 :1:2 
+`uc 1 CHS0 1 0 :1:3 
+`uc 1 CHS1 1 0 :1:4 
+`uc 1 CHS2 1 0 :1:5 
+`uc 1 ADCS0 1 0 :1:6 
+`uc 1 ADCS1 1 0 :1:7 
+]
+[s S215 . 1 `uc 1 . 1 0 :2:0 
+`uc 1 nDONE 1 0 :1:2 
+]
+[s S218 . 1 `uc 1 . 1 0 :2:0 
+`uc 1 GO_DONE 1 0 :1:2 
+]
+[u S221 . 1 `S201 1 . 1 0 `S207 1 . 1 0 `S215 1 . 1 0 `S218 1 . 1 0 ]
+[v _ADCON0bits ADCON0bits `VES221  1 e 1 @31 ]
+[s S167 . 1 `uc 1 PS 1 0 :3:0 
+`uc 1 PSA 1 0 :1:3 
+`uc 1 T0SE 1 0 :1:4 
+`uc 1 T0CS 1 0 :1:5 
+`uc 1 INTEDG 1 0 :1:6 
+`uc 1 nRBPU 1 0 :1:7 
+]
+"1273
+[s S174 . 1 `uc 1 PS0 1 0 :1:0 
+`uc 1 PS1 1 0 :1:1 
+`uc 1 PS2 1 0 :1:2 
+]
+[u S178 . 1 `S167 1 . 1 0 `S174 1 . 1 0 ]
+[v _OPTION_REGbits OPTION_REGbits `VES178  1 e 1 @129 ]
+"1497
+[v _TRISD TRISD `VEuc  1 e 1 @136 ]
+[s S255 . 1 `uc 1 TRISD0 1 0 :1:0 
+`uc 1 TRISD1 1 0 :1:1 
+`uc 1 TRISD2 1 0 :1:2 
+`uc 1 TRISD3 1 0 :1:3 
+`uc 1 TRISD4 1 0 :1:4 
+`uc 1 TRISD5 1 0 :1:5 
+`uc 1 TRISD6 1 0 :1:6 
+`uc 1 TRISD7 1 0 :1:7 
+]
+"1514
+[u S264 . 1 `S255 1 . 1 0 ]
+[v _TRISDbits TRISDbits `VES264  1 e 1 @136 ]
+[s S280 . 1 `uc 1 TMR1IE 1 0 :1:0 
+`uc 1 TMR2IE 1 0 :1:1 
+`uc 1 CCP1IE 1 0 :1:2 
+`uc 1 SSPIE 1 0 :1:3 
+`uc 1 TXIE 1 0 :1:4 
+`uc 1 RCIE 1 0 :1:5 
+`uc 1 ADIE 1 0 :1:6 
+`uc 1 PSPIE 1 0 :1:7 
+]
+"1633
+[u S289 . 1 `S280 1 . 1 0 ]
+[v _PIE1bits PIE1bits `VES289  1 e 1 @140 ]
+"1814
+[v _PR2 PR2 `VEuc  1 e 1 @146 ]
+"1997
+[v _TXSTA TXSTA `VEuc  1 e 1 @152 ]
+"2078
+[v _SPBRG SPBRG `VEuc  1 e 1 @153 ]
+"2227
+[v _ADCON1 ADCON1 `VEuc  1 e 1 @159 ]
+"2286
+[v _EEDATA EEDATA `VEuc  1 e 1 @268 ]
+"2293
+[v _EEADR EEADR `VEuc  1 e 1 @269 ]
+[s S99 . 1 `uc 1 RD 1 0 :1:0 
+`uc 1 WR 1 0 :1:1 
+`uc 1 WREN 1 0 :1:2 
+`uc 1 WRERR 1 0 :1:3 
+`uc 1 . 1 0 :3:4 
+`uc 1 EEPGD 1 0 :1:7 
+]
+"2329
+[u S106 . 1 `S99 1 . 1 0 ]
+[v _EECON1bits EECON1bits `VES106  1 e 1 @396 ]
+"2359
+[v _EECON2 EECON2 `VEuc  1 e 1 @397 ]
+"80 /amazon/root/nozzle/nozzle.X/nozzle.c
+[v _have_serial have_serial `uc  1 e 1 0 ]
+"81
+[v _serial_in serial_in `uc  1 e 1 0 ]
+"84
+[v _interrupt_done interrupt_done `uc  1 e 1 0 ]
+"87
+[v _uart_buffer uart_buffer `[64]uc  1 e 64 0 ]
+"88
+[v _uart_size uart_size `uc  1 e 1 0 ]
+"89
+[v _uart_position1 uart_position1 `uc  1 e 1 0 ]
+"90
+[v _uart_position2 uart_position2 `uc  1 e 1 0 ]
+"93
+[v _armed armed `uc  1 e 1 0 ]
+"94
+[v _led_counter led_counter `uc  1 e 1 0 ]
+"101
+[v _got_tick got_tick `uc  1 e 1 0 ]
+"102
+[v _tick tick `uc  1 e 1 0 ]
+"105
+[v _current_motor current_motor `uc  1 e 1 0 ]
+"109
+[v _motor_master motor_master `uc  1 e 1 0 ]
+"115
+[v _current_adc current_adc `uc  1 e 1 0 ]
+[s S19 . 4 `uc 1 analog 1 0 `uc 1 ns 1 1 `c 1 step 1 2 `c 1 position 1 3 ]
+"139
+[v _sensors sensors `[6]S19  1 e 24 0 ]
+[s S24 . 12 `uc 1 boundary 1 0 `uc 1 encoder 1 1 `uc 1 dec_mask 1 2 `uc 1 inc_mask 1 3 `uc 1 total_unmask 1 4 `uc 1 total_mask 1 5 `uc 1 timer 1 6 `c 1 target_position 1 7 `c 1 min 1 8 `c 1 max 1 9 `uc 1 changed 1 10 `uc 1 brake 1 11 ]
+"163
+[v _tracking_state tracking_state `[3]S24  1 e 36 0 ]
+"167
+[v _nozzle_pitch nozzle_pitch `c  1 e 1 0 ]
+"170
+[v _nozzle_angle nozzle_angle `c  1 e 1 0 ]
+"198
+[v _setting_preset setting_preset `uc  1 e 1 0 ]
+"199
+[v _current_preset current_preset `uc  1 e 1 0 ]
+[s S37 . 2 `c 1 pitch 1 0 `c 1 angle 1 1 ]
+"200
+[v _presets presets `[4]S37  1 e 8 0 ]
+"201
+[v _preset_state preset_state `*.27(v  1 e 1 0 ]
+"202
+[v _orig_nozzle_angle orig_nozzle_angle `c  1 e 1 0 ]
+"203
+[v _preset_delay preset_delay `uc  1 e 1 0 ]
+"217
+[v _up_data up_data `DC[71]uc  1 e 71 0 ]
+"222
+[v _down_data down_data `DC[71]uc  1 e 71 0 ]
+"227
+[v _left_data left_data `DC[71]uc  1 e 71 0 ]
+"232
+[v _right_data right_data `DC[71]uc  1 e 71 0 ]
+"240
+[v _fastrev_data fastrev_data `DC[71]uc  1 e 71 0 ]
+"246
+[v _fastfwd_data fastfwd_data `DC[71]uc  1 e 71 0 ]
+"252
+[v _button7_data button7_data `DC[71]uc  1 e 71 0 ]
+"257
+[v _button8_data button8_data `DC[71]uc  1 e 71 0 ]
+"262
+[v _button9_data button9_data `DC[71]uc  1 e 71 0 ]
+"267
+[v _button0_data button0_data `DC[71]uc  1 e 71 0 ]
+[s S41 . 4 `*.25DCuc 1 data 2 0 `DCuc 1 size 1 2 `DCuc 1 value 1 3 ]
+"286
+[v _ir_codes ir_codes `DC[10]S41  1 e 40 0 ]
+"306
+[v _ir_code_failed ir_code_failed `[10]uc  1 e 10 0 ]
+"307
+[v _ir_offset ir_offset `uc  1 e 1 0 ]
+"309
+[v _have_ir have_ir `uc  1 e 1 0 ]
+"311
+[v _ir_code ir_code `uc  1 e 1 0 ]
+"313
+[v _repeat_delay repeat_delay `uc  1 e 1 0 ]
+"318
+[v _got_ir_int got_ir_int `VEuc  1 e 1 0 ]
+"320
+[v _ir_time ir_time `VEi  1 e 2 0 ]
+"322
+[v _got_tmr2 got_tmr2 `uc  1 e 1 0 ]
+"324
+[v _tmr2_high tmr2_high `ui  1 e 2 0 ]
+"326
+[v _ir_timeout ir_timeout `uc  1 e 1 0 ]
+"327
+[v _first_edge first_edge `uc  1 e 1 0 ]
+"388
+[v _hex_table hex_table `DC[16]uc  1 e 16 0 ]
+"457
+[v _motor_state motor_state `*.27(v  1 e 1 0 ]
+"1300
+[v _adc_state adc_state `*.27(v  1 e 1 0 ]
+"1301
+[v _adc_counter adc_counter `uc  1 e 1 0 ]
+"1593
+[v _pwm_state pwm_state `*.27(v  1 e 1 0 ]
+"1594
+[v _pwm_duty pwm_duty `i  1 e 2 0 ]
+"1595
+[v _pwm_duty_counter pwm_duty_counter `i  1 e 2 0 ]
+"18 /amazon/root/nozzle/nozzle.X/nozzle.h
+[v _step_to_encoders step_to_encoders `DC[75]c  1 e 75 0 ]
+"1740 /amazon/root/nozzle/nozzle.X/nozzle.c
+[v _main main `(v  1 e 1 0 ]
+{
+"1873
+[v main@tracking tracking `*.4S24  1 a 1 32 ]
+"1742
+[v main@i i `uc  1 a 1 33 ]
+"1932
+} 0
+"884
+[v _read_presets read_presets `(v  1 e 1 0 ]
+{
+"886
+[v read_presets@i i `uc  1 a 1 2 ]
+"887
+[v read_presets@ptr ptr `*.4uc  1 a 1 1 ]
+"895
+} 0
+"343
+[v _print_text print_text `(v  1 e 1 0 ]
+{
+[v print_text@s s `*.25DCuc  1 p 2 2 ]
+"350
+} 0
+"330
+[v _print_byte print_byte `(v  1 e 1 0 ]
+{
+[v print_byte@c c `uc  1 a 1 wreg ]
+[v print_byte@c c `uc  1 a 1 wreg ]
+"332
+[v print_byte@c c `uc  1 a 1 1 ]
+"341
+} 0
+"625
+[v _motor_home2 motor_home2 `(v  1 e 1 0 ]
+{
+"629
+[v motor_home2@sensor_value sensor_value `uc  1 a 1 10 ]
+[s S24 . 12 `uc 1 boundary 1 0 `uc 1 encoder 1 1 `uc 1 dec_mask 1 2 `uc 1 inc_mask 1 3 `uc 1 total_unmask 1 4 `uc 1 total_mask 1 5 `uc 1 timer 1 6 `c 1 target_position 1 7 `c 1 min 1 8 `c 1 max 1 9 `uc 1 changed 1 10 `uc 1 brake 1 11 ]
+"627
+[v motor_home2@tracking tracking `*.4S24  1 a 1 9 ]
+"628
+[v motor_home2@current_boundary current_boundary `uc  1 a 1 6 ]
+"637
+} 0
+"613
+[v _motor_home3 motor_home3 `(v  1 e 1 0 ]
+{
+[s S24 . 12 `uc 1 boundary 1 0 `uc 1 encoder 1 1 `uc 1 dec_mask 1 2 `uc 1 inc_mask 1 3 `uc 1 total_unmask 1 4 `uc 1 total_mask 1 5 `uc 1 timer 1 6 `c 1 target_position 1 7 `c 1 min 1 8 `c 1 max 1 9 `uc 1 changed 1 10 `uc 1 brake 1 11 ]
+"615
+[v motor_home3@tracking tracking `*.4S24  1 a 1 6 ]
+"622
+} 0
+"598
+[v _motor_home4 motor_home4 `(v  1 e 1 0 ]
+{
+"605
+[v motor_home4@current_encoder current_encoder `uc  1 a 1 10 ]
+"602
+[v motor_home4@sensor_value sensor_value `uc  1 a 1 11 ]
+[s S24 . 12 `uc 1 boundary 1 0 `uc 1 encoder 1 1 `uc 1 dec_mask 1 2 `uc 1 inc_mask 1 3 `uc 1 total_unmask 1 4 `uc 1 total_mask 1 5 `uc 1 timer 1 6 `c 1 target_position 1 7 `c 1 min 1 8 `c 1 max 1 9 `uc 1 changed 1 10 `uc 1 brake 1 11 ]
+"600
+[v motor_home4@tracking tracking `*.4S24  1 a 1 9 ]
+"601
+[v motor_home4@current_boundary current_boundary `uc  1 a 1 6 ]
+"610
+} 0
+"574
+[v _motor_home5 motor_home5 `(v  1 e 1 0 ]
+{
+[s S24 . 12 `uc 1 boundary 1 0 `uc 1 encoder 1 1 `uc 1 dec_mask 1 2 `uc 1 inc_mask 1 3 `uc 1 total_unmask 1 4 `uc 1 total_mask 1 5 `uc 1 timer 1 6 `c 1 target_position 1 7 `c 1 min 1 8 `c 1 max 1 9 `uc 1 changed 1 10 `uc 1 brake 1 11 ]
+"576
+[v motor_home5@tracking tracking `*.4S24  1 a 1 8 ]
+"577
+[v motor_home5@current_encoder current_encoder `uc  1 a 1 7 ]
+"595
+} 0
+"541
+[v _motor_home6 motor_home6 `(v  1 e 1 0 ]
+{
+"546
+[v motor_home6@current_encoder current_encoder `uc  1 a 1 6 ]
+[s S24 . 12 `uc 1 boundary 1 0 `uc 1 encoder 1 1 `uc 1 dec_mask 1 2 `uc 1 inc_mask 1 3 `uc 1 total_unmask 1 4 `uc 1 total_mask 1 5 `uc 1 timer 1 6 `c 1 target_position 1 7 `c 1 min 1 8 `c 1 max 1 9 `uc 1 changed 1 10 `uc 1 brake 1 11 ]
+"543
+[v motor_home6@tracking tracking `*.4S24  1 a 1 7 ]
+"571
+} 0
+"640
+[v _motor_home1 motor_home1 `(v  1 e 1 0 ]
+{
+"644
+[v motor_home1@sensor_value sensor_value `uc  1 a 1 10 ]
+[s S24 . 12 `uc 1 boundary 1 0 `uc 1 encoder 1 1 `uc 1 dec_mask 1 2 `uc 1 inc_mask 1 3 `uc 1 total_unmask 1 4 `uc 1 total_mask 1 5 `uc 1 timer 1 6 `c 1 target_position 1 7 `c 1 min 1 8 `c 1 max 1 9 `uc 1 changed 1 10 `uc 1 brake 1 11 ]
+"642
+[v motor_home1@tracking tracking `*.4S24  1 a 1 9 ]
+"643
+[v motor_home1@current_boundary current_boundary `uc  1 a 1 6 ]
+"657
+} 0
+"659
+[v _motor_idle motor_idle `(v  1 e 1 0 ]
+{
+"661
+} 0
+"460
+[v _motor_tracking motor_tracking `(v  1 e 1 0 ]
+{
+[s S24 . 12 `uc 1 boundary 1 0 `uc 1 encoder 1 1 `uc 1 dec_mask 1 2 `uc 1 inc_mask 1 3 `uc 1 total_unmask 1 4 `uc 1 total_mask 1 5 `uc 1 timer 1 6 `c 1 target_position 1 7 `c 1 min 1 8 `c 1 max 1 9 `uc 1 changed 1 10 `uc 1 brake 1 11 ]
+"463
+[v motor_tracking@tracking tracking `*.4S24  1 a 1 7 ]
+[s S19 . 4 `uc 1 analog 1 0 `uc 1 ns 1 1 `c 1 step 1 2 `c 1 position 1 3 ]
+"464
+[v motor_tracking@encoder encoder `*.4S19  1 a 1 6 ]
+"538
+} 0
+"8 /opt/microchip/xc8/v1.45/sources/common/memset.c
+[v _memset memset `(*.4v  1 e 1 0 ]
+{
+[v memset@p1 p1 `*.4v  1 a 1 wreg ]
+"15
+[v memset@p p `*.4uc  1 a 1 6 ]
+"8
+[v memset@p1 p1 `*.4v  1 a 1 wreg ]
+[v memset@c c `i  1 p 2 0 ]
+[v memset@n n `ui  1 p 2 2 ]
+"18
+[v memset@p1 p1 `*.4v  1 a 1 5 ]
+"22
+} 0
+"414 /amazon/root/nozzle/nozzle.X/nozzle.c
+[v _handle_uart handle_uart `(v  1 e 1 0 ]
+{
+"426
+} 0
+"1242
+[v _handle_ir handle_ir `(v  1 e 1 0 ]
+{
+"1244
+[v handle_ir@i i `uc  1 a 1 29 ]
+"1296
+} 0
+"1154
+[v _handle_ir2 handle_ir2 `(v  1 e 1 0 ]
+{
+"1182
+[v handle_ir2@data_value data_value `i  1 a 2 23 ]
+"1183
+[v handle_ir2@error error `i  1 a 2 19 ]
+[s S41 . 4 `*.25DCuc 1 data 2 0 `DCuc 1 size 1 2 `DCuc 1 value 1 3 ]
+"1176
+[v handle_ir2@code code `*.25DCS41  1 a 2 25 ]
+"1177
+[v handle_ir2@data data `*.25DCuc  1 a 2 17 ]
+"1165
+[v handle_ir2@i i `uc  1 a 1 27 ]
+"1167
+[v handle_ir2@got_it got_it `uc  1 a 1 22 ]
+"1169
+[v handle_ir2@got_one got_one `uc  1 a 1 21 ]
+"1240
+} 0
+"1028
+[v _handle_ir_code handle_ir_code `(v  1 e 1 0 ]
+{
+"1152
+} 0
+"926
+[v _handle_preset_button handle_preset_button `(v  1 e 1 0 ]
+{
+[v handle_preset_button@preset preset `i  1 p 2 8 ]
+"957
+} 0
+"897
+[v _write_presets write_presets `(v  1 e 1 0 ]
+{
+"899
+[v write_presets@i i `uc  1 a 1 2 ]
+"900
+[v write_presets@ptr ptr `*.4uc  1 a 1 1 ]
+"924
+} 0
+"683
+[v _disarm_motors disarm_motors `(v  1 e 1 0 ]
+{
+"688
+} 0
+"663
+[v _arm_motors arm_motors `(v  1 e 1 0 ]
+{
+"681
+} 0
+"875
+[v _do_preset_save1 do_preset_save1 `(v  1 e 1 0 ]
+{
+"882
+} 0
+"847
+[v _do_preset_center do_preset_center `(v  1 e 1 0 ]
+{
+"863
+} 0
+"839
+[v _do_preset_delay1 do_preset_delay1 `(v  1 e 1 0 ]
+{
+"845
+} 0
+"813
+[v _do_preset_angle do_preset_angle `(v  1 e 1 0 ]
+{
+"818
+[v do_preset_angle@want_angle want_angle `c  1 a 1 9 ]
+"837
+} 0
+"805
+[v _do_preset_delay2 do_preset_delay2 `(v  1 e 1 0 ]
+{
+"811
+} 0
+"780
+[v _do_preset_pitch do_preset_pitch `(v  1 e 1 0 ]
+{
+"785
+[v do_preset_pitch@want_pitch want_pitch `c  1 a 1 10 ]
+"803
+} 0
+"865
+[v _do_preset_save2 do_preset_save2 `(v  1 e 1 0 ]
+{
+"873
+} 0
+"691
+[v _update_motors update_motors `(v  1 e 1 0 ]
+{
+"737
+[v update_motors@diff_551 diff `c  1 a 1 7 ]
+"730
+[v update_motors@diff diff `c  1 a 1 6 ]
+"766
+} 0
+"4 /opt/microchip/xc8/v1.45/sources/common/Umul8.c
+[v ___bmul __bmul `(uc  1 e 1 0 ]
+{
+[v ___bmul@multiplier multiplier `uc  1 a 1 wreg ]
+"6
+[v ___bmul@product product `uc  1 a 1 2 ]
+"4
+[v ___bmul@multiplier multiplier `uc  1 a 1 wreg ]
+[v ___bmul@multiplicand multiplicand `uc  1 p 1 0 ]
+"6
+[v ___bmul@multiplier multiplier `uc  1 a 1 3 ]
+"51
+} 0
+"769 /amazon/root/nozzle/nozzle.X/nozzle.c
+[v _motors_tracking motors_tracking `(uc  1 e 1 0 ]
+{
+"778
+} 0
+"1304
+[v _capture_adc capture_adc `(v  1 e 1 0 ]
+{
+[s S19 . 4 `uc 1 analog 1 0 `uc 1 ns 1 1 `c 1 step 1 2 `c 1 position 1 3 ]
+"1308
+[v capture_adc@sensor sensor `*.4S19  1 a 1 2 ]
+"1373
+} 0
+"1375
+[v _charge_adc charge_adc `(v  1 e 1 0 ]
+{
+"1387
+} 0
+"1665
+[v _isr isr `II(v  1 e 1 0 ]
+{
+"1737
+} 0
+"1638
+[v _pwm_off pwm_off `(v  1 e 1 0 ]
+{
+"1648
+[v pwm_off@prev_port prev_port `uc  1 a 1 1 ]
+"1660
+} 0
+"1599
+[v _pwm_on pwm_on `(v  1 e 1 0 ]
+{
+"1604
+[v pwm_on@temp_mask temp_mask `uc  1 a 1 1 ]
+"1635
+} 0

@@ -1,7 +1,7 @@
 // cat a bunch of files by filename numbers
 
 
-// gcc -o catnums catnums.c
+// gcc -O2 -o catnums catnums.c
 
 #include <stdio.h>
 #include <stdlib.h>

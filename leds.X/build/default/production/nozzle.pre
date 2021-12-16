@@ -1,0 +1,3012 @@
+
+# 1 "nozzle.c"
+
+
+# 31
+#pragma config FOSC = HS
+#pragma config WDTE = ON
+#pragma config PWRTE = OFF
+#pragma config BOREN = ON
+#pragma config LVP = OFF
+#pragma config CPD = OFF
+#pragma config WRT = OFF
+#pragma config CP = OFF
+
+# 50 "/opt/microchip/xc8/v1.45/include/pic16f877a.h"
+extern volatile unsigned char INDF @ 0x000;
+
+asm("INDF equ 00h");
+
+
+
+
+extern volatile unsigned char TMR0 @ 0x001;
+
+asm("TMR0 equ 01h");
+
+
+
+
+extern volatile unsigned char PCL @ 0x002;
+
+asm("PCL equ 02h");
+
+
+
+
+extern volatile unsigned char STATUS @ 0x003;
+
+asm("STATUS equ 03h");
+
+
+typedef union {
+struct {
+unsigned C :1;
+unsigned DC :1;
+unsigned Z :1;
+unsigned nPD :1;
+unsigned nTO :1;
+unsigned RP :2;
+unsigned IRP :1;
+};
+struct {
+unsigned :5;
+unsigned RP0 :1;
+unsigned RP1 :1;
+};
+struct {
+unsigned CARRY :1;
+unsigned :1;
+unsigned ZERO :1;
+};
+} STATUSbits_t;
+extern volatile STATUSbits_t STATUSbits @ 0x003;
+
+# 157
+extern volatile unsigned char FSR @ 0x004;
+
+asm("FSR equ 04h");
+
+
+
+
+extern volatile unsigned char PORTA @ 0x005;
+
+asm("PORTA equ 05h");
+
+
+typedef union {
+struct {
+unsigned RA0 :1;
+unsigned RA1 :1;
+unsigned RA2 :1;
+unsigned RA3 :1;
+unsigned RA4 :1;
+unsigned RA5 :1;
+};
+} PORTAbits_t;
+extern volatile PORTAbits_t PORTAbits @ 0x005;
+
+# 214
+extern volatile unsigned char PORTB @ 0x006;
+
+asm("PORTB equ 06h");
+
+
+typedef union {
+struct {
+unsigned RB0 :1;
+unsigned RB1 :1;
+unsigned RB2 :1;
+unsigned RB3 :1;
+unsigned RB4 :1;
+unsigned RB5 :1;
+unsigned RB6 :1;
+unsigned RB7 :1;
+};
+} PORTBbits_t;
+extern volatile PORTBbits_t PORTBbits @ 0x006;
+
+# 276
+extern volatile unsigned char PORTC @ 0x007;
+
+asm("PORTC equ 07h");
+
+
+typedef union {
+struct {
+unsigned RC0 :1;
+unsigned RC1 :1;
+unsigned RC2 :1;
+unsigned RC3 :1;
+unsigned RC4 :1;
+unsigned RC5 :1;
+unsigned RC6 :1;
+unsigned RC7 :1;
+};
+} PORTCbits_t;
+extern volatile PORTCbits_t PORTCbits @ 0x007;
+
+# 338
+extern volatile unsigned char PORTD @ 0x008;
+
+asm("PORTD equ 08h");
+
+
+typedef union {
+struct {
+unsigned RD0 :1;
+unsigned RD1 :1;
+unsigned RD2 :1;
+unsigned RD3 :1;
+unsigned RD4 :1;
+unsigned RD5 :1;
+unsigned RD6 :1;
+unsigned RD7 :1;
+};
+} PORTDbits_t;
+extern volatile PORTDbits_t PORTDbits @ 0x008;
+
+# 400
+extern volatile unsigned char PORTE @ 0x009;
+
+asm("PORTE equ 09h");
+
+
+typedef union {
+struct {
+unsigned RE0 :1;
+unsigned RE1 :1;
+unsigned RE2 :1;
+};
+} PORTEbits_t;
+extern volatile PORTEbits_t PORTEbits @ 0x009;
+
+# 432
+extern volatile unsigned char PCLATH @ 0x00A;
+
+asm("PCLATH equ 0Ah");
+
+
+typedef union {
+struct {
+unsigned PCLATH :5;
+};
+} PCLATHbits_t;
+extern volatile PCLATHbits_t PCLATHbits @ 0x00A;
+
+# 452
+extern volatile unsigned char INTCON @ 0x00B;
+
+asm("INTCON equ 0Bh");
+
+
+typedef union {
+struct {
+unsigned RBIF :1;
+unsigned INTF :1;
+unsigned TMR0IF :1;
+unsigned RBIE :1;
+unsigned INTE :1;
+unsigned TMR0IE :1;
+unsigned PEIE :1;
+unsigned GIE :1;
+};
+struct {
+unsigned :2;
+unsigned T0IF :1;
+unsigned :2;
+unsigned T0IE :1;
+};
+} INTCONbits_t;
+extern volatile INTCONbits_t INTCONbits @ 0x00B;
+
+# 530
+extern volatile unsigned char PIR1 @ 0x00C;
+
+asm("PIR1 equ 0Ch");
+
+
+typedef union {
+struct {
+unsigned TMR1IF :1;
+unsigned TMR2IF :1;
+unsigned CCP1IF :1;
+unsigned SSPIF :1;
+unsigned TXIF :1;
+unsigned RCIF :1;
+unsigned ADIF :1;
+unsigned PSPIF :1;
+};
+} PIR1bits_t;
+extern volatile PIR1bits_t PIR1bits @ 0x00C;
+
+# 592
+extern volatile unsigned char PIR2 @ 0x00D;
+
+asm("PIR2 equ 0Dh");
+
+
+typedef union {
+struct {
+unsigned CCP2IF :1;
+unsigned :2;
+unsigned BCLIF :1;
+unsigned EEIF :1;
+unsigned :1;
+unsigned CMIF :1;
+};
+} PIR2bits_t;
+extern volatile PIR2bits_t PIR2bits @ 0x00D;
+
+# 632
+extern volatile unsigned short TMR1 @ 0x00E;
+
+asm("TMR1 equ 0Eh");
+
+
+
+
+extern volatile unsigned char TMR1L @ 0x00E;
+
+asm("TMR1L equ 0Eh");
+
+
+
+
+extern volatile unsigned char TMR1H @ 0x00F;
+
+asm("TMR1H equ 0Fh");
+
+
+
+
+extern volatile unsigned char T1CON @ 0x010;
+
+asm("T1CON equ 010h");
+
+
+typedef union {
+struct {
+unsigned TMR1ON :1;
+unsigned TMR1CS :1;
+unsigned nT1SYNC :1;
+unsigned T1OSCEN :1;
+unsigned T1CKPS :2;
+};
+struct {
+unsigned :2;
+unsigned T1SYNC :1;
+unsigned :1;
+unsigned T1CKPS0 :1;
+unsigned T1CKPS1 :1;
+};
+struct {
+unsigned :2;
+unsigned T1INSYNC :1;
+};
+} T1CONbits_t;
+extern volatile T1CONbits_t T1CONbits @ 0x010;
+
+# 728
+extern volatile unsigned char TMR2 @ 0x011;
+
+asm("TMR2 equ 011h");
+
+
+
+
+extern volatile unsigned char T2CON @ 0x012;
+
+asm("T2CON equ 012h");
+
+
+typedef union {
+struct {
+unsigned T2CKPS :2;
+unsigned TMR2ON :1;
+unsigned TOUTPS :4;
+};
+struct {
+unsigned T2CKPS0 :1;
+unsigned T2CKPS1 :1;
+unsigned :1;
+unsigned TOUTPS0 :1;
+unsigned TOUTPS1 :1;
+unsigned TOUTPS2 :1;
+unsigned TOUTPS3 :1;
+};
+} T2CONbits_t;
+extern volatile T2CONbits_t T2CONbits @ 0x012;
+
+# 806
+extern volatile unsigned char SSPBUF @ 0x013;
+
+asm("SSPBUF equ 013h");
+
+
+
+
+extern volatile unsigned char SSPCON @ 0x014;
+
+asm("SSPCON equ 014h");
+
+
+typedef union {
+struct {
+unsigned SSPM :4;
+unsigned CKP :1;
+unsigned SSPEN :1;
+unsigned SSPOV :1;
+unsigned WCOL :1;
+};
+struct {
+unsigned SSPM0 :1;
+unsigned SSPM1 :1;
+unsigned SSPM2 :1;
+unsigned SSPM3 :1;
+};
+} SSPCONbits_t;
+extern volatile SSPCONbits_t SSPCONbits @ 0x014;
+
+# 883
+extern volatile unsigned short CCPR1 @ 0x015;
+
+asm("CCPR1 equ 015h");
+
+
+
+
+extern volatile unsigned char CCPR1L @ 0x015;
+
+asm("CCPR1L equ 015h");
+
+
+
+
+extern volatile unsigned char CCPR1H @ 0x016;
+
+asm("CCPR1H equ 016h");
+
+
+
+
+extern volatile unsigned char CCP1CON @ 0x017;
+
+asm("CCP1CON equ 017h");
+
+
+typedef union {
+struct {
+unsigned CCP1M :4;
+unsigned CCP1Y :1;
+unsigned CCP1X :1;
+};
+struct {
+unsigned CCP1M0 :1;
+unsigned CCP1M1 :1;
+unsigned CCP1M2 :1;
+unsigned CCP1M3 :1;
+};
+} CCP1CONbits_t;
+extern volatile CCP1CONbits_t CCP1CONbits @ 0x017;
+
+# 962
+extern volatile unsigned char RCSTA @ 0x018;
+
+asm("RCSTA equ 018h");
+
+
+typedef union {
+struct {
+unsigned RX9D :1;
+unsigned OERR :1;
+unsigned FERR :1;
+unsigned ADDEN :1;
+unsigned CREN :1;
+unsigned SREN :1;
+unsigned RX9 :1;
+unsigned SPEN :1;
+};
+struct {
+unsigned RCD8 :1;
+unsigned :5;
+unsigned RC9 :1;
+};
+struct {
+unsigned :6;
+unsigned nRC8 :1;
+};
+struct {
+unsigned :6;
+unsigned RC8_9 :1;
+};
+} RCSTAbits_t;
+extern volatile RCSTAbits_t RCSTAbits @ 0x018;
+
+# 1057
+extern volatile unsigned char TXREG @ 0x019;
+
+asm("TXREG equ 019h");
+
+
+
+
+extern volatile unsigned char RCREG @ 0x01A;
+
+asm("RCREG equ 01Ah");
+
+
+
+
+extern volatile unsigned short CCPR2 @ 0x01B;
+
+asm("CCPR2 equ 01Bh");
+
+
+
+
+extern volatile unsigned char CCPR2L @ 0x01B;
+
+asm("CCPR2L equ 01Bh");
+
+
+
+
+extern volatile unsigned char CCPR2H @ 0x01C;
+
+asm("CCPR2H equ 01Ch");
+
+
+
+
+extern volatile unsigned char CCP2CON @ 0x01D;
+
+asm("CCP2CON equ 01Dh");
+
+
+typedef union {
+struct {
+unsigned CCP2M :4;
+unsigned CCP2Y :1;
+unsigned CCP2X :1;
+};
+struct {
+unsigned CCP2M0 :1;
+unsigned CCP2M1 :1;
+unsigned CCP2M2 :1;
+unsigned CCP2M3 :1;
+};
+} CCP2CONbits_t;
+extern volatile CCP2CONbits_t CCP2CONbits @ 0x01D;
+
+# 1150
+extern volatile unsigned char ADRESH @ 0x01E;
+
+asm("ADRESH equ 01Eh");
+
+
+
+
+extern volatile unsigned char ADCON0 @ 0x01F;
+
+asm("ADCON0 equ 01Fh");
+
+
+typedef union {
+struct {
+unsigned ADON :1;
+unsigned :1;
+unsigned GO_nDONE :1;
+unsigned CHS :3;
+unsigned ADCS :2;
+};
+struct {
+unsigned :2;
+unsigned GO :1;
+unsigned CHS0 :1;
+unsigned CHS1 :1;
+unsigned CHS2 :1;
+unsigned ADCS0 :1;
+unsigned ADCS1 :1;
+};
+struct {
+unsigned :2;
+unsigned nDONE :1;
+};
+struct {
+unsigned :2;
+unsigned GO_DONE :1;
+};
+} ADCON0bits_t;
+extern volatile ADCON0bits_t ADCON0bits @ 0x01F;
+
+# 1253
+extern volatile unsigned char OPTION_REG @ 0x081;
+
+asm("OPTION_REG equ 081h");
+
+
+typedef union {
+struct {
+unsigned PS :3;
+unsigned PSA :1;
+unsigned T0SE :1;
+unsigned T0CS :1;
+unsigned INTEDG :1;
+unsigned nRBPU :1;
+};
+struct {
+unsigned PS0 :1;
+unsigned PS1 :1;
+unsigned PS2 :1;
+};
+} OPTION_REGbits_t;
+extern volatile OPTION_REGbits_t OPTION_REGbits @ 0x081;
+
+# 1323
+extern volatile unsigned char TRISA @ 0x085;
+
+asm("TRISA equ 085h");
+
+
+typedef union {
+struct {
+unsigned TRISA0 :1;
+unsigned TRISA1 :1;
+unsigned TRISA2 :1;
+unsigned TRISA3 :1;
+unsigned TRISA4 :1;
+unsigned TRISA5 :1;
+};
+} TRISAbits_t;
+extern volatile TRISAbits_t TRISAbits @ 0x085;
+
+# 1373
+extern volatile unsigned char TRISB @ 0x086;
+
+asm("TRISB equ 086h");
+
+
+typedef union {
+struct {
+unsigned TRISB0 :1;
+unsigned TRISB1 :1;
+unsigned TRISB2 :1;
+unsigned TRISB3 :1;
+unsigned TRISB4 :1;
+unsigned TRISB5 :1;
+unsigned TRISB6 :1;
+unsigned TRISB7 :1;
+};
+} TRISBbits_t;
+extern volatile TRISBbits_t TRISBbits @ 0x086;
+
+# 1435
+extern volatile unsigned char TRISC @ 0x087;
+
+asm("TRISC equ 087h");
+
+
+typedef union {
+struct {
+unsigned TRISC0 :1;
+unsigned TRISC1 :1;
+unsigned TRISC2 :1;
+unsigned TRISC3 :1;
+unsigned TRISC4 :1;
+unsigned TRISC5 :1;
+unsigned TRISC6 :1;
+unsigned TRISC7 :1;
+};
+} TRISCbits_t;
+extern volatile TRISCbits_t TRISCbits @ 0x087;
+
+# 1497
+extern volatile unsigned char TRISD @ 0x088;
+
+asm("TRISD equ 088h");
+
+
+typedef union {
+struct {
+unsigned TRISD0 :1;
+unsigned TRISD1 :1;
+unsigned TRISD2 :1;
+unsigned TRISD3 :1;
+unsigned TRISD4 :1;
+unsigned TRISD5 :1;
+unsigned TRISD6 :1;
+unsigned TRISD7 :1;
+};
+} TRISDbits_t;
+extern volatile TRISDbits_t TRISDbits @ 0x088;
+
+# 1559
+extern volatile unsigned char TRISE @ 0x089;
+
+asm("TRISE equ 089h");
+
+
+typedef union {
+struct {
+unsigned TRISE0 :1;
+unsigned TRISE1 :1;
+unsigned TRISE2 :1;
+unsigned :1;
+unsigned PSPMODE :1;
+unsigned IBOV :1;
+unsigned OBF :1;
+unsigned IBF :1;
+};
+} TRISEbits_t;
+extern volatile TRISEbits_t TRISEbits @ 0x089;
+
+# 1616
+extern volatile unsigned char PIE1 @ 0x08C;
+
+asm("PIE1 equ 08Ch");
+
+
+typedef union {
+struct {
+unsigned TMR1IE :1;
+unsigned TMR2IE :1;
+unsigned CCP1IE :1;
+unsigned SSPIE :1;
+unsigned TXIE :1;
+unsigned RCIE :1;
+unsigned ADIE :1;
+unsigned PSPIE :1;
+};
+} PIE1bits_t;
+extern volatile PIE1bits_t PIE1bits @ 0x08C;
+
+# 1678
+extern volatile unsigned char PIE2 @ 0x08D;
+
+asm("PIE2 equ 08Dh");
+
+
+typedef union {
+struct {
+unsigned CCP2IE :1;
+unsigned :2;
+unsigned BCLIE :1;
+unsigned EEIE :1;
+unsigned :1;
+unsigned CMIE :1;
+};
+} PIE2bits_t;
+extern volatile PIE2bits_t PIE2bits @ 0x08D;
+
+# 1718
+extern volatile unsigned char PCON @ 0x08E;
+
+asm("PCON equ 08Eh");
+
+
+typedef union {
+struct {
+unsigned nBOR :1;
+unsigned nPOR :1;
+};
+struct {
+unsigned nBO :1;
+};
+} PCONbits_t;
+extern volatile PCONbits_t PCONbits @ 0x08E;
+
+# 1752
+extern volatile unsigned char SSPCON2 @ 0x091;
+
+asm("SSPCON2 equ 091h");
+
+
+typedef union {
+struct {
+unsigned SEN :1;
+unsigned RSEN :1;
+unsigned PEN :1;
+unsigned RCEN :1;
+unsigned ACKEN :1;
+unsigned ACKDT :1;
+unsigned ACKSTAT :1;
+unsigned GCEN :1;
+};
+} SSPCON2bits_t;
+extern volatile SSPCON2bits_t SSPCON2bits @ 0x091;
+
+# 1814
+extern volatile unsigned char PR2 @ 0x092;
+
+asm("PR2 equ 092h");
+
+
+
+
+extern volatile unsigned char SSPADD @ 0x093;
+
+asm("SSPADD equ 093h");
+
+
+
+
+extern volatile unsigned char SSPSTAT @ 0x094;
+
+asm("SSPSTAT equ 094h");
+
+
+typedef union {
+struct {
+unsigned BF :1;
+unsigned UA :1;
+unsigned R_nW :1;
+unsigned S :1;
+unsigned P :1;
+unsigned D_nA :1;
+unsigned CKE :1;
+unsigned SMP :1;
+};
+struct {
+unsigned :2;
+unsigned R :1;
+unsigned :2;
+unsigned D :1;
+};
+struct {
+unsigned :2;
+unsigned I2C_READ :1;
+unsigned I2C_START :1;
+unsigned I2C_STOP :1;
+unsigned I2C_DATA :1;
+};
+struct {
+unsigned :2;
+unsigned nW :1;
+unsigned :2;
+unsigned nA :1;
+};
+struct {
+unsigned :2;
+unsigned nWRITE :1;
+unsigned :2;
+unsigned nADDRESS :1;
+};
+struct {
+unsigned :2;
+unsigned R_W :1;
+unsigned :2;
+unsigned D_A :1;
+};
+struct {
+unsigned :2;
+unsigned READ_WRITE :1;
+unsigned :2;
+unsigned DATA_ADDRESS :1;
+};
+} SSPSTATbits_t;
+extern volatile SSPSTATbits_t SSPSTATbits @ 0x094;
+
+# 1997
+extern volatile unsigned char TXSTA @ 0x098;
+
+asm("TXSTA equ 098h");
+
+
+typedef union {
+struct {
+unsigned TX9D :1;
+unsigned TRMT :1;
+unsigned BRGH :1;
+unsigned :1;
+unsigned SYNC :1;
+unsigned TXEN :1;
+unsigned TX9 :1;
+unsigned CSRC :1;
+};
+struct {
+unsigned TXD8 :1;
+unsigned :5;
+unsigned nTX8 :1;
+};
+struct {
+unsigned :6;
+unsigned TX8_9 :1;
+};
+} TXSTAbits_t;
+extern volatile TXSTAbits_t TXSTAbits @ 0x098;
+
+# 2078
+extern volatile unsigned char SPBRG @ 0x099;
+
+asm("SPBRG equ 099h");
+
+
+
+
+extern volatile unsigned char CMCON @ 0x09C;
+
+asm("CMCON equ 09Ch");
+
+
+typedef union {
+struct {
+unsigned CM :3;
+unsigned CIS :1;
+unsigned C1INV :1;
+unsigned C2INV :1;
+unsigned C1OUT :1;
+unsigned C2OUT :1;
+};
+struct {
+unsigned CM0 :1;
+unsigned CM1 :1;
+unsigned CM2 :1;
+};
+} CMCONbits_t;
+extern volatile CMCONbits_t CMCONbits @ 0x09C;
+
+# 2155
+extern volatile unsigned char CVRCON @ 0x09D;
+
+asm("CVRCON equ 09Dh");
+
+
+typedef union {
+struct {
+unsigned CVR :4;
+unsigned :1;
+unsigned CVRR :1;
+unsigned CVROE :1;
+unsigned CVREN :1;
+};
+struct {
+unsigned CVR0 :1;
+unsigned CVR1 :1;
+unsigned CVR2 :1;
+unsigned CVR3 :1;
+};
+} CVRCONbits_t;
+extern volatile CVRCONbits_t CVRCONbits @ 0x09D;
+
+# 2220
+extern volatile unsigned char ADRESL @ 0x09E;
+
+asm("ADRESL equ 09Eh");
+
+
+
+
+extern volatile unsigned char ADCON1 @ 0x09F;
+
+asm("ADCON1 equ 09Fh");
+
+
+typedef union {
+struct {
+unsigned PCFG :4;
+unsigned :2;
+unsigned ADCS2 :1;
+unsigned ADFM :1;
+};
+struct {
+unsigned PCFG0 :1;
+unsigned PCFG1 :1;
+unsigned PCFG2 :1;
+unsigned PCFG3 :1;
+};
+} ADCON1bits_t;
+extern volatile ADCON1bits_t ADCON1bits @ 0x09F;
+
+# 2286
+extern volatile unsigned char EEDATA @ 0x10C;
+
+asm("EEDATA equ 010Ch");
+
+
+
+
+extern volatile unsigned char EEADR @ 0x10D;
+
+asm("EEADR equ 010Dh");
+
+
+
+
+extern volatile unsigned char EEDATH @ 0x10E;
+
+asm("EEDATH equ 010Eh");
+
+
+
+
+extern volatile unsigned char EEADRH @ 0x10F;
+
+asm("EEADRH equ 010Fh");
+
+
+
+
+extern volatile unsigned char EECON1 @ 0x18C;
+
+asm("EECON1 equ 018Ch");
+
+
+typedef union {
+struct {
+unsigned RD :1;
+unsigned WR :1;
+unsigned WREN :1;
+unsigned WRERR :1;
+unsigned :3;
+unsigned EEPGD :1;
+};
+} EECON1bits_t;
+extern volatile EECON1bits_t EECON1bits @ 0x18C;
+
+# 2359
+extern volatile unsigned char EECON2 @ 0x18D;
+
+asm("EECON2 equ 018Dh");
+
+# 2371
+extern volatile __bit ACKDT @ (((unsigned) &SSPCON2)*8) + 5;
+
+extern volatile __bit ACKEN @ (((unsigned) &SSPCON2)*8) + 4;
+
+extern volatile __bit ACKSTAT @ (((unsigned) &SSPCON2)*8) + 6;
+
+extern volatile __bit ADCS0 @ (((unsigned) &ADCON0)*8) + 6;
+
+extern volatile __bit ADCS1 @ (((unsigned) &ADCON0)*8) + 7;
+
+extern volatile __bit ADCS2 @ (((unsigned) &ADCON1)*8) + 6;
+
+extern volatile __bit ADDEN @ (((unsigned) &RCSTA)*8) + 3;
+
+extern volatile __bit ADFM @ (((unsigned) &ADCON1)*8) + 7;
+
+extern volatile __bit ADIE @ (((unsigned) &PIE1)*8) + 6;
+
+extern volatile __bit ADIF @ (((unsigned) &PIR1)*8) + 6;
+
+extern volatile __bit ADON @ (((unsigned) &ADCON0)*8) + 0;
+
+extern volatile __bit BCLIE @ (((unsigned) &PIE2)*8) + 3;
+
+extern volatile __bit BCLIF @ (((unsigned) &PIR2)*8) + 3;
+
+extern volatile __bit BF @ (((unsigned) &SSPSTAT)*8) + 0;
+
+extern volatile __bit BRGH @ (((unsigned) &TXSTA)*8) + 2;
+
+extern volatile __bit C1INV @ (((unsigned) &CMCON)*8) + 4;
+
+extern volatile __bit C1OUT @ (((unsigned) &CMCON)*8) + 6;
+
+extern volatile __bit C2INV @ (((unsigned) &CMCON)*8) + 5;
+
+extern volatile __bit C2OUT @ (((unsigned) &CMCON)*8) + 7;
+
+extern volatile __bit CARRY @ (((unsigned) &STATUS)*8) + 0;
+
+extern volatile __bit CCP1IE @ (((unsigned) &PIE1)*8) + 2;
+
+extern volatile __bit CCP1IF @ (((unsigned) &PIR1)*8) + 2;
+
+extern volatile __bit CCP1M0 @ (((unsigned) &CCP1CON)*8) + 0;
+
+extern volatile __bit CCP1M1 @ (((unsigned) &CCP1CON)*8) + 1;
+
+extern volatile __bit CCP1M2 @ (((unsigned) &CCP1CON)*8) + 2;
+
+extern volatile __bit CCP1M3 @ (((unsigned) &CCP1CON)*8) + 3;
+
+extern volatile __bit CCP1X @ (((unsigned) &CCP1CON)*8) + 5;
+
+extern volatile __bit CCP1Y @ (((unsigned) &CCP1CON)*8) + 4;
+
+extern volatile __bit CCP2IE @ (((unsigned) &PIE2)*8) + 0;
+
+extern volatile __bit CCP2IF @ (((unsigned) &PIR2)*8) + 0;
+
+extern volatile __bit CCP2M0 @ (((unsigned) &CCP2CON)*8) + 0;
+
+extern volatile __bit CCP2M1 @ (((unsigned) &CCP2CON)*8) + 1;
+
+extern volatile __bit CCP2M2 @ (((unsigned) &CCP2CON)*8) + 2;
+
+extern volatile __bit CCP2M3 @ (((unsigned) &CCP2CON)*8) + 3;
+
+extern volatile __bit CCP2X @ (((unsigned) &CCP2CON)*8) + 5;
+
+extern volatile __bit CCP2Y @ (((unsigned) &CCP2CON)*8) + 4;
+
+extern volatile __bit CHS0 @ (((unsigned) &ADCON0)*8) + 3;
+
+extern volatile __bit CHS1 @ (((unsigned) &ADCON0)*8) + 4;
+
+extern volatile __bit CHS2 @ (((unsigned) &ADCON0)*8) + 5;
+
+extern volatile __bit CIS @ (((unsigned) &CMCON)*8) + 3;
+
+extern volatile __bit CKE @ (((unsigned) &SSPSTAT)*8) + 6;
+
+extern volatile __bit CKP @ (((unsigned) &SSPCON)*8) + 4;
+
+extern volatile __bit CM0 @ (((unsigned) &CMCON)*8) + 0;
+
+extern volatile __bit CM1 @ (((unsigned) &CMCON)*8) + 1;
+
+extern volatile __bit CM2 @ (((unsigned) &CMCON)*8) + 2;
+
+extern volatile __bit CMIE @ (((unsigned) &PIE2)*8) + 6;
+
+extern volatile __bit CMIF @ (((unsigned) &PIR2)*8) + 6;
+
+extern volatile __bit CREN @ (((unsigned) &RCSTA)*8) + 4;
+
+extern volatile __bit CSRC @ (((unsigned) &TXSTA)*8) + 7;
+
+extern volatile __bit CVR0 @ (((unsigned) &CVRCON)*8) + 0;
+
+extern volatile __bit CVR1 @ (((unsigned) &CVRCON)*8) + 1;
+
+extern volatile __bit CVR2 @ (((unsigned) &CVRCON)*8) + 2;
+
+extern volatile __bit CVR3 @ (((unsigned) &CVRCON)*8) + 3;
+
+extern volatile __bit CVREN @ (((unsigned) &CVRCON)*8) + 7;
+
+extern volatile __bit CVROE @ (((unsigned) &CVRCON)*8) + 6;
+
+extern volatile __bit CVRR @ (((unsigned) &CVRCON)*8) + 5;
+
+extern volatile __bit DATA_ADDRESS @ (((unsigned) &SSPSTAT)*8) + 5;
+
+extern volatile __bit DC @ (((unsigned) &STATUS)*8) + 1;
+
+extern volatile __bit D_A @ (((unsigned) &SSPSTAT)*8) + 5;
+
+extern volatile __bit D_nA @ (((unsigned) &SSPSTAT)*8) + 5;
+
+extern volatile __bit EEIE @ (((unsigned) &PIE2)*8) + 4;
+
+extern volatile __bit EEIF @ (((unsigned) &PIR2)*8) + 4;
+
+extern volatile __bit EEPGD @ (((unsigned) &EECON1)*8) + 7;
+
+extern volatile __bit FERR @ (((unsigned) &RCSTA)*8) + 2;
+
+extern volatile __bit GCEN @ (((unsigned) &SSPCON2)*8) + 7;
+
+extern volatile __bit GIE @ (((unsigned) &INTCON)*8) + 7;
+
+extern volatile __bit GO @ (((unsigned) &ADCON0)*8) + 2;
+
+extern volatile __bit GO_DONE @ (((unsigned) &ADCON0)*8) + 2;
+
+extern volatile __bit GO_nDONE @ (((unsigned) &ADCON0)*8) + 2;
+
+extern volatile __bit I2C_DATA @ (((unsigned) &SSPSTAT)*8) + 5;
+
+extern volatile __bit I2C_READ @ (((unsigned) &SSPSTAT)*8) + 2;
+
+extern volatile __bit I2C_START @ (((unsigned) &SSPSTAT)*8) + 3;
+
+extern volatile __bit I2C_STOP @ (((unsigned) &SSPSTAT)*8) + 4;
+
+extern volatile __bit IBF @ (((unsigned) &TRISE)*8) + 7;
+
+extern volatile __bit IBOV @ (((unsigned) &TRISE)*8) + 5;
+
+extern volatile __bit INTE @ (((unsigned) &INTCON)*8) + 4;
+
+extern volatile __bit INTEDG @ (((unsigned) &OPTION_REG)*8) + 6;
+
+extern volatile __bit INTF @ (((unsigned) &INTCON)*8) + 1;
+
+extern volatile __bit IRP @ (((unsigned) &STATUS)*8) + 7;
+
+extern volatile __bit OBF @ (((unsigned) &TRISE)*8) + 6;
+
+extern volatile __bit OERR @ (((unsigned) &RCSTA)*8) + 1;
+
+extern volatile __bit PCFG0 @ (((unsigned) &ADCON1)*8) + 0;
+
+extern volatile __bit PCFG1 @ (((unsigned) &ADCON1)*8) + 1;
+
+extern volatile __bit PCFG2 @ (((unsigned) &ADCON1)*8) + 2;
+
+extern volatile __bit PCFG3 @ (((unsigned) &ADCON1)*8) + 3;
+
+extern volatile __bit PEIE @ (((unsigned) &INTCON)*8) + 6;
+
+extern volatile __bit PEN @ (((unsigned) &SSPCON2)*8) + 2;
+
+extern volatile __bit PS0 @ (((unsigned) &OPTION_REG)*8) + 0;
+
+extern volatile __bit PS1 @ (((unsigned) &OPTION_REG)*8) + 1;
+
+extern volatile __bit PS2 @ (((unsigned) &OPTION_REG)*8) + 2;
+
+extern volatile __bit PSA @ (((unsigned) &OPTION_REG)*8) + 3;
+
+extern volatile __bit PSPIE @ (((unsigned) &PIE1)*8) + 7;
+
+extern volatile __bit PSPIF @ (((unsigned) &PIR1)*8) + 7;
+
+extern volatile __bit PSPMODE @ (((unsigned) &TRISE)*8) + 4;
+
+extern volatile __bit RA0 @ (((unsigned) &PORTA)*8) + 0;
+
+extern volatile __bit RA1 @ (((unsigned) &PORTA)*8) + 1;
+
+extern volatile __bit RA2 @ (((unsigned) &PORTA)*8) + 2;
+
+extern volatile __bit RA3 @ (((unsigned) &PORTA)*8) + 3;
+
+extern volatile __bit RA4 @ (((unsigned) &PORTA)*8) + 4;
+
+extern volatile __bit RA5 @ (((unsigned) &PORTA)*8) + 5;
+
+extern volatile __bit RB0 @ (((unsigned) &PORTB)*8) + 0;
+
+extern volatile __bit RB1 @ (((unsigned) &PORTB)*8) + 1;
+
+extern volatile __bit RB2 @ (((unsigned) &PORTB)*8) + 2;
+
+extern volatile __bit RB3 @ (((unsigned) &PORTB)*8) + 3;
+
+extern volatile __bit RB4 @ (((unsigned) &PORTB)*8) + 4;
+
+extern volatile __bit RB5 @ (((unsigned) &PORTB)*8) + 5;
+
+extern volatile __bit RB6 @ (((unsigned) &PORTB)*8) + 6;
+
+extern volatile __bit RB7 @ (((unsigned) &PORTB)*8) + 7;
+
+extern volatile __bit RBIE @ (((unsigned) &INTCON)*8) + 3;
+
+extern volatile __bit RBIF @ (((unsigned) &INTCON)*8) + 0;
+
+extern volatile __bit RC0 @ (((unsigned) &PORTC)*8) + 0;
+
+extern volatile __bit RC1 @ (((unsigned) &PORTC)*8) + 1;
+
+extern volatile __bit RC2 @ (((unsigned) &PORTC)*8) + 2;
+
+extern volatile __bit RC3 @ (((unsigned) &PORTC)*8) + 3;
+
+extern volatile __bit RC4 @ (((unsigned) &PORTC)*8) + 4;
+
+extern volatile __bit RC5 @ (((unsigned) &PORTC)*8) + 5;
+
+extern volatile __bit RC6 @ (((unsigned) &PORTC)*8) + 6;
+
+extern volatile __bit RC7 @ (((unsigned) &PORTC)*8) + 7;
+
+extern volatile __bit RC8_9 @ (((unsigned) &RCSTA)*8) + 6;
+
+extern volatile __bit RC9 @ (((unsigned) &RCSTA)*8) + 6;
+
+extern volatile __bit RCD8 @ (((unsigned) &RCSTA)*8) + 0;
+
+extern volatile __bit RCEN @ (((unsigned) &SSPCON2)*8) + 3;
+
+extern volatile __bit RCIE @ (((unsigned) &PIE1)*8) + 5;
+
+extern volatile __bit RCIF @ (((unsigned) &PIR1)*8) + 5;
+
+extern volatile __bit RD @ (((unsigned) &EECON1)*8) + 0;
+
+extern volatile __bit RD0 @ (((unsigned) &PORTD)*8) + 0;
+
+extern volatile __bit RD1 @ (((unsigned) &PORTD)*8) + 1;
+
+extern volatile __bit RD2 @ (((unsigned) &PORTD)*8) + 2;
+
+extern volatile __bit RD3 @ (((unsigned) &PORTD)*8) + 3;
+
+extern volatile __bit RD4 @ (((unsigned) &PORTD)*8) + 4;
+
+extern volatile __bit RD5 @ (((unsigned) &PORTD)*8) + 5;
+
+extern volatile __bit RD6 @ (((unsigned) &PORTD)*8) + 6;
+
+extern volatile __bit RD7 @ (((unsigned) &PORTD)*8) + 7;
+
+extern volatile __bit RE0 @ (((unsigned) &PORTE)*8) + 0;
+
+extern volatile __bit RE1 @ (((unsigned) &PORTE)*8) + 1;
+
+extern volatile __bit RE2 @ (((unsigned) &PORTE)*8) + 2;
+
+extern volatile __bit READ_WRITE @ (((unsigned) &SSPSTAT)*8) + 2;
+
+extern volatile __bit RP0 @ (((unsigned) &STATUS)*8) + 5;
+
+extern volatile __bit RP1 @ (((unsigned) &STATUS)*8) + 6;
+
+extern volatile __bit RSEN @ (((unsigned) &SSPCON2)*8) + 1;
+
+extern volatile __bit RX9 @ (((unsigned) &RCSTA)*8) + 6;
+
+extern volatile __bit RX9D @ (((unsigned) &RCSTA)*8) + 0;
+
+extern volatile __bit R_W @ (((unsigned) &SSPSTAT)*8) + 2;
+
+extern volatile __bit R_nW @ (((unsigned) &SSPSTAT)*8) + 2;
+
+extern volatile __bit SEN @ (((unsigned) &SSPCON2)*8) + 0;
+
+extern volatile __bit SMP @ (((unsigned) &SSPSTAT)*8) + 7;
+
+extern volatile __bit SPEN @ (((unsigned) &RCSTA)*8) + 7;
+
+extern volatile __bit SREN @ (((unsigned) &RCSTA)*8) + 5;
+
+extern volatile __bit SSPEN @ (((unsigned) &SSPCON)*8) + 5;
+
+extern volatile __bit SSPIE @ (((unsigned) &PIE1)*8) + 3;
+
+extern volatile __bit SSPIF @ (((unsigned) &PIR1)*8) + 3;
+
+extern volatile __bit SSPM0 @ (((unsigned) &SSPCON)*8) + 0;
+
+extern volatile __bit SSPM1 @ (((unsigned) &SSPCON)*8) + 1;
+
+extern volatile __bit SSPM2 @ (((unsigned) &SSPCON)*8) + 2;
+
+extern volatile __bit SSPM3 @ (((unsigned) &SSPCON)*8) + 3;
+
+extern volatile __bit SSPOV @ (((unsigned) &SSPCON)*8) + 6;
+
+extern volatile __bit SYNC @ (((unsigned) &TXSTA)*8) + 4;
+
+extern volatile __bit T0CS @ (((unsigned) &OPTION_REG)*8) + 5;
+
+extern volatile __bit T0IE @ (((unsigned) &INTCON)*8) + 5;
+
+extern volatile __bit T0IF @ (((unsigned) &INTCON)*8) + 2;
+
+extern volatile __bit T0SE @ (((unsigned) &OPTION_REG)*8) + 4;
+
+extern volatile __bit T1CKPS0 @ (((unsigned) &T1CON)*8) + 4;
+
+extern volatile __bit T1CKPS1 @ (((unsigned) &T1CON)*8) + 5;
+
+extern volatile __bit T1INSYNC @ (((unsigned) &T1CON)*8) + 2;
+
+extern volatile __bit T1OSCEN @ (((unsigned) &T1CON)*8) + 3;
+
+extern volatile __bit T1SYNC @ (((unsigned) &T1CON)*8) + 2;
+
+extern volatile __bit T2CKPS0 @ (((unsigned) &T2CON)*8) + 0;
+
+extern volatile __bit T2CKPS1 @ (((unsigned) &T2CON)*8) + 1;
+
+extern volatile __bit TMR0IE @ (((unsigned) &INTCON)*8) + 5;
+
+extern volatile __bit TMR0IF @ (((unsigned) &INTCON)*8) + 2;
+
+extern volatile __bit TMR1CS @ (((unsigned) &T1CON)*8) + 1;
+
+extern volatile __bit TMR1IE @ (((unsigned) &PIE1)*8) + 0;
+
+extern volatile __bit TMR1IF @ (((unsigned) &PIR1)*8) + 0;
+
+extern volatile __bit TMR1ON @ (((unsigned) &T1CON)*8) + 0;
+
+extern volatile __bit TMR2IE @ (((unsigned) &PIE1)*8) + 1;
+
+extern volatile __bit TMR2IF @ (((unsigned) &PIR1)*8) + 1;
+
+extern volatile __bit TMR2ON @ (((unsigned) &T2CON)*8) + 2;
+
+extern volatile __bit TOUTPS0 @ (((unsigned) &T2CON)*8) + 3;
+
+extern volatile __bit TOUTPS1 @ (((unsigned) &T2CON)*8) + 4;
+
+extern volatile __bit TOUTPS2 @ (((unsigned) &T2CON)*8) + 5;
+
+extern volatile __bit TOUTPS3 @ (((unsigned) &T2CON)*8) + 6;
+
+extern volatile __bit TRISA0 @ (((unsigned) &TRISA)*8) + 0;
+
+extern volatile __bit TRISA1 @ (((unsigned) &TRISA)*8) + 1;
+
+extern volatile __bit TRISA2 @ (((unsigned) &TRISA)*8) + 2;
+
+extern volatile __bit TRISA3 @ (((unsigned) &TRISA)*8) + 3;
+
+extern volatile __bit TRISA4 @ (((unsigned) &TRISA)*8) + 4;
+
+extern volatile __bit TRISA5 @ (((unsigned) &TRISA)*8) + 5;
+
+extern volatile __bit TRISB0 @ (((unsigned) &TRISB)*8) + 0;
+
+extern volatile __bit TRISB1 @ (((unsigned) &TRISB)*8) + 1;
+
+extern volatile __bit TRISB2 @ (((unsigned) &TRISB)*8) + 2;
+
+extern volatile __bit TRISB3 @ (((unsigned) &TRISB)*8) + 3;
+
+extern volatile __bit TRISB4 @ (((unsigned) &TRISB)*8) + 4;
+
+extern volatile __bit TRISB5 @ (((unsigned) &TRISB)*8) + 5;
+
+extern volatile __bit TRISB6 @ (((unsigned) &TRISB)*8) + 6;
+
+extern volatile __bit TRISB7 @ (((unsigned) &TRISB)*8) + 7;
+
+extern volatile __bit TRISC0 @ (((unsigned) &TRISC)*8) + 0;
+
+extern volatile __bit TRISC1 @ (((unsigned) &TRISC)*8) + 1;
+
+extern volatile __bit TRISC2 @ (((unsigned) &TRISC)*8) + 2;
+
+extern volatile __bit TRISC3 @ (((unsigned) &TRISC)*8) + 3;
+
+extern volatile __bit TRISC4 @ (((unsigned) &TRISC)*8) + 4;
+
+extern volatile __bit TRISC5 @ (((unsigned) &TRISC)*8) + 5;
+
+extern volatile __bit TRISC6 @ (((unsigned) &TRISC)*8) + 6;
+
+extern volatile __bit TRISC7 @ (((unsigned) &TRISC)*8) + 7;
+
+extern volatile __bit TRISD0 @ (((unsigned) &TRISD)*8) + 0;
+
+extern volatile __bit TRISD1 @ (((unsigned) &TRISD)*8) + 1;
+
+extern volatile __bit TRISD2 @ (((unsigned) &TRISD)*8) + 2;
+
+extern volatile __bit TRISD3 @ (((unsigned) &TRISD)*8) + 3;
+
+extern volatile __bit TRISD4 @ (((unsigned) &TRISD)*8) + 4;
+
+extern volatile __bit TRISD5 @ (((unsigned) &TRISD)*8) + 5;
+
+extern volatile __bit TRISD6 @ (((unsigned) &TRISD)*8) + 6;
+
+extern volatile __bit TRISD7 @ (((unsigned) &TRISD)*8) + 7;
+
+extern volatile __bit TRISE0 @ (((unsigned) &TRISE)*8) + 0;
+
+extern volatile __bit TRISE1 @ (((unsigned) &TRISE)*8) + 1;
+
+extern volatile __bit TRISE2 @ (((unsigned) &TRISE)*8) + 2;
+
+extern volatile __bit TRMT @ (((unsigned) &TXSTA)*8) + 1;
+
+extern volatile __bit TX8_9 @ (((unsigned) &TXSTA)*8) + 6;
+
+extern volatile __bit TX9 @ (((unsigned) &TXSTA)*8) + 6;
+
+extern volatile __bit TX9D @ (((unsigned) &TXSTA)*8) + 0;
+
+extern volatile __bit TXD8 @ (((unsigned) &TXSTA)*8) + 0;
+
+extern volatile __bit TXEN @ (((unsigned) &TXSTA)*8) + 5;
+
+extern volatile __bit TXIE @ (((unsigned) &PIE1)*8) + 4;
+
+extern volatile __bit TXIF @ (((unsigned) &PIR1)*8) + 4;
+
+extern volatile __bit UA @ (((unsigned) &SSPSTAT)*8) + 1;
+
+extern volatile __bit WCOL @ (((unsigned) &SSPCON)*8) + 7;
+
+extern volatile __bit WR @ (((unsigned) &EECON1)*8) + 1;
+
+extern volatile __bit WREN @ (((unsigned) &EECON1)*8) + 2;
+
+extern volatile __bit WRERR @ (((unsigned) &EECON1)*8) + 3;
+
+extern volatile __bit ZERO @ (((unsigned) &STATUS)*8) + 2;
+
+extern volatile __bit nA @ (((unsigned) &SSPSTAT)*8) + 5;
+
+extern volatile __bit nADDRESS @ (((unsigned) &SSPSTAT)*8) + 5;
+
+extern volatile __bit nBO @ (((unsigned) &PCON)*8) + 0;
+
+extern volatile __bit nBOR @ (((unsigned) &PCON)*8) + 0;
+
+extern volatile __bit nDONE @ (((unsigned) &ADCON0)*8) + 2;
+
+extern volatile __bit nPD @ (((unsigned) &STATUS)*8) + 3;
+
+extern volatile __bit nPOR @ (((unsigned) &PCON)*8) + 1;
+
+extern volatile __bit nRBPU @ (((unsigned) &OPTION_REG)*8) + 7;
+
+extern volatile __bit nRC8 @ (((unsigned) &RCSTA)*8) + 6;
+
+extern volatile __bit nT1SYNC @ (((unsigned) &T1CON)*8) + 2;
+
+extern volatile __bit nTO @ (((unsigned) &STATUS)*8) + 4;
+
+extern volatile __bit nTX8 @ (((unsigned) &TXSTA)*8) + 6;
+
+extern volatile __bit nW @ (((unsigned) &SSPSTAT)*8) + 2;
+
+extern volatile __bit nWRITE @ (((unsigned) &SSPSTAT)*8) + 2;
+
+# 13 "/opt/microchip/xc8/v1.45/include/stdint.h"
+typedef signed char int8_t;
+
+# 20
+typedef signed int int16_t;
+
+# 28
+typedef signed short long int int24_t;
+
+# 36
+typedef signed long int int32_t;
+
+# 43
+typedef unsigned char uint8_t;
+
+# 49
+typedef unsigned int uint16_t;
+
+# 56
+typedef unsigned short long int uint24_t;
+
+# 63
+typedef unsigned long int uint32_t;
+
+# 71
+typedef signed char int_least8_t;
+
+# 78
+typedef signed int int_least16_t;
+
+# 90
+typedef signed short long int int_least24_t;
+
+# 98
+typedef signed long int int_least32_t;
+
+# 105
+typedef unsigned char uint_least8_t;
+
+# 111
+typedef unsigned int uint_least16_t;
+
+# 121
+typedef unsigned short long int uint_least24_t;
+
+# 128
+typedef unsigned long int uint_least32_t;
+
+# 137
+typedef signed char int_fast8_t;
+
+# 144
+typedef signed int int_fast16_t;
+
+# 156
+typedef signed short long int int_fast24_t;
+
+# 164
+typedef signed long int int_fast32_t;
+
+# 171
+typedef unsigned char uint_fast8_t;
+
+# 177
+typedef unsigned int uint_fast16_t;
+
+# 187
+typedef unsigned short long int uint_fast24_t;
+
+# 194
+typedef unsigned long int uint_fast32_t;
+
+# 200
+typedef int32_t intmax_t;
+
+
+
+
+typedef uint32_t uintmax_t;
+
+
+
+
+typedef int16_t intptr_t;
+
+
+
+
+typedef uint16_t uintptr_t;
+
+# 4 "/opt/microchip/xc8/v1.45/include/__size_t.h"
+typedef unsigned size_t;
+
+# 14 "/opt/microchip/xc8/v1.45/include/string.h"
+extern void * memcpy(void *, const void *, size_t);
+extern void * memmove(void *, const void *, size_t);
+extern void * memset(void *, int, size_t);
+
+# 36
+extern char * strcat(char *, const char *);
+extern char * strcpy(char *, const char *);
+extern char * strncat(char *, const char *, size_t);
+extern char * strncpy(char *, const char *, size_t);
+extern char * strdup(const char *);
+extern char * strtok(char *, const char *);
+
+
+extern int memcmp(const void *, const void *, size_t);
+extern int strcmp(const char *, const char *);
+extern int stricmp(const char *, const char *);
+extern int strncmp(const char *, const char *, size_t);
+extern int strnicmp(const char *, const char *, size_t);
+extern void * memchr(const void *, int, size_t);
+extern size_t strcspn(const char *, const char *);
+extern char * strpbrk(const char *, const char *);
+extern size_t strspn(const char *, const char *);
+extern char * strstr(const char *, const char *);
+extern char * stristr(const char *, const char *);
+extern char * strerror(int);
+extern size_t strlen(const char *);
+extern char * strchr(const char *, int);
+extern char * strichr(const char *, int);
+extern char * strrchr(const char *, int);
+extern char * strrichr(const char *, int);
+
+# 18 "nozzle.h"
+const int8_t step_to_encoders[] =
+{
+-10, 17, 8,
+-10, 18, 8,
+-10, 19, 9,
+-10, 20, 10,
+-10, 21, 11,
+-10, 22, 12,
+-10, 23, 13,
+-9, 24, 14,
+-9, 25, 15,
+-8, 26, 16,
+-8, 27, 17,
+-7, 28, 18,
+-6, 29, 19,
+-6, 30, 20,
+-5, 31, 21,
+-5, 32, 22,
+-4, 33, 23,
+-4, 34, 24,
+-3, 35, 25,
+-3, 36, 26,
+-2, 37, 27,
+-2, 38, 28,
+-1, 39, 29,
+-1, 40, 30,
+0, 41, 31,
+};
+
+const int8_t cos_table[] =
+{
+-126, -127, -127, -126, -123, -119, -113, -106,
+-97, -88, -77, -66, -53, -40, -27, -13,
+0, 14, 27, 41, 54, 66, 78, 88,
+98, 106, 113, 119, 123, 126, 127, 127,
+125, 122, 118, 111, 104, 95, 86, 75,
+};
+
+const int8_t sin_table[] =
+{
+22, 8, -5, -19, -33, -46, -59, -71,
+-82, -92, -101, -109, -116, -121, -125, -127,
+-127, -127, -124, -121, -115, -109, -101, -92,
+-82, -70, -58, -46, -32, -19, -5, 8,
+22, 36, 49, 62, 73, 84, 94, 103,
+};
+
+# 80 "nozzle.c"
+uint8_t have_serial = 0;
+uint8_t serial_in = 0;
+
+
+uint8_t interrupt_done = 0;
+
+
+uint8_t uart_buffer[64];
+uint8_t uart_size = 0;
+uint8_t uart_position1 = 0;
+uint8_t uart_position2 = 0;
+
+
+uint8_t armed = 0;
+uint8_t led_counter = 0;
+
+# 101
+uint8_t got_tick = 0;
+uint8_t tick = 0;
+
+
+uint8_t current_motor = 0;
+
+
+
+uint8_t motor_master = 0;
+
+# 115
+uint8_t current_adc = 0;
+
+# 128
+typedef struct
+{
+
+uint8_t analog;
+
+uint8_t ns;
+
+int8_t step;
+
+int8_t position;
+} sensor_state_t;
+sensor_state_t sensors[6];
+
+typedef struct
+{
+
+uint8_t boundary;
+uint8_t encoder;
+
+uint8_t dec_mask;
+uint8_t inc_mask;
+uint8_t total_unmask;
+uint8_t total_mask;
+
+
+uint8_t timer;
+int8_t target_position;
+
+int8_t min;
+int8_t max;
+
+uint8_t changed;
+
+uint8_t brake;
+} tracking_state_t;
+tracking_state_t tracking_state[3];
+
+
+
+int8_t nozzle_pitch = 0;
+
+
+int8_t nozzle_angle = 0;
+
+# 188
+typedef struct
+{
+int8_t pitch;
+int8_t angle;
+} preset_t;
+
+# 198
+uint8_t setting_preset = 0;
+uint8_t current_preset = 0;
+preset_t presets[4];
+void (*preset_state)() = 0;
+int8_t orig_nozzle_angle = 0;
+uint8_t preset_delay = 0;
+
+# 209
+typedef struct
+{
+const uint8_t *data;
+const uint8_t size;
+const uint8_t value;
+} ir_code_t;
+
+
+const uint8_t up_data[] =
+{
+0x30, 0x19, 0x03, 0x02, 0x03, 0x09, 0x03, 0x02, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x09, 0x03, 0x02, 0x03, 0x02, 0x03, 0x03, 0x03, 0x09, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x03, 0x03, 0x03, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0xdb, 0x30, 0x0b, 0x03
+};
+
+const uint8_t down_data[] =
+{
+0x30, 0x19, 0x03, 0x02, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x09, 0x03, 0x09, 0x03, 0x02, 0x03, 0x03, 0x03, 0x09, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x03, 0x03, 0x02, 0x03, 0x09, 0x03, 0x09, 0x03, 0x02, 0x03, 0x03, 0x03, 0x09, 0x03, 0x02, 0x03, 0x09, 0x03, 0xdb, 0x30, 0x0c, 0x03
+};
+
+const uint8_t left_data[] =
+{
+0x30, 0x19, 0x03, 0x02, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x02, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x03, 0x03, 0x03, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x02, 0x03, 0x03, 0x03, 0x03, 0x03, 0x09, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0xdb, 0x30, 0x0b, 0x03
+};
+
+const uint8_t right_data[] =
+{
+0x30, 0x19, 0x03, 0x02, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x02, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x02, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x03, 0x03, 0x02, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x02, 0x03, 0x09, 0x03, 0x02, 0x03, 0x09, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x02, 0x03, 0x09, 0x03, 0xdb, 0x30, 0x0c, 0x03
+};
+
+
+
+
+const uint8_t fastrev_data[] =
+{
+0x30, 0x19, 0x03, 0x02, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x02, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x09, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x09, 0x03, 0x09, 0x03, 0x03, 0x03, 0x03, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x02, 0x03, 0xdb, 0x30, 0x0c, 0x03
+};
+
+
+const uint8_t fastfwd_data[] =
+{
+0x30, 0x19, 0x03, 0x03, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x02, 0x03, 0x09, 0x03, 0x02, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x09, 0x03, 0x03, 0x03, 0x03, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x02, 0x03, 0x03, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x02, 0x03, 0x03, 0x03, 0x02, 0x03, 0x09, 0x03, 0x09, 0x03, 0x03, 0x03, 0xdb, 0x30, 0x0c, 0x03
+};
+
+
+const uint8_t button7_data[] =
+{
+0x30, 0x19, 0x03, 0x03, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x08, 0x03, 0x03, 0x03, 0x09, 0x03, 0x02, 0x03, 0x09, 0x03, 0x03, 0x03, 0x03, 0x03, 0x02, 0x03, 0x03, 0x03, 0x09, 0x03, 0x02, 0x03, 0x03, 0x03, 0x09, 0x03, 0x02, 0x03, 0x09, 0x03, 0x02, 0x03, 0x03, 0x03, 0x03, 0x03, 0x09, 0x03, 0x09, 0x03, 0x02, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0xdb, 0x30, 0x0c, 0x03
+};
+
+const uint8_t button8_data[] =
+{
+0x30, 0x19, 0x03, 0x03, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x02, 0x03, 0x03, 0x03, 0x02, 0x03, 0x03, 0x03, 0x09, 0x03, 0x09, 0x03, 0x02, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x02, 0x03, 0x03, 0x03, 0x09, 0x03, 0x02, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0xdb, 0x30, 0x0c, 0x03
+};
+
+const uint8_t button9_data[] =
+{
+0x30, 0x19, 0x03, 0x03, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x02, 0x03, 0x09, 0x03, 0x02, 0x03, 0x09, 0x03, 0x02, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x02, 0x03, 0x03, 0x03, 0x02, 0x03, 0x03, 0x03, 0x09, 0x03, 0x02, 0x03, 0x02, 0x03, 0x03, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x02, 0x03, 0xdb, 0x30, 0x0c, 0x03
+};
+
+const uint8_t button0_data[] =
+{
+0x30, 0x19, 0x03, 0x03, 0x03, 0x09, 0x03, 0x02, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x03, 0x03, 0x02, 0x03, 0x02, 0x03, 0x03, 0x03, 0x09, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x03, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x09, 0x03, 0x03, 0x03, 0xdb, 0x30, 0x0c, 0x03
+};
+
+# 286
+const ir_code_t ir_codes[] = {
+{ button7_data, sizeof(button7_data), 6 },
+{ button8_data, sizeof(button8_data), 7 },
+{ button9_data, sizeof(button9_data), 8 },
+{ button0_data, sizeof(fastrev_data), 9 },
+{ up_data, sizeof(up_data), 0 },
+{ down_data, sizeof(down_data), 1 },
+{ left_data, sizeof(left_data), 2 },
+{ right_data, sizeof(right_data), 3 },
+{ fastfwd_data, sizeof(fastfwd_data), 5 },
+{ fastrev_data, sizeof(fastrev_data), 4 },
+};
+
+# 306
+uint8_t ir_code_failed[(sizeof(ir_codes) / sizeof(ir_code_t))];
+uint8_t ir_offset = 0;
+
+uint8_t have_ir = 0;
+
+uint8_t ir_code = 0;
+
+uint8_t repeat_delay = 0;
+
+
+
+
+volatile uint8_t got_ir_int = 0;
+
+volatile int16_t ir_time = 0;
+
+uint8_t got_tmr2 = 0;
+
+uint16_t tmr2_high = 0;
+
+uint8_t ir_timeout = 0;
+uint8_t first_edge = 1;
+
+
+void print_byte(uint8_t c)
+{
+if(uart_size < 64)
+{
+uart_buffer[uart_position1++] = c;
+uart_size++;
+if(uart_position1 >= 64)
+{
+uart_position1 = 0;
+}
+}
+}
+
+void print_text(const uint8_t *s)
+{
+while(*s != 0)
+{
+print_byte(*s);
+s++;
+}
+}
+
+
+void print_number_nospace(uint16_t number)
+{
+if(number >= 10000) print_byte('0' + (number / 10000));
+if(number >= 1000) print_byte('0' + ((number / 1000) % 10));
+if(number >= 100) print_byte('0' + ((number / 100) % 10));
+if(number >= 10) print_byte('0' + ((number / 10) % 10));
+print_byte('0' + (number % 10));
+}
+
+void print_number2(uint8_t number)
+{
+print_byte('0' + ((number / 10) % 10));
+print_byte('0' + (number % 10));
+}
+
+void print_number(uint16_t number)
+{
+print_number_nospace(number);
+print_byte(' ');
+}
+
+void print_number_signed(int16_t number)
+{
+if(number < 0)
+{
+print_byte('-');
+print_number_nospace(-number);
+}
+else
+{
+print_number_nospace(number);
+}
+print_byte(' ');
+}
+
+const char hex_table[] =
+{
+'0', '1', '2', '3', '4', '5', '6', '7',
+'8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
+};
+
+void print_hex2(uint8_t number)
+{
+print_byte(hex_table[(number >> 4) & 0xf]);
+print_byte(hex_table[number & 0xf]);
+}
+
+void print_bin(uint8_t number)
+{
+print_byte((number & 0x80) ? '1' : '0');
+print_byte((number & 0x40) ? '1' : '0');
+print_byte((number & 0x20) ? '1' : '0');
+print_byte((number & 0x10) ? '1' : '0');
+print_byte((number & 0x8) ? '1' : '0');
+print_byte((number & 0x4) ? '1' : '0');
+print_byte((number & 0x2) ? '1' : '0');
+print_byte((number & 0x1) ? '1' : '0');
+}
+
+
+
+void handle_uart()
+{
+if(uart_size > 0 && PIR1bits.TXIF)
+{
+PIR1bits.TXIF = 0;
+TXREG = uart_buffer[uart_position2++];
+uart_size--;
+if(uart_position2 >= 64)
+{
+uart_position2 = 0;
+}
+}
+}
+
+void flush_uart()
+{
+while(uart_size > 0)
+{
+asm("clrwdt");
+handle_uart();
+}
+}
+
+# 455
+void motor_idle();
+void motor_home1();
+void (*motor_state)() = motor_idle;
+
+
+void motor_tracking()
+{
+
+tracking_state_t *tracking = &tracking_state[current_motor];
+sensor_state_t *encoder = &sensors[tracking->encoder];
+
+current_motor++;
+if(current_motor >= 3)
+{
+current_motor = 0;
+}
+
+
+if((motor_master & tracking->total_mask) == tracking->inc_mask)
+{
+if(encoder->position >= tracking->target_position)
+{
+
+# 484
+{
+motor_master |= tracking->total_mask;
+}
+
+tracking->timer = (100 / 2);
+}
+}
+else
+if((motor_master & tracking->total_mask) == tracking->dec_mask)
+{
+if(encoder->position <= tracking->target_position)
+{
+
+# 503
+{
+motor_master |= tracking->total_mask;
+}
+
+tracking->timer = (100 / 2);
+}
+}
+else
+
+if( tracking->changed > 0)
+{
+
+
+
+if(encoder->position > tracking->target_position)
+{
+encoder->step = -1;
+motor_master &= tracking->total_unmask;
+motor_master |= tracking->dec_mask;
+tracking->changed--;
+}
+else
+if(encoder->position < tracking->target_position)
+{
+encoder->step = 1;
+motor_master &= tracking->total_unmask;
+motor_master |= tracking->inc_mask;
+tracking->changed--;
+}
+else
+{
+
+tracking->changed--;
+}
+}
+}
+
+
+void motor_home6()
+{
+tracking_state_t *tracking = &tracking_state[current_motor];
+if(tracking->timer == 0)
+{
+uint8_t current_encoder = tracking->encoder;
+
+# 554
+switch(current_motor)
+{
+case 2:
+current_motor = 1;
+motor_state = motor_home1;
+break;
+case 1:
+current_motor = 0;
+motor_state = motor_home1;
+break;
+case 0:
+default:
+current_motor = 0;
+motor_state = motor_tracking;
+break;
+}
+}
+}
+
+
+void motor_home5()
+{
+tracking_state_t *tracking = &tracking_state[current_motor];
+uint8_t current_encoder = tracking->encoder;
+if(sensors[current_encoder].position >=
+tracking_state[current_motor].target_position)
+{
+
+# 588
+{
+motor_master |= tracking->total_mask;
+}
+
+tracking->timer = (100 / 2);
+motor_state = motor_home6;
+}
+}
+
+
+void motor_home4()
+{
+tracking_state_t *tracking = &tracking_state[current_motor];
+uint8_t current_boundary = tracking->boundary;
+uint8_t sensor_value = sensors[current_boundary].analog;
+if(((sensor_value - 0x80) < 0 ? (-(sensor_value - 0x80)) : (sensor_value - 0x80)) >= 0x20)
+{
+uint8_t current_encoder = tracking->encoder;
+sensors[current_encoder].position = 0;
+sensors[current_encoder].step = 1;
+motor_state = motor_home5;
+}
+}
+
+
+void motor_home3()
+{
+tracking_state_t *tracking = &tracking_state[current_motor];
+if(tracking->timer == 0)
+{
+motor_master &= tracking->total_unmask;
+motor_master |= tracking->inc_mask;
+motor_state = motor_home4;
+}
+}
+
+
+void motor_home2()
+{
+tracking_state_t *tracking = &tracking_state[current_motor];
+uint8_t current_boundary = tracking->boundary;
+uint8_t sensor_value = sensors[current_boundary].analog;
+if(((sensor_value - 0x80) < 0 ? (-(sensor_value - 0x80)) : (sensor_value - 0x80)) >= 0x20)
+{
+
+motor_master &= tracking->total_unmask;
+motor_state = motor_home3;
+tracking->timer = (100 / 2);
+}
+}
+
+
+void motor_home1()
+{
+tracking_state_t *tracking = &tracking_state[current_motor];
+uint8_t current_boundary = tracking->boundary;
+uint8_t sensor_value = sensors[current_boundary].analog;
+
+if(((sensor_value - 0x80) < 0 ? (-(sensor_value - 0x80)) : (sensor_value - 0x80)) >= 0x20)
+{
+motor_state = motor_idle;
+}
+else
+
+{
+motor_master &= tracking->total_unmask;
+motor_master |= tracking->dec_mask;
+motor_state = motor_home2;
+}
+}
+
+void motor_idle()
+{
+}
+
+void arm_motors()
+{
+armed = 1;
+PORTDbits.RD7 = 1;
+current_motor = 2;
+
+tracking_state[2].target_position = 8;
+tracking_state[2].changed = 0;
+
+tracking_state[1].target_position = 17;
+tracking_state[1].changed = 0;
+
+tracking_state[0].target_position = 22 + step_to_encoders[0 * 3 + 0];
+tracking_state[0].changed = 0;
+
+nozzle_pitch = 0;
+nozzle_angle = 22;
+motor_state = motor_home1;
+}
+
+void disarm_motors()
+{
+armed = 0;
+PORTD &= ~(uint8_t)0b00111111;
+motor_state = motor_idle;
+}
+
+
+void update_motors()
+{
+
+# 702
+if(nozzle_pitch > 24)
+{
+nozzle_pitch = 24;
+}
+if(nozzle_pitch < 0)
+{
+nozzle_pitch = 0;
+}
+
+if(nozzle_angle > 39)
+{
+nozzle_angle = 39;
+}
+if(nozzle_angle < 0)
+{
+nozzle_angle = 0;
+}
+
+
+tracking_state[0].target_position = nozzle_angle +
+step_to_encoders[nozzle_pitch * 3 + 0];
+tracking_state[1].target_position =
+step_to_encoders[nozzle_pitch * 3 + 1];
+tracking_state[2].target_position =
+step_to_encoders[nozzle_pitch * 3 + 2];
+
+if(tracking_state[0].target_position < tracking_state[0].min)
+{
+int8_t diff = tracking_state[0].min - tracking_state[0].target_position;
+tracking_state[0].target_position += diff;
+
+nozzle_angle += diff;
+}
+if(tracking_state[0].target_position > tracking_state[0].max)
+{
+int8_t diff = tracking_state[0].target_position - tracking_state[0].max;
+tracking_state[0].target_position -= diff;
+
+nozzle_angle -= diff;
+}
+
+
+if(tracking_state[0].changed < 0xff)
+{
+tracking_state[0].changed++;
+}
+if(tracking_state[1].changed < 0xff)
+{
+tracking_state[1].changed++;
+}
+if(tracking_state[2].changed < 0xff)
+{
+tracking_state[2].changed++;
+}
+
+# 766
+}
+
+
+uint8_t motors_tracking()
+{
+if(tracking_state[0].changed > 0 ||
+tracking_state[1].changed > 0 ||
+tracking_state[2].changed > 0)
+{
+return 1;
+}
+return 0;
+}
+
+void do_preset_pitch()
+{
+if(!motors_tracking())
+{
+
+int8_t want_pitch = presets[current_preset].pitch;
+if(want_pitch > nozzle_pitch)
+{
+nozzle_pitch++;
+update_motors();
+}
+else
+if(want_pitch < nozzle_pitch)
+{
+nozzle_pitch--;
+update_motors();
+}
+else
+{
+
+preset_state = 0;
+}
+}
+}
+
+void do_preset_delay2()
+{
+if(preset_delay == 0)
+{
+preset_state = do_preset_pitch;
+}
+}
+
+void do_preset_angle()
+{
+if(!motors_tracking())
+{
+
+int8_t want_angle = presets[current_preset].angle;
+if(want_angle > nozzle_angle)
+{
+nozzle_angle++;
+update_motors();
+}
+else
+if(want_angle < nozzle_angle)
+{
+nozzle_angle--;
+update_motors();
+}
+else
+{
+
+preset_delay = (100 / 2);
+preset_state = do_preset_delay2;
+}
+}
+}
+
+void do_preset_delay1()
+{
+if(preset_delay == 0)
+{
+preset_state = do_preset_angle;
+}
+}
+
+void do_preset_center()
+{
+if(!motors_tracking())
+{
+
+if(nozzle_pitch > 0)
+{
+nozzle_pitch--;
+update_motors();
+}
+else
+{
+preset_delay = (100 / 2);
+preset_state = do_preset_delay1;
+}
+}
+}
+
+void do_preset_save2()
+{
+if(preset_delay == 0)
+{
+nozzle_angle = orig_nozzle_angle;
+update_motors();
+preset_state = 0;
+}
+}
+
+void do_preset_save1()
+{
+if(!motors_tracking())
+{
+preset_delay = (100 / 2);
+preset_state = do_preset_save2;
+}
+}
+
+void read_presets()
+{
+uint8_t i;
+uint8_t *ptr = (uint8_t*)presets;
+for(i = 0; i < sizeof(presets); i++)
+{
+EEADR = 0x00 + i;
+EECON1bits.EEPGD = 0;
+EECON1bits.RD = 1;
+*ptr++ = EEDATA;
+}
+}
+
+void write_presets()
+{
+uint8_t i;
+uint8_t *ptr = (uint8_t*)presets;
+
+INTCONbits.GIE = 0;
+for(i = 0; i < sizeof(presets); i++)
+{
+PIR2bits.EEIF = 0;
+EEADR = 0x00 + i;
+EEDATA = *ptr;
+EECON1bits.EEPGD = 0;
+EECON1bits.WREN = 1;
+EECON2 = 0x55;
+EECON2 = 0xaa;
+EECON1bits.WR = 1;
+ptr++;
+
+while(!PIR2bits.EEIF)
+{
+}
+}
+
+
+EECON1bits.WREN = 0;
+
+INTCONbits.GIE = 1;
+}
+
+void handle_preset_button(int preset)
+{
+if(setting_preset)
+{
+presets[preset].pitch = nozzle_pitch;
+presets[preset].angle = nozzle_angle;
+write_presets();
+
+setting_preset = 0;
+
+PORTDbits.RD7 = 1;
+
+
+orig_nozzle_angle = nozzle_angle;
+if(nozzle_angle < 39)
+{
+nozzle_angle++;
+}
+else
+{
+nozzle_angle--;
+}
+update_motors();
+preset_state = do_preset_save1;
+}
+else
+{
+current_preset = preset;
+
+preset_state = do_preset_center;
+}
+}
+
+# 1028
+void handle_ir_code()
+{
+uint8_t i;
+switch(ir_code)
+{
+case 0:
+setting_preset = 0;
+preset_state = 0;
+PORTDbits.RD7 = !PORTDbits.RD7;
+
+# 1046
+if(nozzle_pitch > 0)
+{
+nozzle_pitch--;
+update_motors();
+}
+
+break;
+
+case 1:
+setting_preset = 0;
+preset_state = 0;
+PORTDbits.RD7 = !PORTDbits.RD7;
+
+# 1065
+if(nozzle_pitch < 24)
+{
+nozzle_pitch++;
+update_motors();
+}
+
+break;
+
+case 2:
+setting_preset = 0;
+preset_state = 0;
+PORTDbits.RD7 = !PORTDbits.RD7;
+
+# 1083
+if(nozzle_angle < tracking_state[0].max)
+{
+nozzle_angle++;
+update_motors();
+}
+
+break;
+
+case 3:
+setting_preset = 0;
+preset_state = 0;
+PORTDbits.RD7 = !PORTDbits.RD7;
+
+# 1102
+if(nozzle_angle > tracking_state[0].min)
+{
+nozzle_angle--;
+update_motors();
+}
+
+break;
+
+case 5:
+if(setting_preset)
+{
+setting_preset = 0;
+}
+else
+if(armed)
+{
+setting_preset = 1;
+}
+break;
+
+case 6:
+handle_preset_button(0);
+break;
+
+case 7:
+handle_preset_button(1);
+break;
+
+case 8:
+handle_preset_button(2);
+break;
+
+case 9:
+handle_preset_button(3);
+break;
+
+case 4:
+setting_preset = 0;
+preset_state = 0;
+PORTDbits.RD7 = !PORTDbits.RD7;
+if(!armed)
+{
+arm_motors();
+}
+else
+{
+disarm_motors();
+}
+break;
+}
+}
+
+void handle_ir2()
+{
+
+# 1165
+uint8_t i;
+
+uint8_t got_it = 0;
+
+uint8_t got_one = 0;
+for(i = 0; i < (sizeof(ir_codes) / sizeof(ir_code_t)) && !got_it; i++)
+
+{
+
+if(!ir_code_failed[i])
+{
+const ir_code_t *code = &ir_codes[i];
+const uint8_t *data = code->data;
+
+if(ir_offset < code->size)
+{
+
+int16_t data_value = data[ir_offset];
+int16_t error = ((data_value - ir_time) < 0 ? (-(data_value - ir_time)) : (data_value - ir_time));
+
+
+if(error > 2)
+{
+
+ir_code_failed[i] = 1;
+}
+else
+
+{
+
+if(ir_offset >= code->size - 1)
+{
+have_ir = 1;
+repeat_delay = (100 / 2);
+ir_code = code->value;
+
+got_it = 1;
+}
+
+got_one = 1;
+}
+}
+}
+}
+
+
+if(got_it)
+{
+
+# 1223
+handle_ir_code();
+}
+else
+if(got_one)
+{
+
+ir_offset++;
+}
+else
+{
+
+ir_offset = 0;
+for(i = 0; i < (sizeof(ir_codes) / sizeof(ir_code_t)); i++)
+{
+ir_code_failed[i] = 0;
+}
+}
+}
+
+void handle_ir()
+{
+uint8_t i;
+
+if(ir_timeout && !first_edge)
+{
+
+# 1253
+INTCONbits.GIE = 0;
+
+OPTION_REGbits.INTEDG = 0;
+TMR2 = 0;
+PIR1bits.TMR2IF = 0;
+INTCONbits.GIE = 1;
+
+ir_offset = 0;
+for(i = 0; i < (sizeof(ir_codes) / sizeof(ir_code_t)); i++)
+{
+ir_code_failed[i] = 0;
+}
+first_edge = 1;
+have_ir = 0;
+got_ir_int = 0;
+PORTDbits.RD7 = 1;
+}
+
+
+if(have_ir &&
+repeat_delay == 0 &&
+ir_code != 4 &&
+(motor_master & (uint8_t)0b00111111) == (uint8_t)0b00111111)
+{
+
+
+handle_ir_code();
+}
+
+if(got_ir_int)
+{
+got_ir_int = 0;
+
+OPTION_REGbits.INTEDG = !OPTION_REGbits.INTEDG;
+if(first_edge)
+{
+first_edge = 0;
+}
+else
+{
+handle_ir2();
+}
+}
+}
+
+
+void charge_adc();
+void (*adc_state)() = charge_adc;
+uint8_t adc_counter = 0;
+
+
+void capture_adc()
+{
+if(PIR1bits.ADIF)
+{
+sensor_state_t *sensor = &sensors[current_adc];
+sensor->analog = ADRESH;
+if(sensor->ns == 0 &&
+sensor->analog >= 0x80 + 0x20)
+{
+sensor->ns = 1;
+sensor->position += sensor->step;
+}
+else
+if(sensor->ns == 1 &&
+sensor->analog < 0x80 - 0x20)
+{
+sensor->ns = 0;
+sensor->position += sensor->step;
+}
+
+current_adc++;
+if(current_adc >= 6)
+{
+current_adc = 0;
+
+# 1344
+}
+
+switch(current_adc)
+{
+case 0:
+ADCON0 = 0b10000001 | 0b00000000;
+break;
+case 1:
+ADCON0 = 0b10000001 | 0b00001000;
+break;
+case 2:
+ADCON0 = 0b10000001 | 0b00010000;
+break;
+case 3:
+ADCON0 = 0b10000001 | 0b00011000;
+break;
+case 4:
+ADCON0 = 0b10000001 | 0b00100000;
+break;
+case 5:
+ADCON0 = 0b10000001 | 0b00101000;
+break;
+}
+
+
+
+adc_state = charge_adc;
+adc_counter = 0;
+}
+}
+
+void charge_adc()
+{
+
+
+
+adc_counter++;
+if(adc_counter >= 1)
+{
+PIR1bits.ADIF = 0;
+ADCON0bits.GO = 1;
+adc_state = capture_adc;
+}
+}
+
+# 1591
+void pwm_off();
+void pwm_on();
+void (*pwm_state)() = pwm_off;
+int16_t pwm_duty = 0;
+int16_t pwm_duty_counter = 0;
+
+
+
+void pwm_on()
+{
+if(pwm_duty < 0xff)
+{
+
+uint8_t temp_mask = (uint8_t)0b00111111 ^ 0xff;
+if((motor_master & ((uint8_t)0b00000100 | (uint8_t)0b00001000)) == ((uint8_t)0b00000100 | (uint8_t)0b00001000))
+{
+temp_mask |= ((uint8_t)0b00000100 | (uint8_t)0b00001000);
+}
+if((motor_master & ((uint8_t)0b00100000 | (uint8_t)0b00010000)) == ((uint8_t)0b00100000 | (uint8_t)0b00010000))
+{
+temp_mask |= ((uint8_t)0b00100000 | (uint8_t)0b00010000);
+}
+if((motor_master & ((uint8_t)0b00000001 | (uint8_t)0b00000010)) == ((uint8_t)0b00000001 | (uint8_t)0b00000010))
+{
+temp_mask |= ((uint8_t)0b00000001 | (uint8_t)0b00000010);
+}
+
+PORTD &= temp_mask;
+pwm_state = pwm_off;
+PR2 = 0xff - pwm_duty;
+
+
+pwm_duty_counter++;
+if(pwm_duty_counter >= 100)
+{
+pwm_duty_counter = 0;
+pwm_duty++;
+}
+}
+else
+{
+pwm_state = pwm_off;
+PR2 = 0xff;
+}
+}
+
+
+void pwm_off()
+{
+
+if((motor_master & (uint8_t)0b00111111) == (uint8_t)0b00111111)
+{
+pwm_duty = 0;
+pwm_duty_counter = 0;
+}
+
+
+uint8_t prev_port = PORTD & ~(uint8_t)0b00111111;
+PORTD = prev_port | motor_master;
+pwm_state = pwm_on;
+
+if(pwm_duty == 0)
+{
+PR2 = 0xff;
+}
+else
+{
+PR2 = pwm_duty;
+}
+}
+
+
+
+
+void interrupt isr()
+{
+interrupt_done = 0;
+while(!interrupt_done)
+{
+interrupt_done = 1;
+
+
+
+if(INTCONbits.TMR0IF)
+{
+INTCONbits.TMR0IF = 0;
+interrupt_done = 0;
+pwm_state();
+}
+
+
+
+
+if(PIR1bits.TMR1IF)
+{
+PIR1bits.TMR1IF = 0;
+TMR1 = (-22579000 / 4 / 8 / 100);
+got_tick = 1;
+
+# 1696
+interrupt_done = 0;
+}
+
+
+if(PIR1bits.RCIF)
+{
+PIR1bits.RCIF = 0;
+serial_in = RCREG;
+have_serial = 1;
+interrupt_done = 0;
+}
+
+
+if(PIR1bits.TMR2IF)
+{
+PIR1bits.TMR2IF = 0;
+got_tmr2 = 1;
+tmr2_high++;
+if(tmr2_high > 725)
+{
+ir_timeout = 1;
+}
+interrupt_done = 0;
+}
+
+
+if(INTCONbits.INTF)
+{
+INTCONbits.INTF = 0;
+
+TMR2 = 0;
+PIR1bits.TMR2IF = 0;
+
+ir_time = tmr2_high;
+tmr2_high = 0;
+ir_timeout = 0;
+
+got_ir_int = 1;
+interrupt_done = 0;
+}
+}
+}
+
+
+void main()
+{
+uint8_t i;
+PORTDbits.RD7 = 1;
+TRISDbits.TRISD7 = 0;
+
+PORTD &= ~(uint8_t)0b00111111;
+TRISD &= ~(uint8_t)0b00111111;
+
+have_serial = 0;
+SPBRG = (22579000 / 16 / 57600);
+
+TXSTA = 0b00100100;
+
+RCSTA = 0b10010000;
+PIE1bits.RCIE = 1;
+
+
+
+INTCONbits.INTE = 1;
+INTCONbits.INTF = 0;
+
+OPTION_REGbits.INTEDG = 0;
+ir_offset = 0;
+first_edge = 1;
+
+
+T2CON = 0b00000101;
+
+PR2 = 0xff;
+PIR1bits.TMR2IF = 0;
+PIE1bits.TMR2IE = 1;
+
+
+
+
+T1CON = 0b00110001;
+TMR1 = (-22579000 / 4 / 8 / 100);
+
+memset(sensors, 0, sizeof(sensor_state_t) * 6);
+
+
+ADCON0 = 0b10000001;
+
+ADCON1 = 0b01001001;
+
+
+
+OPTION_REGbits.T0CS = 0;
+TMR0 = 0;
+INTCONbits.TMR0IF = 0;
+INTCONbits.TMR0IE = 1;
+
+
+read_presets();
+
+
+INTCONbits.PEIE = 1;
+INTCONbits.GIE = 1;
+
+print_text("\n\n\n\nWelcome to F-35 nozzle\n");
+
+
+
+tracking_state[2].min = 8;
+tracking_state[2].max = 31;
+tracking_state[2].boundary = 5;
+tracking_state[2].encoder = 4;
+tracking_state[2].dec_mask = (uint8_t)0b00000010;
+tracking_state[2].inc_mask = (uint8_t)0b00000001;
+tracking_state[2].total_unmask = ~((uint8_t)0b00000001 | (uint8_t)0b00000010);
+tracking_state[2].total_mask = (uint8_t)0b00000001 | (uint8_t)0b00000010;
+tracking_state[2].brake = 1;
+
+tracking_state[1].min = 17;
+tracking_state[1].max = 41;
+tracking_state[1].boundary = 2;
+tracking_state[1].encoder = 3;
+tracking_state[1].dec_mask = (uint8_t)0b00100000;
+tracking_state[1].inc_mask = (uint8_t)0b00010000;
+tracking_state[1].total_unmask = ~((uint8_t)0b00100000 | (uint8_t)0b00010000);
+tracking_state[1].total_mask = (uint8_t)0b00100000 | (uint8_t)0b00010000;
+
+tracking_state[0].min = 6;
+tracking_state[0].max = 45;
+tracking_state[0].boundary = 1;
+tracking_state[0].encoder = 0;
+tracking_state[0].dec_mask = (uint8_t)0b00001000;
+tracking_state[0].inc_mask = (uint8_t)0b00000100;
+tracking_state[0].total_unmask = ~((uint8_t)0b00000100 | (uint8_t)0b00001000);
+tracking_state[0].total_mask = (uint8_t)0b00000100 | (uint8_t)0b00001000;
+
+# 1845
+while(1)
+{
+asm("clrwdt");
+
+
+if(!armed)
+{
+motor_master &= ~(uint8_t)0b00111111;
+}
+else
+{
+
+}
+
+
+handle_uart();
+
+# 1868
+if(got_tick)
+{
+got_tick = 0;
+for(i = 0; i < 3; i++)
+{
+tracking_state_t *tracking = &tracking_state[i];
+if(tracking->timer > 0)
+{
+tracking->timer--;
+}
+}
+tick++;
+if(repeat_delay > 0)
+{
+repeat_delay--;
+}
+if(preset_delay > 0)
+{
+preset_delay--;
+}
+
+
+if(!armed)
+{
+led_counter++;
+if(led_counter >= (100 / 2))
+{
+led_counter = 0;
+PORTDbits.RD7 = !PORTDbits.RD7;
+}
+}
+else
+if(setting_preset)
+{
+led_counter++;
+if(led_counter >= (100 / 4))
+{
+led_counter = 0;
+PORTDbits.RD7 = !PORTDbits.RD7;
+}
+}
+}
+
+
+handle_ir();
+
+
+
+
+if(got_tmr2)
+{
+got_tmr2 = 0;
+adc_state();
+}
+
+
+motor_state();
+
+if(preset_state != 0)
+{
+preset_state();
+}
+}
+
+}
+

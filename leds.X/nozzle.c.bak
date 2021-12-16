@@ -1,0 +1,1439 @@
+/*
+ * F-35 NOZZLE CONTROLLER
+ * Copyright (C) 2020 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
+// B0 - IR input
+// B4 - power button
+// AN0-AN5 - hall sensors
+// D7 - LED
+// D0-D5 - H bridges
+
+// PORTC is dead on this particular chip
+
+
+// CONFIG
+#pragma config FOSC = HS        // Oscillator Selection bits (HS oscillator)
+#pragma config WDTE = ON        // Watchdog Timer Enable bit (WDT enabled)
+#pragma config PWRTE = OFF      // Power-up Timer Enable bit (PWRT disabled)
+#pragma config BOREN = ON       // Brown-out Reset Enable bit (BOR enabled)
+#pragma config LVP = OFF        // Low-Voltage (Single-Supply) In-Circuit Serial Programming Enable bit (RB3 is digital I/O, HV on MCLR must be used for programming)
+#pragma config CPD = OFF        // Data EEPROM Memory Code Protection bit (Data EEPROM code protection off)
+#pragma config WRT = OFF        // Flash Program Memory Write Enable bits (Write protection off; all program memory may be written to by EECON control)
+#pragma config CP = OFF         // Flash Program Memory Code Protection bit (Code protection off)
+
+
+#include <pic16f877a.h>
+#include <stdint.h>
+#include <string.h>
+
+// control motors using console input.  Disable if the serial port is floating.
+//#define TEST_MODE
+// less accurate motor positioning but more debugging output
+//#define VERBOSE
+
+#define ABS(x) ((x) < 0 ? (-(x)) : (x))
+
+#define CLOCKSPEED 13300000
+#define LED_TRIS TRISDbits.TRISD7
+#define LED_PORT PORTDbits.RD7
+
+#define HBRIDGE_MASK (uint8_t)0b00111111
+#define HBRIDGE_PORT PORTD
+#define HBRIDGE_TRIS TRISD
+#define MOTOR2_RIGHT (uint8_t)0b00000010
+#define MOTOR2_LEFT  (uint8_t)0b00000001
+#define MOTOR1_RIGHT (uint8_t)0b00010000
+#define MOTOR1_LEFT  (uint8_t)0b00100000
+#define MOTOR0_RIGHT (uint8_t)0b00001000
+#define MOTOR0_LEFT  (uint8_t)0b00000100
+
+// coast instead of brake
+//#define COAST
+
+#define BUTTON_PORT PORTBbits.RB4
+
+uint8_t have_serial = 0;
+uint8_t serial_in = 0;
+// page 115
+#define BAUD_CODE (CLOCKSPEED / 16 / 57600)
+uint8_t interrupt_done = 0;
+
+#define UART_BUFSIZE 64
+uint8_t uart_buffer[UART_BUFSIZE];
+uint8_t uart_size = 0;
+uint8_t uart_position1 = 0;
+uint8_t uart_position2 = 0;
+
+// motors are armed
+uint8_t armed = 0;
+uint8_t led_counter = 0;
+// mane timer fires at 10Hz
+#define HZ 100
+#define TIMER1_VALUE (-CLOCKSPEED / 4 / 8 / HZ)
+#define LED_DELAY (HZ / 2)
+
+uint8_t got_tick = 0;
+uint8_t tick = 0;
+
+// current state of the home operation & the motor tracking
+uint8_t current_motor = 0;
+
+
+// copy of H bridge pins written by the user
+uint8_t motor_master = 0;
+// ticks to wait for a motor to stop
+#define MOTOR_DELAY (HZ / 2)
+
+
+
+uint8_t current_adc = 0;
+#define ADCON0_MASK 0b10000001
+#define TOTAL_ADC 6
+#define TOTAL_MOTORS 3
+#define BOUNDARY0 1 // nearest motor
+#define BOUNDARY1 2
+#define BOUNDARY2 5 // farthest motor
+#define ENCODER0 0 // nearest motor
+#define ENCODER1 3
+#define ENCODER2 4 // farthest motor
+// amount above or below 0x80
+#define SENSOR_THRESHOLD 0x20
+
+// home positions
+#define HOME0 22
+#define HOME1 15
+#define HOME2 8
+
+typedef struct 
+{
+// analog value
+    uint8_t analog;
+// last detected direction
+    uint8_t ns;
+// add or subtract steps from position if an encoder
+    int8_t step;
+// absolute position if an encoder
+    int8_t position;
+} sensor_state_t;
+sensor_state_t sensors[TOTAL_ADC];
+
+typedef struct
+{
+// ADC of the sensors
+    uint8_t boundary;
+    uint8_t encoder;
+// H bridge bitmasks of the 2 directions
+    uint8_t dec_mask; // go towards boundary
+    uint8_t inc_mask; // go away from boundary
+    uint8_t total_unmask; // coasting
+    uint8_t total_mask; // breaking
+
+// ticks remaneing to sleep
+    uint8_t timer;
+    int8_t target_position;
+// position range
+    int8_t min;
+    int8_t max;
+// only move the motors if this is > 0
+    uint8_t changed;
+// use the brake instead of coasting.  Outlet is light enough to use braking.
+    uint8_t brake;
+} tracking_state_t;
+tracking_state_t tracking_state[TOTAL_MOTORS];
+
+// total bend of the nozzle
+uint8_t nozzle_step = 0;
+// user position of motor 0 to which the nozzle_step adds an offset to compensate
+// for the nozzle bending sideways
+int8_t radial_position = 0;
+#define MAX_STEPS 10
+// encoder positions of the 3 motors based on nozzle step
+int8_t step_to_encoders[MAX_STEPS * TOTAL_MOTORS + TOTAL_MOTORS];
+
+
+
+
+
+// IR code follows.  Improved version of heroineclock 2
+typedef struct
+{
+    const int16_t *data;
+	const uint8_t size;
+    const uint8_t value;
+} ir_code_t;
+
+// remote control codes
+const int16_t up_data[] = 
+{ 
+    0x0730, 0x03cc, 0x0074, 0x006f, 0x0078, 0x015b, 0x0079, 0x0073,
+    0x0074, 0x015b, 0x0079, 0x0157, 0x007d, 0x015b, 0x0078, 0x015b,
+    0x0078, 0x006f, 0x0077, 0x015b, 0x0079, 0x0073, 0x0074, 0x015f,
+    0x0074, 0x006f, 0x0078, 0x0073, 0x0074, 0x0073, 0x0074, 0x0073,
+    0x0075, 0x015e, 0x0074, 0x0073, 0x0074, 0x006f, 0x0078, 0x0074,
+    0x0075, 0x015d, 0x0075, 0x015b, 0x0077, 0x0073, 0x0074, 0x015c,
+    0x0077, 0x0073, 0x0074, 0x015d, 0x0076, 0x015c, 0x0077, 0x015f,
+    0x0074, 0x0070, 0x0077, 0x0074, 0x0074, 0x015e, 0x0075, 0x006e,
+    0x0078, 0x0156, 0x007e, 0x2063, 0x0734, 0x01c6, 0x007a
+};
+
+const int16_t down_data[] = 
+{ 
+    0x0737, 0x03c3, 0x0079, 0x006e, 0x0079, 0x0155, 0x007e, 0x0071,
+    0x0077, 0x015b, 0x0077, 0x015a, 0x0079, 0x015c, 0x0078, 0x0155,
+    0x007e, 0x006a, 0x007d, 0x015f, 0x0075, 0x006a, 0x007d, 0x015a,
+    0x0079, 0x0073, 0x0074, 0x0073, 0x0075, 0x006d, 0x007a, 0x0072,
+    0x0075, 0x015b, 0x0077, 0x0156, 0x007d, 0x006a, 0x007d, 0x006c,
+    0x007b, 0x0155, 0x007e, 0x0159, 0x007b, 0x0068, 0x007e, 0x015b,
+    0x0078, 0x0070, 0x0077, 0x006e, 0x0079, 0x0157, 0x007c, 0x015c,
+    0x0078, 0x0073, 0x0074, 0x006b, 0x007e, 0x015a, 0x0078, 0x006f,
+    0x0077, 0x015c, 0x0078, 0x2068, 0x0730, 0x01c1, 0x007a
+};
+
+const int16_t left_data[] =  
+{  
+    0x0730, 0x03c7, 0x0078, 0x0073, 0x0075, 0x015a, 0x0079, 0x006e, 0x007a,
+    0x015b, 0x0077, 0x015b, 0x0078, 0x015a, 0x0079, 0x015e, 0x0075, 0x0073,
+    0x0075, 0x015a, 0x0078, 0x006b, 0x007c, 0x015a, 0x0079, 0x006e, 0x0079,
+    0x006e, 0x0079, 0x006e, 0x007a, 0x006a, 0x007d, 0x015a, 0x0078, 0x015f,
+    0x0074, 0x0158, 0x007b, 0x006f, 0x0078, 0x006f, 0x0078, 0x015b, 0x0078,
+    0x006f, 0x0078, 0x015a, 0x0079, 0x0073, 0x0074, 0x006f, 0x0079, 0x0068,
+    0x007e, 0x015d, 0x0076, 0x015b, 0x0078, 0x006f, 0x0078, 0x015b, 0x0079,
+    0x006f, 0x0078, 0x0157, 0x007c, 0x2063, 0x0736, 0x01bf, 0x007a  
+};
+
+const int16_t right_data[] = 
+{ 
+    0x072f, 0x03c6, 0x0078, 0x0063, 0x0084,
+    0x0155, 0x007e, 0x0073, 0x0075, 0x015e, 0x0075, 0x0156, 0x007d, 
+    0x0154, 0x007e, 0x0157, 0x007d, 0x006f, 0x0078, 0x0156, 0x007c, 
+    0x006f, 0x0079, 0x015f, 0x0074, 0x0072, 0x0075, 0x0070, 0x0077, 
+    0x0073, 0x0074, 0x0070, 0x0077, 0x015b, 0x0078, 0x006b, 0x007e, 
+    0x0159, 0x0079, 0x0073, 0x0074, 0x006b, 0x007d, 0x015a, 0x0079, 
+    0x006e, 0x0079, 0x015a, 0x0078, 0x006b, 0x007c, 0x015b, 0x0078, 
+    0x0072, 0x0076, 0x015b, 0x0077, 0x0157, 0x007c, 0x006e, 0x0079, 
+    0x015e, 0x0074, 0x0072, 0x0075, 0x015b, 0x0078, 0x205d, 0x073a, 
+    0x01c7, 0x007a 
+};
+
+const int16_t fastfwd_data[] = 
+{
+// fast fwd button
+    0x072e, 0x03c3, 0x007d, 0x006f, 0x0078, 0x0157, 0x007e, 0x0069,
+    0x007c, 0x015f, 0x0074, 0x015c, 0x0078, 0x015f, 0x0074, 0x015f,
+    0x0076, 0x0071, 0x0074, 0x015b, 0x0078, 0x0073, 0x0074, 0x015b,
+    0x0078, 0x0070, 0x0077, 0x0073, 0x0074, 0x0070, 0x0079, 0x0071,
+    0x0074, 0x0156, 0x007d, 0x006f, 0x0078, 0x0073, 0x0074, 0x015a,
+    0x0079, 0x015b, 0x0079, 0x015b, 0x0078, 0x0073, 0x0074, 0x006f,
+    0x0079, 0x0159, 0x0079, 0x0156, 0x007d, 0x015f, 0x0074, 0x0073,
+    0x0074, 0x006e, 0x0079, 0x0073, 0x0075, 0x015a, 0x0079, 0x015b,
+    0x0079, 0x006f, 0x007a, 0x2066, 0x0730, 0x01c6, 0x0079
+};
+
+
+// fast rewind button
+const int16_t fastrev_data[] =
+{
+
+    0x0730, 0x03c4, 0x0079, 0x0072, 0x0075, 0x0159, 0x007b, 0x006e, 0x0079,
+    0x015a, 0x0079, 0x015a, 0x0078, 0x015b, 0x0079, 0x0156, 0x007e, 0x0069,
+    0x007e, 0x015a, 0x0078, 0x006a, 0x007d, 0x015a, 0x0079, 0x006f, 0x0078,
+    0x006a, 0x007d, 0x006d, 0x007b, 0x006d, 0x0079, 0x0155, 0x007d, 0x006d,
+    0x007a, 0x015a, 0x007a, 0x0158, 0x007b, 0x006e, 0x007a, 0x006d, 0x0079,
+    0x0069, 0x007f, 0x006d, 0x007a, 0x0155, 0x007d, 0x015a, 0x007a, 0x0072,
+    0x0075, 0x006e, 0x007a, 0x0155, 0x007d, 0x015f, 0x0074, 0x015f, 0x0075,
+    0x015a, 0x007a, 0x006d, 0x007a, 0x206c, 0x072c, 0x01c6, 0x0078 
+
+};
+
+// remote control buttons to enums
+#define UP 0
+#define DOWN 1
+#define LEFT 2
+#define RIGHT 3
+#define POWER 4
+#define BOGUS 5
+
+const ir_code_t ir_codes[] = { 
+    { up_data,      sizeof(up_data) / 2,      UP },
+	{ down_data,  sizeof(down_data) / 2,  DOWN },
+	{ left_data,  sizeof(left_data) / 2,  LEFT },
+	{ right_data, sizeof(right_data) / 2, RIGHT },
+// whatever is in index 4 tends to get falsely hit
+    { fastfwd_data, sizeof(fastfwd_data) / 2, BOGUS },
+    { fastrev_data, sizeof(fastrev_data) / 2, POWER },
+};
+
+#define IR_MARGIN 16
+// At least 120ms as measured on the scope
+#define IR_TIMEOUT 30000
+#define TOTAL_CODES (sizeof(ir_codes) / sizeof(ir_code_t))
+
+// which codes have matched all bytes received so far
+// 0 if matched all bytes  1 if failed
+uint8_t ir_code_failed[TOTAL_CODES];
+uint8_t ir_offset = 0;
+// IR is transmitting repeats
+uint8_t have_ir = 0;
+// last IR code received
+uint8_t ir_code = 0;
+// delay before 1st repeat
+uint8_t repeat_delay = 0;
+#define REPEAT_DELAY (HZ / 2)
+#define REPEAT_DELAY2 (HZ / 4)
+
+// IR interrupt fired
+volatile uint8_t got_ir_int = 0;
+// time of IR interrupt in us / 4
+int16_t ir_time = 0;
+// software defined high byte of IR timer
+uint8_t tmr2_high = 0;
+// time in interrupt handler
+volatile uint16_t ir_time2 = 0;
+uint8_t first_edge = 1;
+
+
+void print_byte(uint8_t c)
+{
+	if(uart_size < UART_BUFSIZE)
+	{
+		uart_buffer[uart_position1++] = c;
+		uart_size++;
+		if(uart_position1 >= UART_BUFSIZE)
+		{
+			uart_position1 = 0;
+		}
+	}
+}
+
+void print_text(const uint8_t *s)
+{
+	while(*s != 0)
+	{
+		print_byte(*s);
+		s++;
+	}
+}
+
+
+void print_number_nospace(uint16_t number)
+{
+	if(number >= 10000) print_byte('0' + (number / 10000));
+	if(number >= 1000) print_byte('0' + ((number / 1000) % 10));
+	if(number >= 100) print_byte('0' + ((number / 100) % 10));
+	if(number >= 10) print_byte('0' + ((number / 10) % 10));
+	print_byte('0' + (number % 10));
+}
+
+void print_number2(uint8_t number)
+{
+	print_byte('0' + ((number / 10) % 10));
+	print_byte('0' + (number % 10));
+}
+
+void print_number(uint16_t number)
+{
+    print_number_nospace(number);
+   	print_byte(' ');
+ 
+}
+
+const char hex_table[] = 
+{
+	'0', '1', '2', '3', '4', '5', '6', '7', 
+	'8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
+};
+
+void print_hex2(uint8_t number)
+{
+	print_byte(hex_table[(number >> 4) & 0xf]);
+	print_byte(hex_table[number & 0xf]);
+}
+
+void print_bin(uint8_t number)
+{
+	print_byte((number & 0x80) ? '1' : '0');
+	print_byte((number & 0x40) ? '1' : '0');
+	print_byte((number & 0x20) ? '1' : '0');
+	print_byte((number & 0x10) ? '1' : '0');
+	print_byte((number & 0x8) ? '1' : '0');
+	print_byte((number & 0x4) ? '1' : '0');
+	print_byte((number & 0x2) ? '1' : '0');
+	print_byte((number & 0x1) ? '1' : '0');
+}
+
+
+// send a UART char
+void handle_uart()
+{
+    if(uart_size > 0 && PIR1bits.TXIF)
+    {
+        PIR1bits.TXIF = 0;
+        TXREG = uart_buffer[uart_position2++];
+		uart_size--;
+		if(uart_position2 >= UART_BUFSIZE)
+		{
+			uart_position2 = 0;
+		}
+    }
+}
+
+void flush_uart()
+{
+    while(uart_size > 0)
+    {
+        asm("clrwdt");
+        handle_uart();
+    }
+}
+
+// motor state machine
+
+void motor_idle();
+void motor_home1();
+void (*motor_state)() = motor_idle;
+
+
+void motor_tracking()
+{
+// only enough clockcycles to test 1 motor per iteration
+    tracking_state_t *tracking = &tracking_state[current_motor];
+    sensor_state_t *encoder = &sensors[tracking->encoder];
+
+    current_motor++;
+    if(current_motor >= TOTAL_MOTORS)
+    {
+        current_motor = 0;
+    }
+
+// motor moving
+    if((motor_master & tracking->total_mask) == tracking->inc_mask)
+    {
+        if(encoder->position >= tracking->target_position)
+        {
+#ifdef COAST
+            if(!tracking->brake)
+            {
+                motor_master &= tracking->total_unmask;
+            }
+            else
+#endif
+            {
+                motor_master |= tracking->total_mask;
+            }
+
+            tracking->timer = MOTOR_DELAY;
+        }
+    }
+    else
+    if((motor_master & tracking->total_mask) == tracking->dec_mask)
+    {
+        if(encoder->position <= tracking->target_position)
+        {
+#ifdef COAST
+            if(!tracking->brake)
+            {
+                motor_master &= tracking->total_unmask;
+            }
+            else
+#endif
+            {
+                motor_master |= tracking->total_mask;
+            }
+
+            tracking->timer = MOTOR_DELAY;
+        }
+    }
+    else
+// waiting for next command
+    if(/* tracking->timer == 0 && */ tracking->changed > 0)
+    {
+// print_text("changed=");
+// print_number(tracking->changed);
+// print_text("\n");
+        if(encoder->position > tracking->target_position)
+        {
+            encoder->step = -1;
+            motor_master &= tracking->total_unmask;
+            motor_master |= tracking->dec_mask;
+            tracking->changed--;
+        }
+        else
+        if(encoder->position < tracking->target_position)
+        {
+            encoder->step = 1;
+            motor_master &= tracking->total_unmask;
+            motor_master |= tracking->inc_mask;
+            tracking->changed--;
+        }
+        else
+        {
+// no difference in position.  Cancel the loop.
+            tracking->changed--;
+        }
+    }
+}
+
+// wait a while
+void motor_home6()
+{
+    tracking_state_t *tracking = &tracking_state[current_motor];
+    if(tracking->timer == 0)
+    {
+        uint8_t current_encoder = tracking->encoder;
+
+#ifdef VERBOSE
+//         print_text("motor=");
+//         print_number(sensors[current_encoder].position);
+//         print_text("\n");
+#endif
+
+        switch(current_motor)
+        {
+            case 2:
+                current_motor = 1;
+                motor_state = motor_home1;
+                break;
+            case 1:
+                current_motor = 0;
+                motor_state = motor_home1;
+                break;
+            case 0:
+            default:
+                current_motor = 0;
+                motor_state = motor_tracking;
+                break;
+        }
+    }
+}
+
+// count until home position
+void motor_home5()
+{
+    tracking_state_t *tracking = &tracking_state[current_motor];
+    uint8_t current_encoder = tracking->encoder;
+    if(sensors[current_encoder].position >= 
+        tracking_state[current_motor].target_position)
+    {
+#ifdef COAST
+        if(!tracking->brake)
+        {
+            motor_master &= tracking->total_unmask;
+        }
+        else
+#endif
+        {
+            motor_master |= tracking->total_mask;
+        }
+
+        tracking->timer = MOTOR_DELAY;
+        motor_state = motor_home6;
+    }
+}
+
+// go until boundary is detected again
+void motor_home4()
+{
+    tracking_state_t *tracking = &tracking_state[current_motor];
+    uint8_t current_boundary = tracking->boundary;
+    uint8_t sensor_value = sensors[current_boundary].analog;
+    if(ABS(sensor_value - 0x80) >= SENSOR_THRESHOLD)
+    {
+        uint8_t current_encoder = tracking->encoder;
+        sensors[current_encoder].position = 0;
+        sensors[current_encoder].step = 1;
+        motor_state = motor_home5;
+    }
+}
+
+// wait a while
+void motor_home3()
+{
+    tracking_state_t *tracking = &tracking_state[current_motor];
+    if(tracking->timer == 0)
+    {
+        motor_master &= tracking->total_unmask;
+        motor_master |= tracking->inc_mask;
+        motor_state = motor_home4;
+    }
+}
+
+// detect motor boundary & overshoot
+void motor_home2()
+{
+    tracking_state_t *tracking = &tracking_state[current_motor];
+    uint8_t current_boundary = tracking->boundary;
+    uint8_t sensor_value = sensors[current_boundary].analog;
+    if(ABS(sensor_value - 0x80) >= SENSOR_THRESHOLD)
+    {
+// always coast
+        motor_master &= tracking->total_unmask;
+        motor_state = motor_home3;
+        tracking->timer = MOTOR_DELAY;
+    }
+}
+
+// go to home position
+void motor_home1()
+{
+    tracking_state_t *tracking = &tracking_state[current_motor];
+    uint8_t current_boundary = tracking->boundary;
+    uint8_t sensor_value = sensors[current_boundary].analog;
+// sensor is already on boundary.  Abort.
+    if(ABS(sensor_value - 0x80) >= SENSOR_THRESHOLD)
+    {
+        motor_state = motor_idle;
+    }
+    else
+// command motor to move to boundary
+    {
+        motor_master &= tracking->total_unmask;
+        motor_master |= tracking->dec_mask;
+        motor_state = motor_home2;
+    }
+}
+
+void motor_idle()
+{
+}
+
+void arm_motors()
+{
+    armed = 1;
+    LED_PORT = 1;
+    current_motor = 2;
+
+    tracking_state[2].target_position = HOME2;
+    tracking_state[2].changed = 0;
+
+    tracking_state[1].target_position = HOME1;
+    tracking_state[1].changed = 0;
+
+    tracking_state[0].target_position = HOME0 + step_to_encoders[0 * TOTAL_MOTORS + 0];
+    tracking_state[0].changed = 0;
+
+    nozzle_step = 0;
+    radial_position = HOME0;
+    motor_state = motor_home1;
+}
+
+void disarm_motors()
+{
+    armed = 0;
+    HBRIDGE_PORT &= ~HBRIDGE_MASK;
+    motor_state = motor_idle;
+}
+
+// compute the encoder positions based on nozzle step
+void handle_nozzle_step()
+{
+#ifdef VERBOSE
+    print_text("nozzle_step=");
+    print_number(nozzle_step);
+    print_text("radial_position=");
+    print_number(radial_position);
+    print_text("\n");
+    flush_uart();
+#endif
+
+    tracking_state[0].target_position = radial_position +
+        step_to_encoders[nozzle_step * TOTAL_MOTORS + 0];
+    tracking_state[1].target_position = 
+        step_to_encoders[nozzle_step * TOTAL_MOTORS + 1];
+    tracking_state[2].target_position = 
+        step_to_encoders[nozzle_step * TOTAL_MOTORS + 2];
+
+    if(tracking_state[0].target_position < tracking_state[0].min)
+    {
+        int8_t diff = tracking_state[0].min - tracking_state[0].target_position;
+        tracking_state[0].target_position += diff;
+// clamp radial position based on the nozzle step
+        radial_position += diff;
+    }
+    if(tracking_state[0].target_position > tracking_state[0].max)
+    {
+        int8_t diff = tracking_state[0].target_position - tracking_state[0].max;
+        tracking_state[0].target_position -= diff;
+// clamp radial position based on the nozzle step
+        radial_position -= diff;
+    }
+
+
+    if(tracking_state[0].changed < 0xff)
+    {
+        tracking_state[0].changed++;
+    }
+    if(tracking_state[1].changed < 0xff)
+    {
+        tracking_state[1].changed++;
+    }
+    if(tracking_state[2].changed < 0xff)
+    {
+        tracking_state[2].changed++;
+    }
+
+#ifdef VERBOSE
+    print_text("nozzle positions=");
+    print_number(tracking_state[0].target_position);
+    print_number(tracking_state[1].target_position);
+    print_number(tracking_state[2].target_position);
+    print_text("\n");
+    flush_uart();
+#endif
+
+}
+
+
+void handle_ir_code()
+{
+	switch(ir_code)
+	{
+        case UP:
+            LED_PORT = !LED_PORT;
+            if(nozzle_step > 0)
+            {
+                nozzle_step--;
+                handle_nozzle_step();
+            }
+            break;
+
+        case DOWN:
+            LED_PORT = !LED_PORT;
+            if(nozzle_step < MAX_STEPS)
+            {
+                nozzle_step++;
+                handle_nozzle_step();
+            }
+            break;
+
+        case LEFT:
+            LED_PORT = !LED_PORT;
+            if(radial_position < tracking_state[0].max)
+            {
+                radial_position++;
+                handle_nozzle_step();
+            }
+            break;
+
+        case RIGHT:
+            LED_PORT = !LED_PORT;
+            if(radial_position > tracking_state[0].min)
+            {
+                radial_position--;
+                handle_nozzle_step();
+            }
+            break;
+
+        case POWER:
+            LED_PORT = !LED_PORT;
+            if(!armed)
+            {
+                arm_motors();
+            }
+            else
+            {
+                disarm_motors();
+            }
+            break;
+	}
+}
+
+void handle_ir2()
+{
+// uncomment this to capture the IR codes
+// send binary to save serial port space & see if the length is consistent
+// DEBUG
+// print_byte((ir_time >> 8) & 0xff);
+// print_byte(ir_time & 0xff);
+// return;
+
+
+
+// search for the code
+	uint8_t i;
+// got complete code
+	uint8_t got_it = 0;
+// got part of a code
+    uint8_t got_one = 0;
+	for(i = 0; i < TOTAL_CODES && !got_it; i++)
+//	for(i = 0; i < 2 && !got_it; i++)
+	{
+// code has matched all previous bytes
+		if(!ir_code_failed[i])
+		{
+			const ir_code_t *code = &ir_codes[i];
+			const int16_t *data = code->data;
+
+            if(ir_offset < code->size)
+            {
+// test latest byte
+                int16_t data_value = data[ir_offset];
+			    int16_t error = ABS(data_value - ir_time);
+
+// reject code if latest byte doesn't match
+			    if(error > IR_MARGIN)
+			    {
+// don't search this code anymore
+				    ir_code_failed[i] = 1;
+			    }
+			    else
+// all bytes so far matched the current code
+			    {
+// complete code was received
+				    if(ir_offset >= code->size - 1)
+				    {
+					    have_ir = 1;
+                        repeat_delay = REPEAT_DELAY;
+					    ir_code = code->value;
+
+                        got_it = 1;
+				    }
+
+				    got_one = 1;
+			    }
+            }
+		}
+	}
+
+// process the code
+    if(got_it)
+    {
+#ifdef VERBOSE
+		print_text("IR code: ");
+		print_number(ir_code);
+		print_byte('\n');
+        flush_uart();
+#endif
+// handle the code
+        handle_ir_code();
+    }
+    else
+    if(got_one)
+    {
+// advance to next offset
+    	ir_offset++;
+    }
+    else
+    {
+// prepare to receive the next code before the next release
+  		ir_offset = 0;
+		for(i = 0; i < TOTAL_CODES; i++)
+		{
+			ir_code_failed[i] = 0;
+		}
+    }
+}
+
+void handle_ir()
+{
+    uint8_t i;
+// IR timed out
+    uint16_t test_time = ((uint16_t)tmr2_high) << 8;
+    if(test_time > IR_TIMEOUT &&
+        !first_edge)
+    {
+#ifdef VERBOSE
+        print_text("IR released\n");
+#endif
+
+// reset the timer
+    	INTCONbits.GIE = 0;
+// use falling edge.  page 25
+        OPTION_REGbits.INTEDG = 0;
+		TMR2 = 0;
+        PIR1bits.TMR2IF = 0;
+    	INTCONbits.GIE = 1;
+
+		ir_offset = 0;
+		for(i = 0; i < TOTAL_CODES; i++)
+		{
+			ir_code_failed[i] = 0;
+		}
+        first_edge = 1;
+		have_ir = 0;
+        got_ir_int = 0;
+        LED_PORT = 1;
+    }
+
+// repeat IR code after 1st delay & motors are all in braking mode
+    if(have_ir && 
+        repeat_delay == 0 &&
+        ir_code != POWER &&
+        (motor_master & HBRIDGE_MASK) == HBRIDGE_MASK)
+    {
+//print_text("IR repeat\n");
+//        repeat_delay = REPEAT_DELAY2;
+        handle_ir_code();
+    }
+
+	if(got_ir_int)
+	{
+        got_ir_int = 0;
+// reverse edge
+		OPTION_REGbits.INTEDG = !OPTION_REGbits.INTEDG;
+		ir_time = ir_time2;
+    	if(first_edge)
+    	{
+        	first_edge = 0;
+    	}
+    	else
+    	{
+ 			handle_ir2();
+    	}
+	}
+}
+
+
+void charge_adc();
+void (*adc_state)() = charge_adc;
+
+void capture_adc()
+{
+    if(PIR1bits.ADIF)
+    {
+        sensor_state_t *sensor = &sensors[current_adc];
+        sensor->analog = ADRESH;
+        if(sensor->ns == 0 && 
+            sensor->analog >= 0x80 + SENSOR_THRESHOLD)
+        {
+            sensor->ns = 1;
+            sensor->position += sensor->step;
+        }
+        else
+        if(sensor->ns == 1 &&
+            sensor->analog < 0x80 - SENSOR_THRESHOLD)
+        {
+            sensor->ns = 0;
+            sensor->position += sensor->step;
+        }
+
+        current_adc++;
+        if(current_adc >= TOTAL_ADC)
+        {
+            current_adc = 0;
+            
+//             if(uart_size == 0)
+//             {
+//                 print_hex2(sensor_values[0]);
+//                 print_text(" ");
+//                 print_hex2(sensor_values[1]);
+//                 print_text(" ");
+//                 print_hex2(sensor_values[2]);
+//                 print_text(" ");
+//                 print_hex2(sensor_values[3]);
+//                 print_text(" ");
+//                 print_hex2(sensor_values[4]);
+//                 print_text(" ");
+//                 print_hex2(sensor_values[5]);
+//                 print_text("\n");
+//             }
+        }
+        
+        switch(current_adc)
+        {
+            case 0:
+                ADCON0 = ADCON0_MASK | 0b00000000;
+                break;
+            case 1:
+                ADCON0 = ADCON0_MASK | 0b00001000;
+                break;
+            case 2:
+                ADCON0 = ADCON0_MASK | 0b00010000;
+                break;
+            case 3:
+                ADCON0 = ADCON0_MASK | 0b00011000;
+                break;
+            case 4:
+                ADCON0 = ADCON0_MASK | 0b00100000;
+                break;
+            case 5:
+                ADCON0 = ADCON0_MASK | 0b00101000;
+                break;
+        }
+        
+        TMR0 = 0;
+        INTCONbits.TMR0IF = 0;
+        adc_state = charge_adc;
+    }
+}
+
+void charge_adc()
+{
+    if(INTCONbits.TMR0IF)
+    {
+        INTCONbits.TMR0IF;
+        PIR1bits.ADIF = 0;
+        ADCON0bits.GO = 1;
+        adc_state = capture_adc;
+    }
+}
+
+#ifdef TEST_MODE
+
+void menu()
+{
+    print_text("1/2 - motor 0 direct drive\n");
+    flush_uart();
+    print_text("3/4 - motor 1 direct drive\n");
+    flush_uart();
+    print_text("5/6 - motor 2 direct drive\n");
+    flush_uart();
+    print_text("q/a - motor 0 tracking (");
+    print_number_nospace(tracking_state[0].target_position);
+    print_text(")\n");
+    flush_uart();
+    print_text("w/s - motor 1 tracking (");
+    print_number_nospace(tracking_state[1].target_position);
+    print_text(")\n");
+    flush_uart();
+    print_text("e/d - motor 2 tracking (");
+    print_number_nospace(tracking_state[2].target_position);
+    print_text(")\n");
+    print_text("r - right angle\n");
+    print_text("t - straight\n");
+    flush_uart();
+    print_text("SPACE - stop\n");
+    
+}
+
+void handle_menu()
+{
+    if(have_serial)
+    {
+        have_serial = 0;
+        switch(serial_in)
+        {
+            case '1':
+                armed = 1;
+                motor_master &= ~MOTOR0_RIGHT;
+                motor_master |= MOTOR0_LEFT;
+                menu();
+                break;
+            case '2':
+                armed = 1;
+                motor_master &= ~MOTOR0_LEFT;
+                motor_master |= MOTOR0_RIGHT;
+                menu();
+                break;
+            case '3':
+                armed = 1;
+                motor_master &= ~MOTOR1_RIGHT;
+                motor_master |= MOTOR1_LEFT;
+                menu();
+                break;
+            case '4':
+                armed = 1;
+                motor_master &= ~MOTOR1_LEFT;
+                motor_master |= MOTOR1_RIGHT;
+                menu();
+                break;
+            case '5':
+                armed = 1;
+                motor_master &= ~MOTOR2_RIGHT;
+                motor_master |= MOTOR2_LEFT;
+                menu();
+                break;
+            case '6':
+                armed = 1;
+                motor_master &= ~MOTOR2_LEFT;
+                motor_master |= MOTOR2_RIGHT;
+                menu();
+                break;
+
+            case 'q':
+                tracking_state[0].target_position++;
+                if(tracking_state[0].changed < 0xff)
+                {
+                    tracking_state[0].changed++;
+                }
+                menu();
+                break;
+
+            case 'a':
+                tracking_state[0].target_position--;
+                if(tracking_state[0].changed < 0xff)
+                {
+                    tracking_state[0].changed++;
+                }
+                menu();
+                break;
+
+            case 'w':
+                tracking_state[1].target_position++;
+                if(tracking_state[1].changed < 0xff)
+                {
+                    tracking_state[1].changed++;
+                }
+                menu();
+                break;
+
+            case 's':
+                tracking_state[1].target_position--;
+                if(tracking_state[1].changed < 0xff)
+                {
+                    tracking_state[1].changed++;
+                }
+                menu();
+                break;
+
+            case 'e':
+                tracking_state[2].target_position++;
+                if(tracking_state[2].changed < 0xff)
+                {
+                    tracking_state[2].changed++;
+                }
+                menu();
+                break;
+
+            case 'd':
+                tracking_state[2].target_position--;
+                if(tracking_state[2].changed < 0xff)
+                {
+                    tracking_state[2].changed++;
+                }
+                menu();
+                break;
+
+            case 'r':
+                tracking_state[2].target_position = tracking_state[2].max;
+                if(tracking_state[2].changed < 0xff)
+                {
+                    tracking_state[2].changed++;
+                }
+                tracking_state[1].target_position = tracking_state[1].max;
+                if(tracking_state[1].changed < 0xff)
+                {
+                    tracking_state[1].changed++;
+                }
+                tracking_state[0].target_position = tracking_state[0].max;
+                if(tracking_state[0].changed < 0xff)
+                {
+                    tracking_state[0].changed++;
+                }
+                menu();
+                break;
+
+            case 't':
+                tracking_state[2].target_position = tracking_state[2].min;
+                if(tracking_state[2].changed < 0xff)
+                {
+                    tracking_state[2].changed++;
+                }
+                tracking_state[1].target_position = tracking_state[1].min;
+                if(tracking_state[1].changed < 0xff)
+                {
+                    tracking_state[1].changed++;
+                }
+                tracking_state[0].target_position = HOME0;
+                if(tracking_state[0].changed < 0xff)
+                {
+                    tracking_state[0].changed++;
+                }
+                menu();
+                break;
+
+            case ' ':
+                disarm_motors();
+                menu();
+                break;
+                
+            case '\n':
+            {
+                print_text("ir_offset=");
+                print_number(ir_offset);
+                uint8_t i;
+                for(i = 0; i < TOTAL_CODES; i++)
+                {
+                    print_number(ir_code_failed[i]);
+                }
+                print_text("\n");
+                flush_uart();
+                break;
+            }
+        }
+    }
+}
+#endif // TEST_MODE
+
+// void handle_pwm()
+// {
+//     if((tick % 3) == 0)
+//     {
+//         uint8_t prev_port = HBRIDGE_PORT & ~HBRIDGE_MASK;
+//         HBRIDGE_PORT = prev_port | motor_master;
+//     }
+//     else
+//     {
+//         HBRIDGE_PORT &= motor_master ^ 0xff;
+//     }
+// }
+
+void interrupt isr()
+{
+    interrupt_done = 0;
+    while(!interrupt_done)
+    {
+        interrupt_done = 1;
+
+// mane timer
+        if(PIR1bits.TMR1IF)
+        {
+            PIR1bits.TMR1IF = 0;
+            TMR1 = TIMER1_VALUE;
+            got_tick = 1;
+            uint8_t prev_port = HBRIDGE_PORT & ~HBRIDGE_MASK;
+            HBRIDGE_PORT = prev_port | motor_master;
+            interrupt_done = 0;
+        }
+
+// UART receive
+        if(PIR1bits.RCIF)
+        {
+            PIR1bits.RCIF = 0;
+            serial_in = RCREG;
+            have_serial = 1;
+			interrupt_done = 0;
+        }
+
+// manage the IR timer
+        if(PIR1bits.TMR2IF)
+        {
+            PIR1bits.TMR2IF = 0;
+            tmr2_high++;
+            interrupt_done = 0;
+        }
+
+// IR interrupt
+		if(INTCONbits.INTF)
+		{
+			INTCONbits.INTF = 0;
+// copy the hardware timer value
+			ir_time2 = TMR2;
+// reset the timer
+			TMR2 = 0;
+            PIR1bits.TMR2IF = 0;
+
+// copy the software timer value
+			ir_time2 |= ((uint16_t)tmr2_high) << 8;
+            tmr2_high = 0;
+			got_ir_int = 1;
+			interrupt_done = 0;
+		}
+    }
+}
+
+void main()
+{
+	uint8_t i;
+    LED_PORT = 1;
+    LED_TRIS = 0;
+
+    HBRIDGE_PORT &= ~HBRIDGE_MASK;
+    HBRIDGE_TRIS &= ~HBRIDGE_MASK;
+
+    have_serial = 0;
+    SPBRG = BAUD_CODE;
+// page 113
+    TXSTA = 0b00100100;
+// page 114
+    RCSTA = 0b10010000;
+    PIE1bits.RCIE = 1;
+
+
+// enable IR interrupt page 26
+    INTCONbits.INTE = 1;
+    INTCONbits.INTF = 0;
+// use falling edge.  page 25
+    OPTION_REGbits.INTEDG = 0;
+	ir_offset = 0;
+    first_edge = 1;
+
+// IR timer. 16x prescale. page 63
+    T2CON = 0b00000111;
+// timer period
+    PR2 = 0xff;
+    PIR1bits.TMR2IF = 0;
+    PIE1bits.TMR2IE = 1;
+
+
+
+// enable mane timer.  8:1 prescale  
+    T1CON = 0b00110001;
+    TMR1 = TIMER1_VALUE;
+
+    memset(sensors, 0, sizeof(sensor_state_t) * TOTAL_ADC);
+
+// enable ADC page 129
+    ADCON0 = ADCON0_MASK;
+// page 130
+    ADCON1 = 0b01001001;
+// ADC timer page 56
+    OPTION_REGbits.T0CS = 0;
+    TMR0 = 0;
+    INTCONbits.TMR0IF = 0;
+
+
+
+// enable all interrupts page 26
+    INTCONbits.PEIE = 1;
+    INTCONbits.GIE = 1;
+
+	print_text("\n\n\n\nWelcome to F-35 nozzle\n");
+
+
+// initialize motor tables
+    tracking_state[2].min = 8;
+    tracking_state[2].max = 31;
+    tracking_state[2].boundary = BOUNDARY2;
+    tracking_state[2].encoder = ENCODER2;
+    tracking_state[2].dec_mask = MOTOR2_RIGHT;
+    tracking_state[2].inc_mask = MOTOR2_LEFT;
+    tracking_state[2].total_unmask = ~(MOTOR2_LEFT | MOTOR2_RIGHT);
+    tracking_state[2].total_mask = MOTOR2_LEFT | MOTOR2_RIGHT;
+    tracking_state[2].brake = 1;
+
+    tracking_state[1].min = 15;
+    tracking_state[1].max = 39;
+    tracking_state[1].boundary = BOUNDARY1;
+    tracking_state[1].encoder = ENCODER1;
+    tracking_state[1].dec_mask = MOTOR1_LEFT;
+    tracking_state[1].inc_mask = MOTOR1_RIGHT;
+    tracking_state[1].total_unmask = ~(MOTOR1_LEFT | MOTOR1_RIGHT);
+    tracking_state[1].total_mask = MOTOR1_LEFT | MOTOR1_RIGHT;
+
+    tracking_state[0].min = 6;
+    tracking_state[0].max = 38;
+    tracking_state[0].boundary = BOUNDARY0;
+    tracking_state[0].encoder = ENCODER0;
+    tracking_state[0].dec_mask = MOTOR0_RIGHT;
+    tracking_state[0].inc_mask = MOTOR0_LEFT;
+    tracking_state[0].total_unmask = ~(MOTOR0_LEFT | MOTOR0_RIGHT);
+    tracking_state[0].total_mask = MOTOR0_LEFT | MOTOR0_RIGHT;
+
+// hard coded offsets for encoder 0
+    step_to_encoders[0 * TOTAL_MOTORS + 0] = -10;
+    step_to_encoders[1 * TOTAL_MOTORS + 0] = -10;
+    step_to_encoders[2 * TOTAL_MOTORS + 0] = -10;
+    step_to_encoders[3 * TOTAL_MOTORS + 0] = -8;
+    step_to_encoders[4 * TOTAL_MOTORS + 0] = -8;
+    step_to_encoders[5 * TOTAL_MOTORS + 0] = -7;
+    step_to_encoders[6 * TOTAL_MOTORS + 0] = -6;
+    step_to_encoders[7 * TOTAL_MOTORS + 0] = -5;
+    step_to_encoders[8 * TOTAL_MOTORS + 0] = -3;
+    step_to_encoders[9 * TOTAL_MOTORS + 0] = -2;
+    step_to_encoders[10 * TOTAL_MOTORS + 0] = 0;
+
+    for(i = 0; i < MAX_STEPS + 1; i++)
+    {
+// encoder 1 value
+        step_to_encoders[i * TOTAL_MOTORS + 1] = 
+            (uint32_t)tracking_state[1].min +
+            (uint32_t)(tracking_state[1].max - tracking_state[1].min) * i / MAX_STEPS;
+// encoder 2 value
+        step_to_encoders[i * TOTAL_MOTORS + 2] = 
+            (uint32_t)tracking_state[2].min +
+            (uint32_t)(tracking_state[2].max - tracking_state[2].min) * i / MAX_STEPS;
+
+//         print_text("step=");
+//         print_number(i);
+//         print_text("encoders=");
+//         print_number(step_to_encoders[i * TOTAL_MOTORS + 0]);
+//         print_number(step_to_encoders[i * TOTAL_MOTORS + 1]);
+//         print_number(step_to_encoders[i * TOTAL_MOTORS + 2]);
+//         print_text("\n");
+//         flush_uart();
+    }
+
+#ifdef TEST_MODE
+    menu();
+#endif // TEST_MODE
+
+
+    while(1)
+    {
+        asm("clrwdt");
+
+// turn off all motors
+        if(!armed)
+        {
+            motor_master &= ~HBRIDGE_MASK;
+        }
+        else
+        {
+//            LED_PORT = 1;
+        }
+
+// send a UART char
+        handle_uart();
+
+// receive UART char
+#ifdef TEST_MODE
+        handle_menu();
+#endif // TEST_MODE
+
+// mane timer fired
+        if(got_tick)
+        {
+            got_tick = 0;
+            for(i = 0; i < TOTAL_MOTORS; i++)
+            {
+                tracking_state_t *tracking = &tracking_state[i];
+                if(tracking->timer > 0)
+                {
+                    tracking->timer--;
+                }
+            }
+            tick++;
+            if(repeat_delay > 0)
+            {
+                repeat_delay--;
+            }
+
+// flash LED if disarmed
+            if(!armed)
+            {
+                led_counter++;
+                if(led_counter >= LED_DELAY)
+                {
+            
+//                    print_bin(PORTD);
+//                    print_text("\n");
+                    
+                    led_counter = 0;
+                    LED_PORT = !LED_PORT;
+                }
+            }
+        }
+
+
+        handle_ir();
+
+
+
+// probe hall effect sensors
+        adc_state();
+
+
+        motor_state();
+    }
+
+}
+
+
+
+
