@@ -65,7 +65,9 @@ stopwatch2.c: command line stopwatch
 
 switch.FCStd: generic cap for a MHPS switch
 
-symbol.c: find a symbol in a bunch of ELF files
+symbol.c: obsolete symbol finder
+
+symbol.py: find a symbol in a bunch of ELF files
 
 tampon3.FCStd: adjustible thing for standing a solar panel up in a car
 
