@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     if(argc < 4)
     {
         printf("Download a segmented video file by replacing the formatting code with the number\n");
-        printf("Usage: segments URL <start number> <end number inclusive>\n");
+        printf("Usage: segments URL <start number> <end number inclusive> [step size]\n");
         printf(" -n dry run\n");
         printf("Example: segments2 https://ga.video.cdn.pbs.org/videos/some_long_filename_%%05d.ts 1 268\n");
         exit(1);
@@ -23,8 +23,9 @@ int main(int argc, char *argv[])
     int i;
     int dry_run = 0;
     const char *url;
-    const char *start_number;
-    const char *end_number;
+    int start_number = 0;
+    int end_number = 0;
+    int step = 1;
     int argument = 0;
     for(i = 1; i < argc; i++)
     {
@@ -41,31 +42,42 @@ int main(int argc, char *argv[])
         else
         if(argument == 1)
         {
-            start_number = argv[i];
+            start_number = atoi(argv[i]);
             argument++;
         }
         else
         if(argument == 2)
         {
-            end_number = argv[i];
+            end_number = atoi(argv[i]);
             argument++;
+        }
+        else
+        if(argument == 3)
+        {
+            step = atoi(argv[i]);
         }
     }
 
     
-    int start_number1 = atoi(start_number);
-    int end_number1 = atoi(end_number);
     char *url2 = malloc(strlen(url) + TEXTLEN);
     char *string2 = malloc(strlen(url) + TEXTLEN);
 
-    for(i = start_number1; i <= end_number1; i++)
+    printf("\nDownloading %s\nstart=%d\nend=%d\nstep=%d\n",
+        url,
+        start_number,
+        end_number,
+        step);
+    printf("Press enter to continue\n");
+    fgetc(stdin);
+
+    for(i = start_number; i <= end_number; i += step)
     {
         sprintf(url2, url, i);
         sprintf(string2, "wget %s", url2);
         printf("main %d: %s\n", __LINE__, string2);
         if(!dry_run)
         {
-            system(string2);
+            int _ = system(string2);
         }
     }
     
