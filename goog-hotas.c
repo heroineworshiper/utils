@@ -76,17 +76,21 @@
 
 #define TEXTLEN 1024
 
-// use keys for roll/pitch
+// generate key events for roll/pitch instead of mouse events
 //#define USE_KEYS
+
+// chroma key threshold
+#define THRESHOLD 1
+
 
 #define FRAMERATE 60
 #define MIN_ANALOG 0
 #define MAX_ANALOG 32
 #define MIN_MOUSE 200
 #define MAX_MOUSE 4000
-#define MIN_W 320
+#define MIN_W 160
 #define MAX_W 1024
-#define MIN_H 240
+#define MIN_H 120
 #define MAX_H 1024
 #define REPORT_SIZE 8
 #define ESC 0x1b
@@ -1078,6 +1082,12 @@ void terminal(void *ptr)
 }
 
 
+int x_error_handler(Display *display, XErrorEvent *event)
+{
+	return 0;
+}
+
+
 // the event writing loop
 void screencap(void *ptr)
 {
@@ -1085,6 +1095,7 @@ void screencap(void *ptr)
     int prev_w = capture_w;
     int prev_h = capture_h;
 
+	XSetErrorHandler(x_error_handler);
     display = XOpenDisplay(":0");
     if(!display)
     {
@@ -1103,6 +1114,16 @@ void screencap(void *ptr)
     uint8_t **src_rows = 0;
     root_w = WidthOfScreen(screen_ptr);
     root_h = HeightOfScreen(screen_ptr);
+
+// clamp capture coordinates to screen
+    if(capture_x + capture_w > root_w)
+    {
+        capture_x = root_w - capture_w;
+    }
+    if(capture_y + capture_h > root_h)
+    {
+        capture_y = root_h - capture_h;
+    }
 
 // create outline out of 4 windows
     unsigned long mask;
@@ -1255,7 +1276,8 @@ void screencap(void *ptr)
 		        row_data[i] = &chroma_key[i * capture_w];
 	        }
         }
-        
+
+//printf("screencap %d\n", __LINE__);
 
         XShmGetImage(display, 
             rootwin, 
@@ -1263,6 +1285,7 @@ void screencap(void *ptr)
             capture_x, 
             capture_y, 
             0xffffffff);
+//printf("screencap %d\n", __LINE__);
 
 // chroma key it
         for(int i = 0; i < capture_h; i++)
@@ -1271,7 +1294,6 @@ void screencap(void *ptr)
             uint8_t *dst_row = row_data[i];
             for(int j = 0; j < capture_w; j++)
             {
-#define THRESHOLD 64
                 if(src_row[0] < THRESHOLD &&            // B
                     src_row[1] > 255 - THRESHOLD &&     // G
                     src_row[2] < THRESHOLD)             // R
