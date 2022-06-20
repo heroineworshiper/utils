@@ -24,6 +24,12 @@ DO_LEVELING = True
 DO_TEMP_CHANGE = False
 
 
+# temperature changes
+# this promotes layer adhesion without destroying the bed
+NOZZLE_TEMP2 = 250
+# this lowers the bed temperature without causing shrinkage
+BED_TEMP2 = 0
+
 
 # timelapse config
 # mm
@@ -34,12 +40,6 @@ PARK_DELAY = 1000
 # retraction speed
 RETRACT_SPEED = 2700
 RETRACT_DIST = 5
-
-# temperature changes
-# this promotes TPU layer adhesion without destroying the bed
-NOZZLE_TEMP2 = 230
-# this lowers the bed temperature without causing shrinkage
-BED_TEMP2 = 0
 
 
 
@@ -217,8 +217,9 @@ print 'last line:', lastLine
 print 'total layers:', totalLayers
 
 
-value = raw_input('Enter y to proceed: ')
-if value != 'y':
+value = raw_input('Press ENTER to proceed or ctrl-C to quit.')
+if value != '':
+    print('Giving up & going to a movie');
     exit()
 
 
