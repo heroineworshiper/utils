@@ -7,17 +7,24 @@
 #include <string.h>
 #include <math.h>
 
-
+// format of a coord in the native file
 typedef struct {
 	float x,y,z;
-} vector;
+} vector_t;
 
+// format of a triangle for editing
 typedef struct
 {
-    vector n;
-    vector coords[3];
+    vector_t coords[3];
+} triangle_t;
+
+// format of a triangle in the native file
+typedef struct
+{
+    vector_t n;
+    vector_t coords[3];
     uint16_t attr;
-} __attribute__((packed)) triangle_t;
+} __attribute__((packed)) stl_triangle_t;
 
 #define TEXTLEN 1024
 #define BUFSIZE 1024
@@ -37,8 +44,8 @@ double planeIntercept = 0.0;
 double cosPlane = 1.0;
 double sinPlane = 0.0;
 
-void writeTriangle(vector coord0, vector coord1, vector coord2);
-void writeTriangle2(vector coord0, vector coord1, vector coord2);
+void writeTriangle(vector_t coord0, vector_t coord1, vector_t coord2);
+void writeTriangle2(vector_t coord0, vector_t coord1, vector_t coord2);
 
 void writeInt32(int x)
 {
@@ -94,27 +101,29 @@ int open_stl(char *path)
     return 0;
 }
 
-triangle_t* read_stl(char *path, int *count)
+stl_triangle_t* read_stl(const char *path, int *count)
 {
     FILE *in;
     uint8_t buffer[BUFSIZE];
+    *count = 0;
     if(!(in = fopen(path, "r")))
     {
         printf("read_stl %d: Couldn't open %s\n", __LINE__, path);
+        perror("");
         return 0;
     }
     
     int _ = fread(buffer, 1, strlen(HEADER), in);
     _ = fread(count, 1, sizeof(int), in);
-    triangle_t *triangles = calloc(sizeof(triangle_t), *count);
-    _ = fread(triangles, sizeof(triangle_t), *count, in);
+    stl_triangle_t *triangles = (stl_triangle_t*)calloc(sizeof(stl_triangle_t), *count);
+    _ = fread(triangles, sizeof(stl_triangle_t), *count, in);
     printf("read_stl %d: %d triangles\n", __LINE__, *count);
     
     fclose(in);
     return triangles;
 }
 
-void write_stl(char *path, int count, triangle_t *triangles)
+void write_stl(char *path, int count, stl_triangle_t *triangles)
 {
     if((out = fopen(path, "r")))
     {
@@ -140,13 +149,13 @@ void write_stl(char *path, int count, triangle_t *triangles)
     int i;
     for(i = 0; i < count; i++)
     {
-        triangle_t *triangle = &triangles[i];
+        stl_triangle_t *triangle = &triangles[i];
         writeTriangle(triangle->coords[0], 
             triangle->coords[1], 
             triangle->coords[2]);
     }
 
-//    fwrite(triangles, sizeof(triangle_t), count, out);
+//    fwrite(triangles, sizeof(stl_triangle_t), count, out);
     fclose(out);
 }
 
@@ -161,7 +170,7 @@ void close_stl()
     fclose(out);
 }
 
-vector polarToXYZ(vector point)
+vector_t polarToXYZ(vector_t point)
 {
 // polar to XYZ
     double angle = point.x;
@@ -191,11 +200,11 @@ vector polarToXYZ(vector point)
         x += z * slope;
     }
 
-    return (vector){ x, y, z };
+    return (vector_t){ x, y, z };
 }
 
 
-vector XYZToPolar(vector xyz)
+vector_t XYZToPolar(vector_t xyz)
 {
     double aspect = 1.0;
     if(fabs(topAspect - 1.0) > 0.001)
@@ -247,51 +256,51 @@ vector XYZToPolar(vector xyz)
 //     radius,
 //     z);
 
-    return (vector){ angle, radius, z };
+    return (vector_t){ angle, radius, z };
 }
 
-vector addVectors(vector a, vector b)
+vector_t addVectors(vector_t a, vector_t b)
 {
-	return (vector){ a.x + b.x, a.y + b.y, a.z + b.z };
+	return (vector_t){ a.x + b.x, a.y + b.y, a.z + b.z };
 }
  
-vector subVectors(vector a, vector b)
+vector_t subVectors(vector_t a, vector_t b)
 {
-	return (vector){ a.x - b.x, a.y - b.y, a.z - b.z };
+	return (vector_t){ a.x - b.x, a.y - b.y, a.z - b.z };
 }
 
-vector crossProduct(vector a, vector b)
+vector_t crossProduct(vector_t a, vector_t b)
 {
-    vector result;
+    vector_t result;
 	result.x = a.y * b.z - a.z * b.y;
 	result.y = a.z * b.x - a.x * b.z;
 	result.z = a.x * b.y - a.y * b.x;
     return result;
 }
 
-double magnitude(vector a)
+double magnitude(vector_t a)
 {
     return sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
 }
 
-vector normalize(vector a)
+vector_t normalize(vector_t a)
 {
     double m = magnitude(a);
-    return (vector){ a.x / m, a.y / m, a.z / m };
+    return (vector_t){ a.x / m, a.y / m, a.z / m };
 }
 
-double dotProduct(vector a, vector b)
+double dotProduct(vector_t a, vector_t b)
 {
 	return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
-vector scaleVector(double l, vector a)
+vector_t scaleVector(double l, vector_t a)
 {
-	return (vector){ l * a.x, l * a.y, l * a.z };
+	return (vector_t){ l * a.x, l * a.y, l * a.z };
 }
 
 // does the line intersect the plane?
-int intersect(vector lineVector, vector planeNormal)
+int intersect(vector_t lineVector, vector_t planeNormal)
 {
     if(dotProduct(lineVector, planeNormal) == 0)
     {
@@ -304,12 +313,12 @@ int intersect(vector lineVector, vector planeNormal)
 }
 
 // point where line intersects plane.  Not reliable.
-vector intersectionPoint(vector lineVector, 
-    vector linePoint, 
-    vector planeNormal, 
-    vector planePoint)
+vector_t intersectionPoint(vector_t lineVector, 
+    vector_t linePoint, 
+    vector_t planeNormal, 
+    vector_t planePoint)
 {
-	vector diff = subVectors(linePoint,planePoint);
+	vector_t diff = subVectors(linePoint,planePoint);
  
 	return addVectors(addVectors(diff,planePoint),
         scaleVector(
@@ -319,15 +328,15 @@ vector intersectionPoint(vector lineVector,
 }
 
 // brute force intersection between line & plane
-vector intersectionPoint2(vector xyz1, 
-    vector xyz2, 
+vector_t intersectionPoint2(vector_t xyz1, 
+    vector_t xyz2, 
     double planeIntercept, 
     double planeSlope)
 {
     double testFraction = 0.5;
     double step = 0.5;
-    vector testPoint;
-    vector diff = subVectors(xyz2, xyz1);
+    vector_t testPoint;
+    vector_t diff = subVectors(xyz2, xyz1);
     while(step > 0.0001)
     {
         testPoint = addVectors(xyz1, 
@@ -347,10 +356,10 @@ vector intersectionPoint2(vector xyz1,
     return testPoint;
 }
 
-void writeTriangle(vector coord0, vector coord1, vector coord2)
+void writeTriangle(vector_t coord0, vector_t coord1, vector_t coord2)
 {
 // normal
-    vector n = crossProduct(subVectors(coord1, coord0),
+    vector_t n = crossProduct(subVectors(coord1, coord0),
         subVectors(coord2, coord1));
     if(magnitude(n) > 0)
     {
@@ -383,13 +392,13 @@ void writeTriangle(vector coord0, vector coord1, vector coord2)
 
 
 
-void writeTriangle2(vector coord0, vector coord1, vector coord2)
+void writeTriangle2(vector_t coord0, vector_t coord1, vector_t coord2)
 {
     writeTriangle(coord2, coord1, coord0);
 }
 
 
-void writeQuad(vector coord0, vector coord1, vector coord2, vector coord3)
+void writeQuad(vector_t coord0, vector_t coord1, vector_t coord2, vector_t coord3)
 {
     if(isnan(coord0.x) ||
         isnan(coord0.y) ||
@@ -413,7 +422,7 @@ void writeQuad(vector coord0, vector coord1, vector coord2, vector coord3)
     writeTriangle(coord0, coord2, coord3);
 }
 
-void loopToSolid(vector *edgeLoop1, vector *edgeLoop2, int loopPoints)
+void loopToSolid(vector_t *edgeLoop1, vector_t *edgeLoop2, int loopPoints)
 {
     int j;
     for(j = 0; j < loopPoints - 1; j++)
@@ -435,7 +444,7 @@ void loopToSolid(vector *edgeLoop1, vector *edgeLoop2, int loopPoints)
 // create a solid from edge loops
 // edgeLoops -> XYZ coords
 // capIt -> make quads for the ends, otherwise the last & first edge loops are joined
-void loopsToSolid(vector **edgeLoops, 
+void loopsToSolid(vector_t **edgeLoops, 
     int totalLoops, 
     int loopPoints,
     int capIt)
@@ -453,8 +462,8 @@ void loopsToSolid(vector **edgeLoops,
     int i;
     for(i = 0; i < totalLoops - 1; i++)
     {
-        vector *edgeLoop1 = edgeLoops[i];
-        vector *edgeLoop2 = edgeLoops[i + 1];
+        vector_t *edgeLoop1 = edgeLoops[i];
+        vector_t *edgeLoop2 = edgeLoops[i + 1];
         loopToSolid(edgeLoops[i], edgeLoops[i + 1], loopPoints);
     }
     
