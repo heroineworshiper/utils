@@ -1,6 +1,6 @@
 /*
  * UTILS
- * Copyright (C) 2021 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2021-2022 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,6 +45,8 @@ headset.pcb: self monitoring headset enclosure
 
 hextube.py: create hex cylinders in blender
 
+incense5.FCStd: starship incense holder
+
 ipcclean.c: delete all the IPC objects Goog chrome leaves behind.
 
 lens_cap.FCStd: lens cap for a gopro 4
@@ -66,6 +68,8 @@ soap.FCStd: soap scavenger for paw soap
 soap2.FCStd: soap scavenger for dishwashing soap
 
 speaker3.FCStd: speaker stand for a desk
+
+stl_to_pcb.c, 3dstuff.h: convert STL files to a PC board
 
 stopwatch2.c: command line stopwatch
 
