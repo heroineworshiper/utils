@@ -49,6 +49,8 @@ headset.pcb: self monitoring headset enclosure
 hextube.py: create hex cylinders in blender
 
 incense5.FCStd: starship incense holder
+ - uses 6 3x6mm magnets & 2 2x14mm magnets
+ - ball point pen spring
 
 ipcclean.c: delete all the IPC objects Goog chrome leaves behind.
 
@@ -65,6 +67,8 @@ segments2.c: download segmented video files by number
 scale.FCStd: switch enclosure for bathroom scale
 
 scratch3.FCStd: back scratcher
+
+shower.FCStd: ultimate shower curtain ring
 
 soap.FCStd: soap scavenger for paw soap
 
