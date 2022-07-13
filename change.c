@@ -1,7 +1,7 @@
 // recursively change all the files to the user & group
 // the chown commands don't descend into every directory or change every file
 
-// gcc -o chall chall.c
+// gcc -o change change.c
 
 #include <stdio.h>
 #include <string.h>
@@ -92,9 +92,9 @@ void main(int argc, char *argv[])
     int i;
     if(argc < 4)
     {
-        printf("Usage: chall [-n] <user> <group> <files>\n");
-        printf("Example: chall grid grid .\n");
-        printf("Dry run: chall -n grid grid .\n");
+        printf("Usage: change [-n] <user> <group> <files>\n");
+        printf("Example: change grid grid .\n");
+        printf("Dry run: change -n grid grid .\n");
         exit(1);
     }
 

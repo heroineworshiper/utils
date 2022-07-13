@@ -26,10 +26,10 @@ bandwidth.c: show network usage
 
 catbps.c: print bits per second of stdin
 
-chall.c: replacement for chown & chgrp which fixes some bugs
-
 catnums.c: cat files based on numbers in the filenames.  Used with segments2.c to
     reconstruct segmented video files.
+    
+change.c: replacement for chown & chgrp which fixes some bugs
 
 diffdir.c: find changed files in 2 directories
 
