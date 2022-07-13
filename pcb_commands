@@ -1,0 +1,16 @@
+#<command> <STL filename> <output layer><subtract mode 1 or 0><fill mode 1 or 0>
+polys top_mask.stl F.Mask 1 1
+polys bottom_mask.stl B.Mask 1 1
+polys board.stl Edge.Cuts 0 0
+
+polys top_traces.stl F.Cu 0 1
+polys bottom_traces.stl B.Cu 0 1
+polys stiffener.stl B.Fab 0 1
+
+polys lens.stl F.Cu 0 1
+polys connector.stl F.Cu 0 1
+
+vias vias.stl
+
+
+

@@ -738,10 +738,11 @@ int main(int argc, char *argv[])
         printf("The stl file for polys contains XY polygons with arbitrary Z height.\n");
         printf("Subtract mode causes all polygons in the file to be drawn as 1 path.  Kicad interprets overlapping polygons as holes.\n");
         printf("Fill mode creates a solid mask\n");
+        printf("Clear areas of the solder mask have to be filled polygons in the STL file\n");
         printf("The stl file for vias contains cylinders on the XY plane with arbitrary Z height & arbitrary radius.\n");
         printf("The center of each cylinder becomes a via of hard coded size.\n");
-        printf("<command> <STL filename> <output layer><subtract mode 1 or 0><fill mode 1 or 0>\n");
         printf("Example command lines:\n");
+        printf("#<command> <STL filename> <output layer><subtract mode 1 or 0><fill mode 1 or 0>\n");
         printf("polys trace.stl F.Cu 0 1\n");
         printf("vias vias.stl\n");
         return 1;

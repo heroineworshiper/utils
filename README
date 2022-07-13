@@ -33,6 +33,9 @@ catnums.c: cat files based on numbers in the filenames.  Used with segments2.c t
 
 diffdir.c: find changed files in 2 directories
 
+eos_rp_cable.FCStd: lens ribbon cable for an EOS RP
+    - Must be converted to a kicad pcb file with stl_to_pcb.c & pcb_commands
+
 fixcura.py: Add timelapse, bed leveling to Cura's gcode.
 
 grapher.c: Graph data from a file with continuous polling
@@ -70,6 +73,7 @@ soap2.FCStd: soap scavenger for dishwashing soap
 speaker3.FCStd: speaker stand for a desk
 
 stl_to_pcb.c, 3dstuff.h: convert STL files to a PC board
+    - Clear areas of the solder mask have to be filled polygons in the STL file
 
 stopwatch2.c: command line stopwatch
 
