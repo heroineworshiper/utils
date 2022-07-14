@@ -48,9 +48,9 @@ headset.pcb: self monitoring headset enclosure
 
 hextube.py: create hex cylinders in blender
 
-incense5.FCStd: starship incense holder
- - uses 6 3x6mm magnets & 2 2x14mm magnets
- - ball point pen spring
+incense6.FCStd: starship incense holder
+ - uses 6 3x6mm magnets, 2 2x14mm magnets, 7 m2.6 x 6mm screws
+ - 1 ball point pen spring
 
 ipcclean.c: delete all the IPC objects Goog chrome leaves behind.
 
