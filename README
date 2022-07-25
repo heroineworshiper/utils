@@ -54,6 +54,9 @@ incense6.FCStd: starship incense holder
 
 ipcclean.c: delete all the IPC objects Goog chrome leaves behind.
 
+lens.FCStd: Improved tripod mount for the commlite EF to R lens
+adapter.  This bolts the lens as close as possible to the tripod.
+
 lens_cap.FCStd: lens cap for a gopro 4
 
 logcat.c: print debug output from android programs on the command line
