@@ -42,6 +42,15 @@ grapher.c: Graph data from a file with continuous polling
 
 goog-hotas.c: Use the T flight Hotas with Goog Earth flight simulator
 
+gu24.FCStd
+gu24.pcb
+gu24rx.X/
+gu24tx.FCStd
+gu24tx.X/: remote controlled GU-24 lightbulb
+
+
+
+
 headset2.FCStd
 headset3.sch
 headset.pcb: self monitoring headset enclosure
