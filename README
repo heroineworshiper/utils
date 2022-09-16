@@ -31,6 +31,13 @@ catnums.c: cat files based on numbers in the filenames.  Used with segments2.c t
     
 change.c: replacement for chown & chgrp which fixes some bugs
 
+
+desk_tx.FCStd: enclosure for desk transmitter
+    - detents must be printed with detent support
+    - direction of the lines must be towards the detents, not tangential
+    - a polar array might generate better support lines
+    - print caps with print mask to use multiple color filament
+
 diffdir.c: find changed files in 2 directories
 
 eos_rp_cable.FCStd: lens ribbon cable for an EOS RP
@@ -41,6 +48,8 @@ fixcura.py: Add timelapse, bed leveling to Cura's gcode.
 grapher.c: Graph data from a file with continuous polling
 
 goog-hotas.c: Use the T flight Hotas with Goog Earth flight simulator
+
+gopro_lens.FCStd: gopro 3 lens cover which holds a button instead of a lens
 
 gu24.FCStd
 gu24.pcb
@@ -81,6 +90,8 @@ scale.FCStd: switch enclosure for bathroom scale
 scratch3.FCStd: back scratcher
 
 shower.FCStd: ultimate shower curtain ring
+
+shower5.FCStd: hold the shower curtain against the sides
 
 soap.FCStd: soap scavenger for paw soap
 
