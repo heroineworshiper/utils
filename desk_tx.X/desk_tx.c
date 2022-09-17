@@ -259,17 +259,17 @@ void main()
                 print_text("\n");
 
                 uint8_t selection = 0;
-                if(analog_accum >= 225)
-                {
-                    selection = 1;
-                }
-                else
-                if(analog_accum >= 160)
+                if(analog_accum < 48)
                 {
                     selection = 0;
                 }
                 else
-                if(analog_accum > 80)
+                if(analog_accum < 100)
+                {
+                    selection = 1;
+                }
+                else
+                if(analog_accum < 180)
                 {
                     selection = 2;
                 }
