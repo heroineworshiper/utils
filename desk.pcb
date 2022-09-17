@@ -1510,9 +1510,6 @@ Layer(10 "silk")
 	Text[27.9000mm 70.5500mm 0 100 "UART TX" "clearline"]
 	Text[49.2500mm 73.0500mm 0 122 "DEBUG" "clearline"]
 	Text[59.4500mm 71.4000mm 0 100 "HALL" "clearline"]
-	Text[31.4000mm 73.0500mm 0 122 "3V" "clearline"]
-	Text[31.7000mm 75.4500mm 0 122 "3V" "clearline"]
-	Text[29.7500mm 79.1000mm 0 122 "3V" "clearline"]
 	Text[36.9500mm 81.9500mm 0 122 "DIODE" "clearline"]
 	Text[29.9500mm 34.3500mm 0 100 "UART TX" "clearline"]
 	Text[30.0000mm 36.8000mm 0 100 "UART RX" "clearline"]
@@ -1533,4 +1530,5 @@ Layer(10 "silk")
 	Text[45.8500mm 58.6000mm 1 122 "DAT" "clearline"]
 	Text[51.4000mm 58.4500mm 1 122 "GND" "clearline"]
 	Text[33.0500mm 41.9000mm 0 100 "GND" "clearline"]
+	Text[28.7500mm 74.5000mm 0 100 "3.3-5V" "clearline,selected"]
 )
