@@ -138,12 +138,14 @@ uint8_t status_size = 0;
 #define PRESET_IDLE 0
 // wait for confirmation of a saved preset
 #define WAIT_SAVED_PRESET 1
-// wait for the right height code
-#define WAIT_TOP 2
-#define HEIGHT_WAIT1 3
+// wait for the boundary height
+#define WAIT_MOVE 2
+// wait for the stop
+#define WAIT_TOP 3
 #define WAIT_BOTTOM 4
-#define HEIGHT_WAIT2 5
-#define HEIGHT_WAIT3 6
+// release the button
+#define HEIGHT_WAIT 5
+
 // wait for maximum or minimum height preset
 uint8_t preset_state = PRESET_IDLE;
 uint16_t preset_tick = 0;
@@ -290,46 +292,32 @@ void preset_bug()
                 if(status_code[0] == 0x01 && 
                     status_code[1] == 0x01)
                 {
-                    if(button == PRESET1)
-                    {
-                        print_text("MOVING TO BOTTOM\n");
-                        preset_state = WAIT_BOTTOM;
-                    }
-                    else
-                    if(button == PRESET4)
-                    {
-                        print_text("MOVING TO TOP\n");
-                        preset_state = WAIT_TOP;
-                    }
-                    else
-                    {
-                        preset_state = PRESET_IDLE;
-                    }
-
+                    print_text("MOVING TO PRESET\n");
+                    preset_state = WAIT_MOVE;
                     preset_tick = 0;
                 }
                 break;
 
-            case WAIT_TOP:
-            case WAIT_BOTTOM:
+            case WAIT_MOVE:
                 if(status_code[0] == 0x01 && 
                     status_code[1] == 0x01)
                 {
                     uint16_t height = (status_code[2] << 8) |
                         status_code[3];
 // reached top
-                    if(preset_state == WAIT_TOP && height >= MAX_HEIGHT)
+                    if(height >= MAX_HEIGHT)
                     {
                         print_text("TOP REACHED\n");
-                        preset_state++;
+                        preset_state = WAIT_TOP;
                     }
                     else
 // reached bottom
-                    if(preset_state == WAIT_BOTTOM && height <= MIN_HEIGHT)
+                    if(height <= MIN_HEIGHT)
                     {
                         print_text("BOTTOM REACHED\n");
-                        preset_state++;
+                        preset_state = WAIT_BOTTOM;
                     }
+
                     preset_tick = 0;
                 }
                 else
@@ -340,31 +328,67 @@ void preset_bug()
                 break;
 
 // wait after reaching preset height
-            case HEIGHT_WAIT1:
-                if(preset_tick >= HEIGHT_WAIT_TIME)
+            case WAIT_TOP:
+                if(status_code[0] == 0x01 && 
+                    status_code[1] == 0x01)
                 {
-                    print_text("GOING UP AGAIN\n");
-                    preset_state = HEIGHT_WAIT3;
-                    preset_tick = 0;
+                    uint16_t height = (status_code[2] << 8) |
+                        status_code[3];
+                    if(height < MAX_HEIGHT)
+                    {
+                        print_text("LEFT TOP\n");
+                        preset_state = WAIT_MOVE;
+                        preset_tick = 0;
+                    }
+                    else
+                    if(preset_tick >= HEIGHT_WAIT_TIME)
+                    {
+                        print_text("GOING UP AGAIN\n");
+                        preset_state = HEIGHT_WAIT;
+                        preset_tick = 0;
 // press the up button
-                    UP_TRIS = 0;
+                        UP_TRIS = 0;
+                    }
+                }
+                else
+                {
+// unknown packet.  Abort
+                    preset_state = PRESET_IDLE;
                 }
                 break;
 
 // wait after reaching preset height
-            case HEIGHT_WAIT2:
-                if(preset_tick >= HEIGHT_WAIT_TIME)
+            case WAIT_BOTTOM:
+                if(status_code[0] == 0x01 && 
+                    status_code[1] == 0x01)
                 {
-                    print_text("GOING DOWN AGAIN\n");
-                    preset_state = HEIGHT_WAIT3;
-                    preset_tick = 0;
-// press the down button
-                    DOWN_TRIS = 0;
+                    uint16_t height = (status_code[2] << 8) |
+                        status_code[3];
+                    if(height > MIN_HEIGHT)
+                    {
+                        print_text("LEFT BOTTOM\n");
+                        preset_state = WAIT_MOVE;
+                        preset_tick = 0;
+                    }
+                    else
+                    if(preset_tick >= HEIGHT_WAIT_TIME)
+                    {
+                        print_text("GOING DOWN AGAIN\n");
+                        preset_state = HEIGHT_WAIT;
+                        preset_tick = 0;
+    // press the down button
+                        DOWN_TRIS = 0;
+                    }
+                }
+                else
+                {
+// unknown packet.  Abort
+                    preset_state = PRESET_IDLE;
                 }
                 break;
 
 // wait after pressing button
-            case HEIGHT_WAIT3:
+            case HEIGHT_WAIT:
                 if(preset_tick >= HEIGHT_WAIT_TIME)
                 {
                     print_text("PRESET WORKAROUND DONE\n");
@@ -510,6 +534,7 @@ void main()
             uint8_t i, j;
             const uint8_t *key = &keys[SELF * KEYSIZE];
 
+//print_text("HAVE CODE\n");
 //             for(i = 0; i < CODE_SIZE; i++)
 //             {
 //                 print_hex2(code[i]);
@@ -596,6 +621,9 @@ void main()
                         RECALL_TRIS = 0;
                         MODE_TRIS = 1;
                         flags.want_led = 1;
+// trigger the preset workaround
+                        preset_state = WAIT_SAVED_PRESET;
+                        preset_tick = 0;
                         break;
 
                     case PRESET3:
@@ -604,6 +632,9 @@ void main()
                         RECALL_TRIS = 0;
                         MODE_TRIS = 1;
                         flags.want_led = 1;
+// trigger the preset workaround
+                        preset_state = WAIT_SAVED_PRESET;
+                        preset_tick = 0;
                         break;
 // Max height preset
                     case PRESET4:
@@ -699,10 +730,17 @@ void interrupt isr()
                 TMR1H = 0;
                 TMR1L = 0;
                 T1CON = 0b00000001;
+//print_text(".");
 
 // check for the start of a new packet
                 if(pulse_tick2 >= PACKET_THRESHOLD)
                 {
+//                     uint8_t i;
+//                     for(i = 0; i < code_offset; i++)
+//                     {
+//                         print_hex2(code[i]);
+//                     }
+//                     print_text("\n");
                     reset_code();
                 }
 // copy to debugging variable
@@ -724,6 +762,7 @@ void interrupt isr()
                 code_bit++;
                 if(code_bit >= 8)
                 {
+//print_hex2(code_byte);
                     code[code_offset++] = code_byte;
                     code_byte = 0;
                     code_bit = 0;
