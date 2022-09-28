@@ -19,7 +19,7 @@ import fileinput
 # operations to perform
 DO_TIMELAPSE = False
 # probe the bed before printing
-DO_LEVELING = True
+DO_LEVELING = False
 # change nozzle & bed temperature after the 1st layer
 DO_TEMP_CHANGE = False
 
