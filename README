@@ -99,6 +99,8 @@ scale.FCStd: switch enclosure for bathroom scale
 
 scratch3.FCStd: back scratcher
 
+shampoo.FCStd: voronoi shampoo holder
+
 shower.FCStd: ultimate shower curtain ring
 
 shower5.FCStd: hold the shower curtain against the sides
@@ -131,6 +133,8 @@ in place of the cooling fan
 tube.py: wrapper for youtube-dl/yt-dlp which automates the format selection
 
 udptest.c: transfer a file over UDP
+
+vbox_sleep: send a command to all the virtual machines
 
 ARduinoISP: Arduino ISP hacked for 115200 baud.
 
