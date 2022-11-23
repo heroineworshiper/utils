@@ -51,6 +51,8 @@
 // A clock slow enough for an ATtiny85 @ 1 MHz, is a reasonable default:
 
 #define SPI_CLOCK 		(1000000/4)
+//#define SPI_CLOCK     (1000000/16)
+//#define SPI_CLOCK     (1000000/32)
 
 
 // Select hardware or software SPI, depending on SPI clock.
@@ -138,9 +140,10 @@
 
 
 // Configure the baud rate:
-
-// #define BAUDRATE	19200
-#define BAUDRATE	115200
+// If it fails to reset the target or CLK is slow, it's not getting chars
+// so try a slower baud rate.  115200 seems to be unreliable.
+#define BAUDRATE	19200
+// #define BAUDRATE	115200
 // #define BAUDRATE	1000000
 
 
@@ -231,6 +234,7 @@ void setup() {
   pinMode(LED_HB, OUTPUT);
   pulse(LED_HB, 2);
 
+
 }
 
 int ISPError = 0;
@@ -302,6 +306,8 @@ void loop(void) {
   // light the heartbeat LED
   heartbeat();
   if (SERIAL.available()) {
+//digitalWrite(RESET, LOW);
+//pinMode(RESET, OUTPUT);
     avrisp();
   }
 }
@@ -416,6 +422,7 @@ void start_pmode() {
   // (reset_target() first sets the correct level)
   reset_target(true);
   pinMode(RESET, OUTPUT);
+
   SPI.begin();
   SPI.beginTransaction(SPISettings(SPI_CLOCK, MSBFIRST, SPI_MODE0));
 
