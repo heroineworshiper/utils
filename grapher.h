@@ -22,6 +22,9 @@
 #ifndef GRAPHER_H
 #define GRAPHER_H
 
+// from hvirtual_config.h
+#define HAVE_GL
+
 #include "guicast.h"
 
 // determined by colors

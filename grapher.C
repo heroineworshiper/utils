@@ -1,6 +1,6 @@
 /*
  * simple data graphing program
- * Copyright (C) 2020 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2020-2022 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,17 +18,14 @@
  * 
  */
 
+
+// Written in C to handle large amounts of data.
+
 // compilation command:
-// g++ -O2  -o grapher grapher.C \
-// 		-I../hvirtual/guicast \
-// 		../hvirtual/guicast/x86_64/libguicast.a \
-// 		-lX11 \
-// 		-lXext \
-// 		-lXft \
-// 		-lXv \
-// 		-lpthread \
-// 		-lm \
-// 		-lpng
+// make grapher
+
+// If it crashes in guicast, make sure HAVE_GL agrees with what guicast
+// was compiled with.
 
 
 #include "bchash.h"
@@ -209,12 +206,19 @@ void MWindow::draw_crosshair(int flash_it, int want_visible)
 	if(crosshair_visible != want_visible)
 	{
 		int max_w = get_text_width(MEDIUMFONT, "00000000");
+        int text_h = get_text_height(MEDIUMFONT);
+
+// clear text areas
 		clear_box((graph_x2 + graph_x1) / 2 - max_w / 2, 
 			graph_y2 + MARGIN,
 			max_w,
-			get_text_height(MEDIUMFONT));
+			text_h);
 
-		
+		clear_box(MARGIN, 
+			(graph_y1 + graph_y2) / 2 - text_h / 2,
+			graph_x1 - MARGIN,
+			text_h);
+	
 // printf("MWindow::draw_crosshair %d %d %d %d\n", 
 // 	__LINE__, 
 // 	mouse_x, 
@@ -235,12 +239,20 @@ void MWindow::draw_crosshair(int flash_it, int want_visible)
 
 			if(want_visible)
 			{
-				set_color(0x000000);
 				char string[BCTEXTLEN];
+				set_color(0x000000);
+
+// The X value
 				sprintf(string, "%d", cursor_row);
 				draw_center_text((graph_x2 + graph_x1) / 2, 
-					graph_y2 + get_text_height(MEDIUMFONT),
+					graph_y2 + text_h,
 					string);
+
+// The Y value
+ 				draw_number(MARGIN, 
+    				(graph_y1 + graph_y2) / 2 + text_h / 2,
+ 					(graph_y2 - crosshair_y) * (max - min) / (graph_y2 - graph_y1) + min);
+
 			}
 			
 			crosshair_visible = !crosshair_visible;
@@ -1065,6 +1077,8 @@ int main(int argc, char *argv[])
 		printf(" -b2 - last byte in binary mode\n\n");
 		printf("In the GUI, f fits the scale to the visible rows.\n");
 		printf("\nExamples:\n");
+		printf("Graph columns of text data\n");
+		printf("\tgrapher terminal.cap\n");
 		printf("Graph 2 columns from the first 1024 lines\n");
 		printf("\tgrapher /tmp/x -c1 1 -c2 2 -r2 1024\n");
 		printf("Graph 2 columns from lines 10 to 1024\n");
