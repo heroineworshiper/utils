@@ -655,6 +655,10 @@ void MWindow::calculate_limits()
 		    }
         }
 	}
+    
+    float range = max - min;
+    max += range / 20;
+    min -= range / 20;
 }
 
 
