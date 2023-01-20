@@ -50,7 +50,7 @@
 
 
 // the number of this desk (0-3)
-#define SELF 3
+#define SELF 2
 
 // button outputs
 #define DOWN_LAT LATC5

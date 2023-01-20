@@ -73,7 +73,7 @@ headset.pcb: self monitoring headset enclosure
 
 hextube.py: create hex cylinders in blender
 
-incense6.FCStd: starship incense holder
+incense10.FCStd: starship incense holder
  - uses 6 3x6mm magnets, 2 2x14mm magnets, 7 m2.6 x 6mm screws
  - 1 ball point pen spring
  - use 20% infill for booster, thrust, engines
@@ -93,11 +93,13 @@ push.c: push multiple files to an android directory
 
 rpn2.c: HP48 style RPN calculator for command line
 
+runout5.FCStd: filament runout sensor
+
 segments2.c: download segmented video files by number
 
 scale.FCStd: switch enclosure for bathroom scale
 
-scratch3.FCStd: back scratcher
+scratch4.FCStd: back scratcher
 
 shampoo.FCStd: voronoi shampoo holder
 
@@ -110,6 +112,10 @@ soap.FCStd: soap scavenger for paw soap
 soap2.FCStd: soap scavenger for dishwashing soap
 
 speaker3.FCStd: speaker stand for a desk
+
+spool.FCStd: spool for SUNLU
+
+spool2.FCStd: spool for matterhackers
 
 stl_to_pcb.c, 3dstuff.h: convert STL files to a PC board
     - Clear areas of the solder mask have to be filled polygons in the STL file
@@ -133,6 +139,8 @@ in place of the cooling fan
 tube.py: wrapper for youtube-dl/yt-dlp which automates the format selection
 
 udptest.c: transfer a file over UDP
+
+usb_hook.FCStd: USB hub on a pole
 
 vbox_sleep: send a command to all the virtual machines
 
