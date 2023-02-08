@@ -271,7 +271,7 @@ void listdir(char *dir, vector_t *dst)
     
     if(!got_line)
     {
-        printf("listdir %d: coommand failed command=%s fd=%p\n", 
+        printf("listdir %d: command failed command=%s fd=%p\n", 
             __LINE__, 
             string2, 
             fd);
@@ -447,6 +447,8 @@ void main(int argc, char *argv[])
     }
 
 // list the contents of the directories
+    bzero(&dir1_files, sizeof(vector_t));
+    bzero(&dir2_files, sizeof(vector_t));
     listdir(dir1, &dir1_files);
     listdir(dir2, &dir2_files);
     

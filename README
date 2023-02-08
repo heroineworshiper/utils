@@ -1,6 +1,6 @@
 /*
  * UTILS
- * Copyright (C) 2021-2022 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2021-2023 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -107,6 +107,10 @@ shower.FCStd: ultimate shower curtain ring
 
 shower5.FCStd: hold the shower curtain against the sides
 
+skulterm.X: terminal output on an SPI LCD
+
+skulscope.X: oscilloscope on an SPI LCD
+
 soap.FCStd: soap scavenger for paw soap
 
 soap2.FCStd: soap scavenger for dishwashing soap
@@ -124,7 +128,7 @@ stopwatch2.c: command line stopwatch
 
 switch.FCStd: generic cap for a MHPS switch
 
-symbol.c: obsolete symbol finder
+symbol.c: find a definition or usage recursively in a directory
 
 symbol.py: find a symbol in a bunch of ELF files
 
