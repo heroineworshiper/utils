@@ -43,7 +43,8 @@ class Movie:
 
 
 #EXE = 'youtube-dl'
-EXE = '/root/yt-dlp/yt-dlp'
+#EXE = '/root/yt-dlp/yt-dlp'
+EXE = '/usr/local/bin/yt-dlp'
 VCODEC = 'avc1'
 # use VP9 only for highest resolution, since it's not seekable
 VCODEC_H = 'vp9@'
@@ -69,7 +70,10 @@ def toint(text):
         if c < ord('0') or c > ord('9'):
             end = i
             break
-    return int(text[0:end])
+    if end > 0:
+        return int(text[0:end])
+    else:
+        return -1
 
 # is text in the array of words?
 def words_contain(array, text):
@@ -137,61 +141,94 @@ for movie in movies:
 
     #print('lines=%d' % len(lines));
 
-
+    gotColumns = False
 
 
     for line in lines:
-        words = line.split()
-        #print('words=%d' % len(words));
-    # got a format line
-        if len(words) >= 5 and \
-            isnumeric(words[0]) and \
-            (words[1] == 'mp4' or words[1] == 'm4a' or words[1] == 'webm'):
-            #print('format=%s' % line);
+        if not gotColumns:
+            if line.startswith('ID '):
+                print('columns=%s' % line);
+                col1 = dict([
+                    ('ID', line.find('ID ')),
+                    ('EXT', line.find('EXT ')),
+                    ('RESOLUTION', line.find('RESOLUTION ')),
+                    ('BITRATE', line.find('TBR ')),
+                    ('SAMPLERATE', line.find('ASR ')),
+                    ('VCODEC', line.find('VCODEC '))])
+                col2 = dict([
+                    ('ID', line.find('EXT ')),
+                    ('EXT', line.find('RESOLUTION ')),
+                    ('RESOLUTION', line.find('FPS ')),
+                    ('BITRATE', line.find('PROTO ')),
+                    ('SAMPLERATE', line.find('MORE ')),
+                    ('VCODEC', line.find('VBR '))])
+                gotColumns = True
+            else:
+                continue
+            
+            
+        #words = line.split()
+        words = dict([
+            ('ID', line[col1['ID']:col2['ID']].strip()),  
+            ('EXT', line[col1['EXT']:col2['EXT']].strip()), 
+            ('RESOLUTION', line[col1['RESOLUTION']:col2['RESOLUTION']].strip()), 
+            ('BITRATE', line[col1['BITRATE']:col2['BITRATE']].strip()),
+            ('SAMPLERATE', line[col1['SAMPLERATE']:col2['SAMPLERATE']].strip()),
+            ('VCODEC', line[col1['VCODEC']:col2['VCODEC']].strip())])
+# strip trailing -dash
+        id = toint(words['ID'])
+
+# got a format line
+        #print('ID=%d EXT=%s' % \
+        #    (id, words['EXT']))
+        if id >= 0 and \
+            (words['EXT'] == 'mp4' or words['EXT'] == 'm4a' or words['EXT'] == 'webm'):
+            #print('ID=%d resolution=%s' % (id, words['RESOLUTION']))
+            #print('vcodec=%s' % words['VCODEC'])
 
 
 
-
-    # got audio
-            if words[2] == 'audio' and words[3] == 'only':
-                note = 5
-                if words[4] == 'DASH':
-                    note = 6
-
-
-                new_bitrate = toint(words[note])
-    # dumb samplerate estimation
+# got audio
+            if words['RESOLUTION'] == 'audio only':
+                new_bitrate = toint(words['BITRATE'])
+                #print('ID=%d BITRATE=%s new_bitrate=%s' % \
+                #    (id, words['BITRATE'], new_bitrate))
+# dumb samplerate estimation
                 new_samplerate = 48000
-                if words_contain(words[note:], "44100"):
+                if words['SAMPLERATE'] == '44k':
                     new_samplerate = 44100
-    # closer to desired format
-                #print('audio_code=%d new_samplerate=%d new_bitrate=%d' % \
-                #    (toint(words[0]), new_samplerate, new_bitrate))
+# closer to desired format
+                #print('ID=%d new_samplerate=%d new_bitrate=%d' % \
+                #    (id, new_samplerate, new_bitrate))
                 if movie.audio_code < 0 or \
                     (movie.got_samplerate != want_samplerate and new_bitrate > movie.audio_bitrate) or \
                     abs(new_samplerate - want_samplerate) <= abs(movie.got_samplerate - want_samplerate) or \
                     (new_samplerate == movie.got_samplerate and new_bitrate > movie.audio_bitrate):
-                    movie.audio_code = toint(words[0])
+                    movie.audio_code = id
                     movie.audio_bitrate = new_bitrate
                     movie.got_samplerate = new_samplerate
-                    #print('audio_code=%d bitrate=%d' % (movie.audio_code, movie.audio_bitrate))
-    # got video
+                    #print('audio_code=%d bitrate=%d' % \
+                    #    (movie.audio_code, movie.audio_bitrate))
+# got video
             else:
-                note = 3
-                if words[3] == 'DASH':
-                    note = 5
+                #print('want_video=%s vcodec=%s VCODEC=%s' % 
+                #    (want_video, words['VCODEC'], VCODEC))
+
 # supported codec based on the desired resolution
-                if want_video and (words_contain(words[note:], VCODEC) or \
-                    (want_res == MAX_RES and words_contain(words[note:], VCODEC_H))):
+                if want_video and (VCODEC in words['VCODEC']or \
+                    want_res == MAX_RES):
+                    #(want_res == MAX_RES and words_contain(words['VCODEC'], VCODEC_H))):
 # get video resolution
-                    new_res = toint(words[2])
-                    new_bitrate = toint(words[note])
+                    new_res = toint(words['RESOLUTION'])
+                    new_bitrate = toint(words['BITRATE'])
+                    #print('new_res=%d new_bitrate=%d' % (new_res, new_bitrate))
+
                     if movie.video_code < 0 or \
                         (new_res <= want_res and new_res >= movie.got_res):
-                        movie.video_code = toint(words[0])
+                        movie.video_code = id
                         movie.video_bitrate = new_bitrate
                         movie.got_res = new_res
-                        movie.res_text = words[2]
+                        movie.res_text = words['RESOLUTION']
                         #print('video_code=%d video_bitrate=%d res_text=%s' % \
                         #    (movie.video_code, movie.video_bitrate, movie.res_text))
 
