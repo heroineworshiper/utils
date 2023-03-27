@@ -82,6 +82,8 @@ incense10.FCStd: starship incense holder
 
 ipcclean.c: delete all the IPC objects Goog chrome leaves behind.
 
+key.FCStd: car key grip
+
 lens.FCStd: Improved tripod mount for the commlite EF to R lens
 adapter.  This bolts the lens as close as possible to the tripod.
 
@@ -100,13 +102,16 @@ segments2.c: download segmented video files by number
 scale.FCStd: switch enclosure for bathroom scale
 
 scratch5.FCStd: back scratcher
+    - .4mm nozzle x .2mm layers
     - support blocker for handle joiner
     - spike array must be booleaned in blender & exported with spike panel
-spikes.stl: last spikes part
+    - spike array must be printed separately with 5mm retraction & no extra prime
+spikes.stl: latest spikes part
 
 shampoo.FCStd: voronoi shampoo holder
 
 shower.FCStd: ultimate shower curtain ring
+    - no support. .8mm nozzle x .32mm layers
 
 shower5.FCStd: hold the shower curtain against the sides
 
