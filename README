@@ -24,7 +24,8 @@ Random programs & CAD models.
 
 bandwidth.c: show network usage
 
-battery.FCStd: dummy battery for an EOS RP
+battery.FCStd: dummy battery for an EOS RP.  Takes the circuit board
+from a wasabi battery.
 
 catbps.c: print bits per second of stdin
 
