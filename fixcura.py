@@ -217,10 +217,10 @@ print 'last line:', lastLine
 print 'total layers:', totalLayers
 
 
-value = raw_input('Press ENTER to proceed or ctrl-C to quit.')
-if value != '':
-    print('Giving up & going to a movie');
-    exit()
+#value = raw_input('Press ENTER to proceed or ctrl-C to quit.')
+#if value != '':
+#    print('Giving up & going to a movie');
+#    exit()
 
 
 # copy up to temperature lines

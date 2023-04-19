@@ -94,6 +94,8 @@ lens_cap.FCStd: lens cap for a gopro 4
 
 logcat.c: print debug output from android programs on the command line
 
+pocket.FCSTd: pocket protector for keys
+
 push.c: push multiple files to an android directory
 
 rpn2.c: HP48 style RPN calculator for command line
