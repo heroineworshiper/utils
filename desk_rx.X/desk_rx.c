@@ -1,7 +1,7 @@
 /*
- * IR Receiver for remote controlled desk.
+ * RF Receiver for remote controlled desk.
  *
- * Copyright (C) 2022 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2022-2023 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,9 +48,10 @@
 #include <string.h>
 #include "desk_tx.h"
 
-
 // the number of this desk (0-3)
 #define SELF 2
+
+#define USE_RF
 
 // button outputs
 #define DOWN_LAT LATC5
@@ -68,7 +69,7 @@
 #define LED_TRIS TRISC0
 // ticks per second
 #define HZ 977
-#define IR_PORT RA2
+#define RF_PORT RA2
 
 typedef union 
 {
@@ -76,8 +77,7 @@ typedef union
 	{
 		unsigned interrupt_complete : 1;
 		unsigned have_serial : 1;
-//        unsigned have_pulse : 1;
-        unsigned have_code : 1;
+        unsigned update_button : 1;
 // desired LED value from button state.  Overridden by led_state
         unsigned want_led : 1;
 	};
@@ -90,24 +90,15 @@ flags_t flags;
 uint8_t serial_in;
 // LED blinker
 uint16_t blink_tick = 0;
-// time since last pulse
-// value for debug printing
-uint8_t pulse_tick = 0;
-// incremented value
-uint8_t pulse_tick2 = 0;
 // time since last byte
 uint8_t serial_tick = 0;
 // incremented value
 uint8_t serial_tick2 = 0;
+
 // time between status packets
 #define SERIAL_THRESHOLD 10
-uint16_t pulse = 0;
 
-#define CODE_SIZE (KEYSIZE + 4)
-uint16_t code[CODE_SIZE];
-uint8_t code_offset = 0;
-uint8_t code_bit = 0;
-uint8_t code_byte = 0;
+
 
 // button codes
 #define PRESET1 0x08
@@ -118,16 +109,27 @@ uint8_t code_byte = 0;
 #define SET 0x01
 #define UP 0x04
 #define DOWN 0x40
-#define NO_BUTTON 0
-// last button pressed
+#define NO_BUTTON 0xff
+// current button pressed
 uint8_t button = NO_BUTTON;
+#define TOTAL_BUTTONS 8
 
-// division between long & short pulse
-#define PULSE_THRESHOLD 1050
-// ticks between codes
-#define PACKET_THRESHOLD 15
-// ticks before releasing all buttons
-#define BUTTON_TIMEOUT 60
+
+// period for 1kbit at 16Mhz
+//#define BIT_PERIOD 4000
+// period for 2kbit at 16Mhz
+#define BIT_PERIOD 2000
+uint16_t code;
+uint8_t code_counts[TOTAL_BUTTONS];
+// time since last code count
+uint8_t code_tick = 0;
+// ticks to accumulate code counts
+#define CODE_TICKS (HZ / 8)
+// code count required for a button press
+#define CODE_THRESHOLD 4
+
+// ticks before releasing all buttons.  Not used
+#define BUTTON_TIMEOUT 200
 
 // buffer for the status code
 #define STATUS_SIZE 4
@@ -241,7 +243,7 @@ void print_hex2(uint8_t v)
     
     send_uart(hex_table[v >> 4]);
     send_uart(hex_table[v & 0xf]);
-    send_uart(' ');
+//    send_uart(' ');
 }
 
 void print_text(const uint8_t *s)
@@ -260,14 +262,6 @@ void reset_buttons()
     RECALL_TRIS = 1;
     MODE_TRIS = 1;
     flags.want_led = 0;
-}
-
-void reset_code()
-{
-// start of a new code
-    code_bit = 0;
-    code_offset = 0;
-    code_byte = 0;
 }
 
 
@@ -433,7 +427,9 @@ void main()
     RCSTA = 0b10010000;
     BAUDCON = 0b00001000;
 // 9600 baud at 16Mhz
-#define BAUD_CODE 416
+//#define BAUD_CODE 416
+// 19200 baud
+#define BAUD_CODE 208
     SPBRGH = BAUD_CODE >> 8;
     SPBRGL = BAUD_CODE & 0xff;
     RCIE = 1;
@@ -447,12 +443,17 @@ void main()
     ANSELB = 0;
     ANSELC = 0;
 
-// IR interrupt
+
+// RF interrupt
     IOCIE = 1;
-// detect both edges of IR pin
+// detect both edges of RF pin
     IOCAP2 = 1;
     IOCAN2 = 1;
-    
+// RF timer
+    T1CON = 0b00000001;
+    TMR1 = -BIT_PERIOD;
+    TMR1IF = 0;
+    TMR1IE = 1;
 
     flags.value = 0;
 
@@ -460,7 +461,7 @@ void main()
     GIE = 1;
     PEIE = 1;
 
-    print_text("Welcome to desk RX\n");
+    print_text("\n\n\n\nWelcome to desk RX\n");
 
     while(1)
     {
@@ -528,142 +529,98 @@ void main()
         }
 
 // IR code overrides inactive LED
-        if(flags.have_code)
+        if(flags.update_button)
         {
-            flags.have_code = 0;
-            uint8_t i, j;
-            const uint8_t *key = &keys[SELF * KEYSIZE];
+            flags.update_button = 0;
 
-//print_text("HAVE CODE\n");
-//             for(i = 0; i < CODE_SIZE; i++)
-//             {
-//                 print_hex2(code[i]);
-//             }
-//             print_text("\n");
-
-// match the key
-            uint8_t got_it = 1;
-            for(j = 0; j < KEYSIZE; j++)
-            {
-                if(key[j] != code[j]) 
-                {
-                    got_it = 0; 
-                    break;
-                }
-            }
-
-            if(got_it)
-            {
-// 4 consecutive XORs must match the button code
-                button = code[KEYSIZE] ^ key[0];
-                for(j = 1; j < 4; j++)
-                {
-                    if((code[KEYSIZE + j] ^ button) != key[j])
-                    {
-                        got_it = 0;
-                        break;
-                    }
-                }
-            }
-            
-            if(got_it)
-            {
 // abort height workaround on each button press
-                preset_state = PRESET_IDLE;
+            preset_state = PRESET_IDLE;
 
-//                 print_hex2(button);
-//                 print_text("\n");
-                switch(button)
-                {
-                    case UP:
-                        DOWN_TRIS = 1;
-                        UP_TRIS = 0;
-                        RECALL_TRIS = 1;
-                        MODE_TRIS = 1;
-                        flags.want_led = 1;
-                        break;
-                    case DOWN:
-                        DOWN_TRIS = 0;
-                        UP_TRIS = 1;
-                        RECALL_TRIS = 1;
-                        MODE_TRIS = 1;
-                        flags.want_led = 1;
-                        break;
-                    case SET:
-                        DOWN_TRIS = 1;
-                        UP_TRIS = 1;
-                        RECALL_TRIS = 1;
-                        MODE_TRIS = 0;
-                        flags.want_led = 1;
-                        break;
-                    case ABORT:
-                        DOWN_TRIS = 1;
-                        UP_TRIS = 1;
-                        RECALL_TRIS = 1;
-                        MODE_TRIS = 0;
-                        flags.want_led = 1;
-                        break;
+// print_text("BUTTON ");
+// print_hex2(button);
+// print_text("\n");
+            switch(button)
+            {
+                case UP:
+                    DOWN_TRIS = 1;
+                    UP_TRIS = 0;
+                    RECALL_TRIS = 1;
+                    MODE_TRIS = 1;
+                    flags.want_led = 1;
+                    break;
+                case DOWN:
+                    DOWN_TRIS = 0;
+                    UP_TRIS = 1;
+                    RECALL_TRIS = 1;
+                    MODE_TRIS = 1;
+                    flags.want_led = 1;
+                    break;
+                case SET:
+                    DOWN_TRIS = 1;
+                    UP_TRIS = 1;
+                    RECALL_TRIS = 1;
+                    MODE_TRIS = 0;
+                    flags.want_led = 1;
+                    break;
+                case ABORT:
+                    DOWN_TRIS = 1;
+                    UP_TRIS = 1;
+                    RECALL_TRIS = 1;
+                    MODE_TRIS = 0;
+                    flags.want_led = 1;
+                    break;
 // Min height preset
-                    case PRESET1:
-                        DOWN_TRIS = 1;
-                        UP_TRIS = 1;
-                        RECALL_TRIS = 0;
-                        MODE_TRIS = 1;
-                        flags.want_led = 1;
+                case PRESET1:
+                    DOWN_TRIS = 1;
+                    UP_TRIS = 1;
+                    RECALL_TRIS = 0;
+                    MODE_TRIS = 1;
+                    flags.want_led = 1;
 // trigger the preset workaround
-                        preset_state = WAIT_SAVED_PRESET;
-                        preset_tick = 0;
-                        break;
+                    preset_state = WAIT_SAVED_PRESET;
+                    preset_tick = 0;
+                    break;
 
-                    case PRESET2:
-                        DOWN_TRIS = 0;
-                        UP_TRIS = 1;
-                        RECALL_TRIS = 0;
-                        MODE_TRIS = 1;
-                        flags.want_led = 1;
+                case PRESET2:
+                    DOWN_TRIS = 0;
+                    UP_TRIS = 1;
+                    RECALL_TRIS = 0;
+                    MODE_TRIS = 1;
+                    flags.want_led = 1;
 // trigger the preset workaround
-                        preset_state = WAIT_SAVED_PRESET;
-                        preset_tick = 0;
-                        break;
+                    preset_state = WAIT_SAVED_PRESET;
+                    preset_tick = 0;
+                    break;
 
-                    case PRESET3:
-                        DOWN_TRIS = 1;
-                        UP_TRIS = 0;
-                        RECALL_TRIS = 0;
-                        MODE_TRIS = 1;
-                        flags.want_led = 1;
+                case PRESET3:
+                    DOWN_TRIS = 1;
+                    UP_TRIS = 0;
+                    RECALL_TRIS = 0;
+                    MODE_TRIS = 1;
+                    flags.want_led = 1;
 // trigger the preset workaround
-                        preset_state = WAIT_SAVED_PRESET;
-                        preset_tick = 0;
-                        break;
+                    preset_state = WAIT_SAVED_PRESET;
+                    preset_tick = 0;
+                    break;
 // Max height preset
-                    case PRESET4:
-                        DOWN_TRIS = 0;
-                        UP_TRIS = 0;
-                        RECALL_TRIS = 1;
-                        MODE_TRIS = 1;
-                        flags.want_led = 1;
+                case PRESET4:
+                    DOWN_TRIS = 0;
+                    UP_TRIS = 0;
+                    RECALL_TRIS = 1;
+                    MODE_TRIS = 1;
+                    flags.want_led = 1;
 // trigger the preset workaround
-                        preset_state = WAIT_SAVED_PRESET;
-                        preset_tick = 0;
-                        break;
+                    preset_state = WAIT_SAVED_PRESET;
+                    preset_tick = 0;
+                    break;
 
-                    default:
+                default:
 // reset all buttons
-                        reset_buttons();
-                        break;
-                }
+                    reset_buttons();
+                    break;
             }
         }
 
-// button released
-        if(pulse_tick2 == BUTTON_TIMEOUT)
-        {
-            pulse_tick2++;
-            reset_code();
-// reset all buttons
-            reset_buttons();
-        }
 
 // Active LED state has LED's highest priority
         switch(led_state)
@@ -682,6 +639,8 @@ void main()
     }
 }
 
+
+
 void interrupt isr()
 {
     flags.interrupt_complete = 0;
@@ -694,8 +653,52 @@ void interrupt isr()
             flags.interrupt_complete = 0;
             TMR0IF = 0;
             blink_tick++;
-            if(pulse_tick2 < BUTTON_TIMEOUT)
-                pulse_tick2++;
+            code_tick++;
+            if(code_tick >= CODE_TICKS)
+            {
+                code_tick = 0;
+                flags.update_button = 1;
+                if(code_counts[0] >= CODE_THRESHOLD) button = PRESET1;
+                else
+                if(code_counts[1] >= CODE_THRESHOLD) button = PRESET2;
+                else
+                if(code_counts[2] >= CODE_THRESHOLD) button = PRESET3;
+                else
+                if(code_counts[3] >= CODE_THRESHOLD) button = PRESET4;
+                else
+                if(code_counts[4] >= CODE_THRESHOLD) button = ABORT;
+                else
+                if(code_counts[5] >= CODE_THRESHOLD) button = SET;
+                else
+                if(code_counts[6] >= CODE_THRESHOLD) button = UP;
+                else
+                if(code_counts[7] >= CODE_THRESHOLD) button = DOWN;
+                else
+                    button = NO_BUTTON;
+
+
+// DEBUG print code counts
+//if(button != SET)
+{
+print_number(code_counts[0]);
+print_number(code_counts[1]);
+print_number(code_counts[2]);
+print_number(code_counts[3]);
+print_number(code_counts[4]);
+print_number(code_counts[5]);
+print_number(code_counts[6]);
+print_number(code_counts[7]);
+print_text("\n");
+}
+                code_counts[0] = 0;
+                code_counts[1] = 0;
+                code_counts[2] = 0;
+                code_counts[3] = 0;
+                code_counts[4] = 0;
+                code_counts[5] = 0;
+                code_counts[6] = 0;
+                code_counts[7] = 0;
+            }
 
             if(led_tick < LED_TIMEOUT)
                 led_tick++;
@@ -712,6 +715,7 @@ void interrupt isr()
         
         if(RCIF)
         {
+            flags.interrupt_complete = 0;
             serial_in = RCREG;
             RCIF = 0;
             serial_tick = serial_tick2;
@@ -719,60 +723,92 @@ void interrupt isr()
             flags.have_serial = 1;
         }
 
-// IR interrupt
+
+// RF pin changed
         if(IOCAF2)
         {
+            flags.interrupt_complete = 0;
+// reset the alarm to 1/2 a period
+            TMR1 = -BIT_PERIOD / 2;
             IOCAF2 = 0;
-// beginning of pulse
-            if(!IR_PORT)
-            {
-// start the timer
-                TMR1H = 0;
-                TMR1L = 0;
-                T1CON = 0b00000001;
-//print_text(".");
+// disable edge detect until the next alarm
+            IOCIE = 0;
+        }
 
-// check for the start of a new packet
-                if(pulse_tick2 >= PACKET_THRESHOLD)
-                {
-//                     uint8_t i;
-//                     for(i = 0; i < code_offset; i++)
-//                     {
-//                         print_hex2(code[i]);
-//                     }
-//                     print_text("\n");
-                    reset_code();
-                }
-// copy to debugging variable
-                pulse_tick = pulse_tick2;
-                pulse_tick2 = 0;
+
+// alarm expired
+        if(TMR1IF)
+        {
+            flags.interrupt_complete = 0;
+            TMR1 = -BIT_PERIOD;
+            TMR1IF = 0;
+// enable edge detect
+            IOCIE = 1;
+
+// shift next bit in
+            code <<= 1;
+            code |= RF_PORT;
+
+// fill the code counts
+            if(code == BUTTON_CODE(PRESET1)) 
+            {
+                code_counts[0]++;
+                code = 0;
             }
             else
-// end of pulse
+            if(code == BUTTON_CODE(PRESET2))
             {
-// stop the timer
-                T1CON = 0b00000000;
-                
-                pulse = TMR1L | (TMR1H << 8);
-
-// store bit
-                code_byte >>= 1;
-                if(pulse >= PULSE_THRESHOLD)
-                    code_byte |= 0x80;
-                code_bit++;
-                if(code_bit >= 8)
-                {
-//print_hex2(code_byte);
-                    code[code_offset++] = code_byte;
-                    code_byte = 0;
-                    code_bit = 0;
-                    if(code_offset >= CODE_SIZE)
-                    {
-                        flags.have_code = 1;
-                        code_offset = 0;
-                    }
-                }
+                code_counts[1]++;
+                code = 0;
             }
+            else
+            if(code == BUTTON_CODE(PRESET3))
+            {
+                code_counts[2]++;
+                code = 0;
+            }
+            else
+            if(code == BUTTON_CODE(PRESET4))
+            {
+                code_counts[3]++;
+                code = 0;
+            }
+            else
+            if(code == BUTTON_CODE(ABORT))
+            {
+                code_counts[4]++;
+                code = 0;
+            }
+            else
+            if(code == BUTTON_CODE(SET))
+            {
+                code_counts[5]++;
+                code = 0;
+            }
+            else
+            if(code == BUTTON_CODE(UP)){
+                code_counts[6]++;
+                code = 0;
+            }
+            else
+            if(code == BUTTON_CODE(DOWN))
+            {
+                code_counts[7]++;
+                code = 0;
+            }
+
+// if(code == KEY)
+// {
+//     print_text("*");
+// LED_LAT = 1;
+// }
+// else
+// {
+// //    print_text("-");
+// LED_LAT = 0;
+// }
+
+
         }
     }
 }

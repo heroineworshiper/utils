@@ -48,11 +48,15 @@
 #include <string.h>
 #include "desk_tx.h"
 
+// output for a 433Mhz AM radio is DC & active low.
+// output for IR is AC & active high.  The receiver inverts to active low.
+//#define USE_RF
 
 
 #define LED_LAT LATC3
 #define LED_TRIS TRISC3
 #define PWM_TRIS TRISC1
+#define PWM_LAT LATC1
 
 
 #define CODE_SIZE (KEYSIZE + 4)
@@ -134,28 +138,28 @@ void print_text(const uint8_t *s)
 void send_bit(uint8_t c)
 {
     uint8_t i;
-// RS232
-// IR uses inverse logic so LED is off if bit is 1
-//     if(c) 
-//         PWM_TRIS = 1;
-//     else
-//         PWM_TRIS = 0;
-// // 1000 baud
-//     for(i = 0; i < 45; i++)
-//     {
-//         asm("nop");
-//     }
 
     uint8_t delay = 15;
     if(!c)
         delay = 5;
+
 // pulse
+#ifdef USE_RF
+    PWM_LAT = 0;
+#else
     PWM_TRIS = 0;
+#endif
+
     for(i = 0; i < delay; i++)
     {
         asm("nop");
     }
+
+#ifdef USE_RF
+    PWM_LAT = 1;
+#else
     PWM_TRIS = 1;
+#endif
 
 // inactive period between pulses
     for(i = 0; i < 5; i++)
@@ -201,6 +205,11 @@ void main()
     WPUA = 0xff;
     WPUB = 0xff;
 
+// enable RF
+#ifdef USE_RF
+    PWM_LAT = 1;
+    PWM_TRIS = 0;
+#else
 // enable PWM4/C1
     T2CON = 0b00000100;
     PR2 = 12;
@@ -210,6 +219,8 @@ void main()
     PWM_TRIS = 1;
 // DEBUG enable IR
 //    PWM_TRIS = 0;
+#endif
+
 
 
 // ADC

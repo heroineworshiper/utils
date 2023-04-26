@@ -48,9 +48,10 @@
 #include <string.h>
 #include "desk_tx.h"
 
-
 // the number of this desk (0-3)
-#define SELF 0
+#define SELF 2
+
+//#define USE_RF
 
 // button outputs
 #define DOWN_LAT LATC5
@@ -76,7 +77,9 @@ typedef union
 	{
 		unsigned interrupt_complete : 1;
 		unsigned have_serial : 1;
-//        unsigned have_pulse : 1;
+        unsigned prev_rf : 1; // previous bit before deglitching
+        unsigned next_rf : 1; // next bit before deglitching
+        unsigned deglitched_rf : 1; // output bit after deglitching
         unsigned have_code : 1;
 // desired LED value from button state.  Overridden by led_state
         unsigned want_led : 1;
@@ -90,18 +93,41 @@ flags_t flags;
 uint8_t serial_in;
 // LED blinker
 uint16_t blink_tick = 0;
+// time since last byte
+uint8_t serial_tick = 0;
+// incremented value
+uint8_t serial_tick2 = 0;
 // time since last pulse
 // value for debug printing
 uint8_t pulse_tick = 0;
 // incremented value
 uint8_t pulse_tick2 = 0;
-// time since last byte
-uint8_t serial_tick = 0;
-// incremented value
-uint8_t serial_tick2 = 0;
 // time between status packets
 #define SERIAL_THRESHOLD 10
+
+#ifndef USE_RF
+
 uint16_t pulse = 0;
+
+#else // !USE_RF
+
+// number of samples in the past the edge was detected
+// Sampling 1kbit at 10khz, 1 bit is 10 samples
+uint8_t last_rise = 0xff;
+uint8_t last_fall = 0xff;
+// samples in a bit
+#define BIT_SIZE 10
+// minimum number of samples for 0 to be a bit
+#define GLITCH_SIZE (BIT_SIZE / 2)
+// samples in a start of frame.  Must be longer than 1 byte
+#define MIN_SOF (BIT_SIZE * 10)
+uint8_t rf_counter = 0;
+void get_sof();
+void get_start();
+void (*process_rf)();
+
+#endif // USE_RF
+
 
 #define CODE_SIZE (KEYSIZE + 4)
 uint16_t code[CODE_SIZE];
@@ -138,12 +164,14 @@ uint8_t status_size = 0;
 #define PRESET_IDLE 0
 // wait for confirmation of a saved preset
 #define WAIT_SAVED_PRESET 1
-// wait for the right height code
-#define WAIT_TOP 2
-#define HEIGHT_WAIT1 3
+// wait for the boundary height
+#define WAIT_MOVE 2
+// wait for the stop
+#define WAIT_TOP 3
 #define WAIT_BOTTOM 4
-#define HEIGHT_WAIT2 5
-#define HEIGHT_WAIT3 6
+// release the button
+#define HEIGHT_WAIT 5
+
 // wait for maximum or minimum height preset
 uint8_t preset_state = PRESET_IDLE;
 uint16_t preset_tick = 0;
@@ -290,46 +318,32 @@ void preset_bug()
                 if(status_code[0] == 0x01 && 
                     status_code[1] == 0x01)
                 {
-                    if(button == PRESET1)
-                    {
-                        print_text("MOVING TO BOTTOM\n");
-                        preset_state = WAIT_BOTTOM;
-                    }
-                    else
-                    if(button == PRESET4)
-                    {
-                        print_text("MOVING TO TOP\n");
-                        preset_state = WAIT_TOP;
-                    }
-                    else
-                    {
-                        preset_state = PRESET_IDLE;
-                    }
-
+                    print_text("MOVING TO PRESET\n");
+                    preset_state = WAIT_MOVE;
                     preset_tick = 0;
                 }
                 break;
 
-            case WAIT_TOP:
-            case WAIT_BOTTOM:
+            case WAIT_MOVE:
                 if(status_code[0] == 0x01 && 
                     status_code[1] == 0x01)
                 {
                     uint16_t height = (status_code[2] << 8) |
                         status_code[3];
 // reached top
-                    if(preset_state == WAIT_TOP && height >= MAX_HEIGHT)
+                    if(height >= MAX_HEIGHT)
                     {
                         print_text("TOP REACHED\n");
-                        preset_state++;
+                        preset_state = WAIT_TOP;
                     }
                     else
 // reached bottom
-                    if(preset_state == WAIT_BOTTOM && height <= MIN_HEIGHT)
+                    if(height <= MIN_HEIGHT)
                     {
                         print_text("BOTTOM REACHED\n");
-                        preset_state++;
+                        preset_state = WAIT_BOTTOM;
                     }
+
                     preset_tick = 0;
                 }
                 else
@@ -340,31 +354,67 @@ void preset_bug()
                 break;
 
 // wait after reaching preset height
-            case HEIGHT_WAIT1:
-                if(preset_tick >= HEIGHT_WAIT_TIME)
+            case WAIT_TOP:
+                if(status_code[0] == 0x01 && 
+                    status_code[1] == 0x01)
                 {
-                    print_text("GOING UP AGAIN\n");
-                    preset_state = HEIGHT_WAIT3;
-                    preset_tick = 0;
+                    uint16_t height = (status_code[2] << 8) |
+                        status_code[3];
+                    if(height < MAX_HEIGHT)
+                    {
+                        print_text("LEFT TOP\n");
+                        preset_state = WAIT_MOVE;
+                        preset_tick = 0;
+                    }
+                    else
+                    if(preset_tick >= HEIGHT_WAIT_TIME)
+                    {
+                        print_text("GOING UP AGAIN\n");
+                        preset_state = HEIGHT_WAIT;
+                        preset_tick = 0;
 // press the up button
-                    UP_TRIS = 0;
+                        UP_TRIS = 0;
+                    }
+                }
+                else
+                {
+// unknown packet.  Abort
+                    preset_state = PRESET_IDLE;
                 }
                 break;
 
 // wait after reaching preset height
-            case HEIGHT_WAIT2:
-                if(preset_tick >= HEIGHT_WAIT_TIME)
+            case WAIT_BOTTOM:
+                if(status_code[0] == 0x01 && 
+                    status_code[1] == 0x01)
                 {
-                    print_text("GOING DOWN AGAIN\n");
-                    preset_state = HEIGHT_WAIT3;
-                    preset_tick = 0;
-// press the down button
-                    DOWN_TRIS = 0;
+                    uint16_t height = (status_code[2] << 8) |
+                        status_code[3];
+                    if(height > MIN_HEIGHT)
+                    {
+                        print_text("LEFT BOTTOM\n");
+                        preset_state = WAIT_MOVE;
+                        preset_tick = 0;
+                    }
+                    else
+                    if(preset_tick >= HEIGHT_WAIT_TIME)
+                    {
+                        print_text("GOING DOWN AGAIN\n");
+                        preset_state = HEIGHT_WAIT;
+                        preset_tick = 0;
+    // press the down button
+                        DOWN_TRIS = 0;
+                    }
+                }
+                else
+                {
+// unknown packet.  Abort
+                    preset_state = PRESET_IDLE;
                 }
                 break;
 
 // wait after pressing button
-            case HEIGHT_WAIT3:
+            case HEIGHT_WAIT:
                 if(preset_tick >= HEIGHT_WAIT_TIME)
                 {
                     print_text("PRESET WORKAROUND DONE\n");
@@ -409,7 +459,9 @@ void main()
     RCSTA = 0b10010000;
     BAUDCON = 0b00001000;
 // 9600 baud at 16Mhz
-#define BAUD_CODE 416
+//#define BAUD_CODE 416
+// 19200 baud
+#define BAUD_CODE 208
     SPBRGH = BAUD_CODE >> 8;
     SPBRGL = BAUD_CODE & 0xff;
     RCIE = 1;
@@ -423,12 +475,27 @@ void main()
     ANSELB = 0;
     ANSELC = 0;
 
+#ifndef USE_RF
+
 // IR interrupt
     IOCIE = 1;
 // detect both edges of IR pin
     IOCAP2 = 1;
     IOCAN2 = 1;
-    
+
+#else // !USE_RF
+
+// 10khz radio sampling
+//    T2CON = 0b00011100;
+// 5000Hz radio sampling
+//    T2CON = 0b00111100;
+// 2500Hz radio sampling
+    T2CON = 0b01111100;
+    PR2 = 99;
+    TMR2IE = 1;
+    process_rf = get_sof;
+
+#endif // USE_RF
 
     flags.value = 0;
 
@@ -436,7 +503,7 @@ void main()
     GIE = 1;
     PEIE = 1;
 
-    print_text("Welcome to desk RX\n");
+    print_text("\n\n\n\nWelcome to desk RX\n");
 
     while(1)
     {
@@ -510,12 +577,12 @@ void main()
             uint8_t i, j;
             const uint8_t *key = &keys[SELF * KEYSIZE];
 
-//print_text("HAVE CODE\n");
-//             for(i = 0; i < CODE_SIZE; i++)
-//             {
-//                 print_hex2(code[i]);
-//             }
-//             print_text("\n");
+print_text("CODE ");
+for(i = 0; i < CODE_SIZE; i++)
+{
+    print_hex2(code[i]);
+}
+print_text("\n");
 
 // match the key
             uint8_t got_it = 1;
@@ -544,11 +611,16 @@ void main()
             
             if(got_it)
             {
+#ifdef USE_RF
+                pulse_tick2 = 0;
+#endif
+
 // abort height workaround on each button press
                 preset_state = PRESET_IDLE;
 
-//                 print_hex2(button);
-//                 print_text("\n");
+                 print_text("BUTTON ");
+                 print_hex2(button);
+                 print_text("\n");
                 switch(button)
                 {
                     case UP:
@@ -597,6 +669,9 @@ void main()
                         RECALL_TRIS = 0;
                         MODE_TRIS = 1;
                         flags.want_led = 1;
+// trigger the preset workaround
+                        preset_state = WAIT_SAVED_PRESET;
+                        preset_tick = 0;
                         break;
 
                     case PRESET3:
@@ -605,6 +680,9 @@ void main()
                         RECALL_TRIS = 0;
                         MODE_TRIS = 1;
                         flags.want_led = 1;
+// trigger the preset workaround
+                        preset_state = WAIT_SAVED_PRESET;
+                        preset_tick = 0;
                         break;
 // Max height preset
                     case PRESET4:
@@ -630,7 +708,10 @@ void main()
         if(pulse_tick2 == BUTTON_TIMEOUT)
         {
             pulse_tick2++;
+#ifndef USE_RF
             reset_code();
+#endif
+
 // reset all buttons
             reset_buttons();
         }
@@ -651,6 +732,103 @@ void main()
         LED_LAT = flags.want_led;
     }
 }
+
+
+// get stop bit
+void get_stop()
+{
+    if(rf_counter < BIT_SIZE)
+        rf_counter++;
+    if(flags.deglitched_rf && rf_counter >= BIT_SIZE)
+    {
+// get next byte
+        process_rf = get_start;
+    }
+}
+
+// wait for next bit
+void get_bit()
+{
+    rf_counter++;
+    if(rf_counter >= BIT_SIZE)
+    {
+        code_byte <<= 1;
+        if(flags.deglitched_rf)
+            code_byte |= 1;
+        code_bit++;
+        rf_counter = 0;
+        if(code_bit >= 8)
+        {
+            code[code_offset++] = code_byte;
+            code_bit = 0;
+            code_byte = 0;
+            rf_counter = 0;
+            if(code_offset >= CODE_SIZE)
+            {
+                flags.have_code = 1;
+                code_offset = 0;
+// get next frame
+                process_rf = get_sof;
+            }
+            else
+            {
+                process_rf = get_stop;
+            }
+        }
+    }
+}
+
+// wait for half of start bit
+void get_start2()
+{
+    if(!flags.deglitched_rf)
+    {
+        rf_counter++;
+        if(rf_counter >= BIT_SIZE / 2)
+        {
+            rf_counter = 0;
+            process_rf = get_bit;
+        }
+    }
+    else
+    {
+// glitched out of start bit
+        rf_counter = 0;
+        process_rf = get_sof;
+    }
+}
+
+// wait for start bit
+void get_start()
+{
+    if(!flags.deglitched_rf)
+    {
+        rf_counter = 0;
+        process_rf = get_start2;
+    }
+// can't time out of get_start because it might hit before the next
+// SOF is found
+}
+
+// get start of frame
+void get_sof()
+{
+    if(flags.deglitched_rf)
+    {
+        rf_counter++;
+// stayed high for enough samples
+        if(rf_counter >= MIN_SOF)
+        {
+            code_offset = 0;
+            code_bit = 0;
+            code_byte = 0;
+            process_rf = get_start;
+        }
+    }
+    else
+        rf_counter = 0;
+}
+
 
 void interrupt isr()
 {
@@ -682,6 +860,7 @@ void interrupt isr()
         
         if(RCIF)
         {
+            flags.interrupt_complete = 0;
             serial_in = RCREG;
             RCIF = 0;
             serial_tick = serial_tick2;
@@ -689,9 +868,12 @@ void interrupt isr()
             flags.have_serial = 1;
         }
 
+
+#ifndef USE_RF
 // IR interrupt
         if(IOCAF2)
         {
+            flags.interrupt_complete = 0;
             IOCAF2 = 0;
 // beginning of pulse
             if(!IR_PORT)
@@ -744,6 +926,51 @@ void interrupt isr()
                 }
             }
         }
+#else // !USE_RF
+
+
+        if(TMR2IF)
+        {
+            flags.interrupt_complete = 0;
+            TMR2IF = 0;
+            flags.next_rf = IR_PORT;
+
+// advance previous transitions
+            if(last_rise < 0xff)
+                last_rise++;
+            if(last_fall < 0xff)
+                last_fall++;
+
+// rising edge
+            if(flags.next_rf && !flags.prev_rf)
+            {
+// erase glitch if it rose within the glitch time
+//                 if(last_fall <= GLITCH_SIZE)
+//                     last_fall = 0xff;
+//                 else
+// end of low bit
+                    last_rise = 0;
+            }
+            else
+// falling edge
+            if(!flags.next_rf && flags.prev_rf)
+            {
+                last_fall = 0;
+            }
+
+            flags.prev_rf = flags.next_rf;
+
+// update delayed value
+            if(last_rise == GLITCH_SIZE)
+                flags.deglitched_rf = 1;
+            else
+            if(last_fall == GLITCH_SIZE)
+                flags.deglitched_rf = 0;
+//flags.deglitched_rf = IR_PORT;
+
+            process_rf();
+        }
+#endif // USE_RF
     }
 }
 
