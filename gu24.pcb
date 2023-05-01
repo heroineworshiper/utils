@@ -1446,7 +1446,7 @@ Layer(10 "silk")
 	Text[32.6000mm 78.2500mm 0 100 "GND" "clearline"]
 	Text[25.0000mm 70.5500mm 0 100 "RADIO GD0/TX" "clearline"]
 	Text[47.8500mm 3500.00mil 1 122 "GND" "clearline"]
-	Text[43.6500mm 89.2000mm 1 122 "3.3V" "clearline"]
+	Text[43.9000mm 97.8000mm 1 122 "3.3V COIN CELL" "clearline"]
 	Text[47.0500mm 76.8500mm 0 122 "0R" "clearline"]
 	Text[22.1000mm 14.0000mm 0 122 "RECEIVER" "clearline"]
 	Text[23.2500mm 57.7500mm 0 122 "TRANSMITTER" "clearline"]
@@ -1456,4 +1456,5 @@ Layer(10 "silk")
 	Text[53.4000mm 80.3000mm 0 122 "LED GND" "clearline"]
 	Text[51.6000mm 74.8500mm 0 122 "LED" "clearline"]
 	Text[23.1500mm 8.7000mm 0 144 "CLK & DAT ARE MEANT TO BE SWAPPED IN AN UMBILLICAL" "clearline"]
+	Text[25.3000mm 11.3000mm 0 144 "TODO: CREATE 5V FOR LIGHT MOSFET" "clearline"]
 )

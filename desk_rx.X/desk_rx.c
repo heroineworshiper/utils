@@ -48,10 +48,9 @@
 #include <string.h>
 #include "desk_tx.h"
 
-// the number of this desk (0-3)
+// the desk code
 #define SELF 2
 
-#define USE_RF
 
 // button outputs
 #define DOWN_LAT LATC5
@@ -107,26 +106,30 @@ uint8_t serial_tick2 = 0;
 #define PRESET4 0x20
 #define ABORT 0x10
 #define SET 0x01
-#define UP 0x04
+#define UP 0x06
 #define DOWN 0x40
+// #define PRESET1 7
+// #define PRESET2 1
+// #define PRESET3 3
+// #define PRESET4 8
+// #define ABORT 4
+// #define SET 0
+// #define UP 2
+// #define DOWN 6
 #define NO_BUTTON 0xff
 // current button pressed
 uint8_t button = NO_BUTTON;
 #define TOTAL_BUTTONS 8
 
 
-// period for 1kbit at 16Mhz
-//#define BIT_PERIOD 4000
-// period for 2kbit at 16Mhz
-#define BIT_PERIOD 2000
 uint16_t code;
 uint8_t code_counts[TOTAL_BUTTONS];
 // time since last code count
 uint8_t code_tick = 0;
 // ticks to accumulate code counts
-#define CODE_TICKS (HZ / 8)
+#define CODE_TICKS (HZ / 5)
 // code count required for a button press
-#define CODE_THRESHOLD 4
+#define CODE_THRESHOLD 3
 
 // ticks before releasing all buttons.  Not used
 #define BUTTON_TIMEOUT 200
@@ -245,6 +248,21 @@ void print_hex2(uint8_t v)
     send_uart(hex_table[v & 0xf]);
 //    send_uart(' ');
 }
+
+void print_hex4(uint16_t v)
+{
+    const uint8_t hex_table[] = {
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+        'a', 'b', 'c', 'd', 'e', 'f'  
+    };
+    
+    send_uart(hex_table[(v >> 12) & 0xf]);
+    send_uart(hex_table[(v >> 8) & 0xf]);
+    send_uart(hex_table[(v >> 4) & 0xf]);
+    send_uart(hex_table[v & 0xf]);
+    send_uart(' ');
+}
+
 
 void print_text(const uint8_t *s)
 {
@@ -427,9 +445,9 @@ void main()
     RCSTA = 0b10010000;
     BAUDCON = 0b00001000;
 // 9600 baud at 16Mhz
-//#define BAUD_CODE 416
-// 19200 baud
-#define BAUD_CODE 208
+#define BAUD_CODE 416
+// 19200 baud for debugging
+//#define BAUD_CODE 208
     SPBRGH = BAUD_CODE >> 8;
     SPBRGL = BAUD_CODE & 0xff;
     RCIE = 1;
@@ -467,16 +485,7 @@ void main()
     {
         asm("clrwdt");
         handle_uart();
-        
-        
-//        if(flags.have_pulse)
-//        {
-//            print_number(pulse);
-//            if(!uart_size)
-//                print_number(pulse_tick);
-//            flags.have_pulse = 0;
-//        }
-        
+
         if(flags.have_serial)
         {
             flags.have_serial = 0;
@@ -640,6 +649,73 @@ void main()
 }
 
 
+void capture_bit()
+{
+// shift next bit in
+    code <<= 1;
+    code |= RF_PORT;
+
+// fill the code counts
+    if(code == BUTTON_CODE(SELF, PRESET1)) 
+    {
+        code_counts[0]++;
+        code = 0;
+    }
+    else
+    if(code == BUTTON_CODE(SELF, PRESET2))
+    {
+        code_counts[1]++;
+        code = 0;
+    }
+    else
+    if(code == BUTTON_CODE(SELF, PRESET3))
+    {
+        code_counts[2]++;
+        code = 0;
+    }
+    else
+    if(code == BUTTON_CODE(SELF, PRESET4))
+    {
+        code_counts[3]++;
+        code = 0;
+    }
+    else
+    if(code == BUTTON_CODE(SELF, ABORT))
+    {
+        code_counts[4]++;
+        code = 0;
+    }
+    else
+    if(code == BUTTON_CODE(SELF, SET))
+    {
+        code_counts[5]++;
+        code = 0;
+    }
+    else
+    if(code == BUTTON_CODE(SELF, UP)){
+        code_counts[6]++;
+        code = 0;
+    }
+    else
+    if(code == BUTTON_CODE(SELF, DOWN))
+    {
+        code_counts[7]++;
+        code = 0;
+    }
+
+// if(code == KEY)
+// {
+//     print_text("*");
+// LED_LAT = 1;
+// }
+// else
+// {
+// //    print_text("-");
+// LED_LAT = 0;
+// }
+
+}
+
 
 void interrupt isr()
 {
@@ -676,10 +752,7 @@ void interrupt isr()
                 else
                     button = NO_BUTTON;
 
-
 // DEBUG print code counts
-//if(button != SET)
-{
 print_number(code_counts[0]);
 print_number(code_counts[1]);
 print_number(code_counts[2]);
@@ -688,8 +761,8 @@ print_number(code_counts[4]);
 print_number(code_counts[5]);
 print_number(code_counts[6]);
 print_number(code_counts[7]);
+print_hex4(code);
 print_text("\n");
-}
                 code_counts[0] = 0;
                 code_counts[1] = 0;
                 code_counts[2] = 0;
@@ -728,11 +801,16 @@ print_text("\n");
         if(IOCAF2)
         {
             flags.interrupt_complete = 0;
-// reset the alarm to 1/2 a period
-            TMR1 = -BIT_PERIOD / 2;
+// reset the alarm to land in the middle of the next bit
+// Rising edge lags.  Falling edge leads.
+            if(RF_PORT)
+                TMR1 = -BIT_PERIOD;
+            else
+                TMR1 = -BIT_PERIOD * 3 / 2;
+            TMR1IF = 0;
             IOCAF2 = 0;
-// disable edge detect until the next alarm
-            IOCIE = 0;
+
+            capture_bit();
         }
 
 
@@ -742,72 +820,8 @@ print_text("\n");
             flags.interrupt_complete = 0;
             TMR1 = -BIT_PERIOD;
             TMR1IF = 0;
-// enable edge detect
-            IOCIE = 1;
 
-// shift next bit in
-            code <<= 1;
-            code |= RF_PORT;
-
-// fill the code counts
-            if(code == BUTTON_CODE(PRESET1)) 
-            {
-                code_counts[0]++;
-                code = 0;
-            }
-            else
-            if(code == BUTTON_CODE(PRESET2))
-            {
-                code_counts[1]++;
-                code = 0;
-            }
-            else
-            if(code == BUTTON_CODE(PRESET3))
-            {
-                code_counts[2]++;
-                code = 0;
-            }
-            else
-            if(code == BUTTON_CODE(PRESET4))
-            {
-                code_counts[3]++;
-                code = 0;
-            }
-            else
-            if(code == BUTTON_CODE(ABORT))
-            {
-                code_counts[4]++;
-                code = 0;
-            }
-            else
-            if(code == BUTTON_CODE(SET))
-            {
-                code_counts[5]++;
-                code = 0;
-            }
-            else
-            if(code == BUTTON_CODE(UP)){
-                code_counts[6]++;
-                code = 0;
-            }
-            else
-            if(code == BUTTON_CODE(DOWN))
-            {
-                code_counts[7]++;
-                code = 0;
-            }
-
-// if(code == KEY)
-// {
-//     print_text("*");
-// LED_LAT = 1;
-// }
-// else
-// {
-// //    print_text("-");
-// LED_LAT = 0;
-// }
-
+            capture_bit();
 
         }
     }
