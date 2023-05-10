@@ -734,6 +734,7 @@ print_text("\n");
 }
 
 
+#ifdef USE_RF
 // get stop bit
 void get_stop()
 {
@@ -828,6 +829,7 @@ void get_sof()
     else
         rf_counter = 0;
 }
+#endif // USE_RF
 
 
 void interrupt isr()

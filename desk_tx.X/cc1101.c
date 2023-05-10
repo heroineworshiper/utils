@@ -183,6 +183,7 @@
 #define CC1101_DEFVAL_TEST0      0x09        // Various Test Settings
 
 
+// stm32 pins
 #define CC1101_SCL_PIN GPIO_Pin_11
 #define CC1101_SCL_GPIO GPIOA
 #define CC1101_SDA_PIN GPIO_Pin_9
@@ -193,15 +194,15 @@
 
 
 
+// PIC pins
+#define CS_LAT LATC3
+#define CS_TRIS TRISC3
 
-#define CS_LAT LATC5
-#define CS_TRIS TRISC5
+#define CLK_LAT LATC7
+#define CLK_TRIS TRISC7
 
-#define CLK_LAT LATC3
-#define CLK_TRIS TRISC3
-
-#define MOSI_LAT LATC4
-#define MOSI_TRIS TRISC4
+#define MOSI_LAT LATC6
+#define MOSI_TRIS TRISC6
 
 static void delay()
 {
