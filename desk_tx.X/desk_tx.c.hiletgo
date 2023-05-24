@@ -269,21 +269,21 @@ void main()
 
 // Convert only 1 button to a code
                 uint8_t button = 0;
-                if(!RA0) button = 0x1;
+                if(!RA0) button = 0x01; // UNUSED
                 else
-                if(!RA1) button = 0x2;
+                if(!RA1) button = 0x02; // PRESET2
                 else
-                if(!RA2) button = 0x4;
+                if(!RA2) button = 0x04; // UP
                 else
-                if(!RA4) button = 0x8;
+                if(!RA4) button = 0x08; // PRESET1
                 else
-                if(!RA5) button = 0x10;
+                if(!RA5) button = 0x10; // SET
                 else
-                if(!RB4) button = 0x20;
+                if(!RB4) button = 0x20; // PRESET4
                 else
-                if(!RB5) button = 0x40;
+                if(!RB5) button = 0x40; // DOWN
                 else
-                if(!RB6) button = 0x80;
+                if(!RB6) button = 0x80; // PRESET3
 
 // DEBUG
 //selection = 0;

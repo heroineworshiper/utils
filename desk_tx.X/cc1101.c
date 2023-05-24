@@ -215,10 +215,12 @@ static void delay()
 //         asm("nop");
 //     }
 // 100us delay at 2Mhz clock
-     for(i = 0; i < 3; i++)
-     {
-         asm("nop");
-     }
+//      for(i = 0; i < 3; i++)
+//      {
+//          asm("nop");
+//      }
+
+     asm("nop");
 }
 
 static void select_chip()

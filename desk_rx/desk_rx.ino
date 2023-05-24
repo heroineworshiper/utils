@@ -32,6 +32,7 @@ extern "C" {
 #define SSID "OVERPRICED APT"
 #define PASSWORD "growamane"
 
+#define CLOCKSPEED 80000000
 #define PORT 1234
 #define BUFSIZE 16
 char incomingPacket[BUFSIZE];  // buffer for incoming packets
@@ -41,12 +42,14 @@ os_timer_t ticker;
 #define HZ 20
 
 // ticks between bits
-#define UART_PERIOD (80000000 / 9600)
-
+#define UART_PERIOD (CLOCKSPEED / 9600)
+// 10 ms UART timeout
+#define UART_TIMEOUT (CLOCKSPEED / 100)
 
 // GPIOS
-#define LED_PIN 2  // On board LED
-#define UART_RX 15 // UART RX
+#define CONNECTION_LED 2  // Connection LED.  On is 0
+#define STATUS_LED 4 // status LED.  On is 0
+#define UART_RX 5 // UART RX
 // button outputs
 #define DOWN_PIN 12
 #define UP_PIN 13
@@ -58,8 +61,8 @@ os_timer_t ticker;
 #define PRESET2 0x02
 #define PRESET3 0x80
 #define PRESET4 0x20
-#define ABORT 0x10
-#define SET 0x01
+//#define ABORT 0x10
+#define SET 0x10
 #define UP 0x04
 #define DOWN 0x40
 #define NO_BUTTON 0
@@ -69,19 +72,11 @@ uint8_t button = NO_BUTTON;
 
 // LED blinker
 uint16_t blink_tick = 0;
-// time since last byte
-uint8_t serial_tick = 0;
-// incremented value
-uint8_t serial_tick2 = 0;
 // time since last button press
-uint8_t button_tick = 0;
-// incremented value
 uint8_t button_tick2 = 0;
-// time between serial packets before resetting the packet
-#define SERIAL_TIMEOUT 10
 
 // ticks before releasing all buttons
-#define BUTTON_TIMEOUT 60
+#define BUTTON_TIMEOUT (HZ / 5)
 
 // buffer for the status code
 #define STATUS_SIZE 4
@@ -293,11 +288,8 @@ void reset_buttons()
 // timeout timer
 void handle_tick(void* x)
 {
-//    digitalWrite(LED_PIN,!(digitalRead(LED_PIN)));
+//    digitalWrite(CONNECTION_LED,!(digitalRead(CONNECTION_LED)));
 
-    if(serial_tick2 < SERIAL_TIMEOUT)
-        serial_tick2++;
-    
     if(button_tick2 < BUTTON_TIMEOUT)
         button_tick2++;
     
@@ -310,22 +302,32 @@ void handle_tick(void* x)
     blink_tick++;
 }
 
+
+// start bit timeout
+void ICACHE_RAM_ATTR start_bit_timeout()
+{
+    timer1_disable();
+    status_size = 0;
+}
+
 // UART bit timer
 void ICACHE_RAM_ATTR uart_int();
 void ICACHE_RAM_ATTR timer1_int()
 {
+// schedule next bit
     timer1_write(UART_PERIOD);
-//    digitalWrite(LED_PIN,!(digitalRead(LED_PIN)));
-    serial_in <<= 1;
-    serial_in = digitalRead(UART_RX);
+//    digitalWrite(CONNECTION_LED,!(digitalRead(CONNECTION_LED)));
+// desk outputs LSB 1st
+    serial_in >>= 1;
+    if(digitalRead(UART_RX))
+        serial_in |= 0x80;
     uart_counter++;
     if(uart_counter >= 8)
     {
         flags.have_serial = 1;
-        serial_tick = serial_tick2;
-        serial_tick2 = 0;
-        timer1_disable();
-// enable start bit detection
+// enable start bit detection & timeout
+        timer1_attachInterrupt(start_bit_timeout);
+        timer1_write(UART_TIMEOUT);
         attachInterrupt(digitalPinToInterrupt(UART_RX), uart_int, FALLING);
     }
 }
@@ -336,25 +338,38 @@ void ICACHE_RAM_ATTR uart_int()
     uart_counter = 0;
     serial_in = 0;
     detachInterrupt(digitalPinToInterrupt(UART_RX));
-// enable bit detection
+// enable bit reads
+    timer1_attachInterrupt(timer1_int);
     timer1_enable(TIM_DIV1, TIM_EDGE, TIM_SINGLE);
     timer1_write(UART_PERIOD * 3 / 2);
 }
 
 void do_connection()
 {
-    Serial.printf("Connecting to %s ", SSID);
-    WiFi.begin(SSID, PASSWORD);
-    
-    int tick = 0;
-    while (WiFi.status() != WL_CONNECTED)
+    while(WiFi.status() != WL_CONNECTED)
     {
-        delay(1000);
-        Serial.print(".");
-        tick++;
-        if(tick >= 10) ESP.restart();
+        Serial.printf("\nConnecting to %s ", SSID);
+        WiFi.begin(SSID, PASSWORD);
+
+        int tick = 0;
+        flags.want_led = 1;
+        while (WiFi.status() != WL_CONNECTED)
+        {
+            delay(500);
+            Serial.print(".");
+            digitalWrite(CONNECTION_LED, flags.want_led);
+            flags.want_led = !flags.want_led;
+            tick++;
+// reset command might actually put it in bootloader
+            if(tick >= 20) 
+            {
+                ESP.restart();
+                break;
+            }
+        }
     }
     Serial.println(" connected");
+    digitalWrite(CONNECTION_LED, 0);
 
     Udp.begin(PORT);
     Serial.printf("Now listening at IP %s, UDP port %d\n", 
@@ -371,8 +386,10 @@ void setup()
     Serial.println();
     Serial.println();
     Serial.println();
-    pinMode(LED_PIN, OUTPUT);
-    digitalWrite(LED_PIN, 0);
+    pinMode(CONNECTION_LED, OUTPUT);
+    pinMode(STATUS_LED, OUTPUT);
+    digitalWrite(CONNECTION_LED, 0);
+    digitalWrite(STATUS_LED, 1);
     pinMode(UART_RX, INPUT);
 
 
@@ -390,7 +407,7 @@ void setup()
     os_timer_setfn(&ticker, handle_tick, 0);
     os_timer_arm(&ticker, 1000 / HZ, 1);
 
-    timer1_attachInterrupt(timer1_int);
+//    timer1_attachInterrupt(timer1_int);
 //    timer1_enable(TIM_DIV1, TIM_EDGE, TIM_SINGLE);
 //    timer1_write(UART_PERIOD);
 
@@ -411,15 +428,19 @@ void loop()
     if(flags.have_serial)
     {
         flags.have_serial = 0;
-// reject if serial port timed out
-        if(serial_tick >= SERIAL_TIMEOUT)
-            status_size = 0;
         if(status_size < STATUS_SIZE)
             status_code[status_size++] = serial_in;
 
 // handle a new packet
         if(status_size >= STATUS_SIZE)
         {
+//             Serial.printf("loop %d: %02x %02x %02x %02x\n", 
+//                 __LINE__,
+//                 status_code[0],
+//                 status_code[1],
+//                 status_code[2],
+//                 status_code[3]);
+
 // waiting for a preset to set
             if(status_code[0] == 0x01 && 
                 status_code[1] == 0x06 && 
@@ -445,6 +466,7 @@ void loop()
 
 // preset bug workaround
             preset_bug();
+            status_size = 0;
         }
     }
 
@@ -464,21 +486,22 @@ void loop()
     if (packetSize)
     {
 // receive incoming UDP packets
-//         Serial.printf("loop %d: got %d bytes from %s, port %d\n", 
-//             __LINE__,
-//             packetSize, 
-//             Udp.remoteIP().toString().c_str(), 
-//             Udp.remotePort());
+        Serial.printf("loop %d: got %d bytes from %s ", 
+            __LINE__,
+            packetSize, 
+            Udp.remoteIP().toString().c_str(), 
+            Udp.remotePort());
         int len = Udp.read(incomingPacket, BUFSIZE);
 
 // button code
         if(len == 1)
         {
+            button = incomingPacket[0];
             Serial.printf("BUTTON %02x\n", button);
 
 // abort height workaround on each button press
             preset_state = PRESET_IDLE;
-            button_tick = 0;
+            button_tick2 = 0;
             
             
 
@@ -508,13 +531,13 @@ void loop()
                     digitalWrite(MODE_PIN, 0);
                     flags.want_led = 1;
                     break;
-                case ABORT:
-                    digitalWrite(DOWN_PIN, 1);
-                    digitalWrite(UP_PIN, 1);
-                    digitalWrite(RECALL_PIN, 1);
-                    digitalWrite(MODE_PIN, 0);
-                    flags.want_led = 1;
-                    break;
+//                 case ABORT:
+//                     digitalWrite(DOWN_PIN, 1);
+//                     digitalWrite(UP_PIN, 1);
+//                     digitalWrite(RECALL_PIN, 1);
+//                     digitalWrite(MODE_PIN, 0);
+//                     flags.want_led = 1;
+//                     break;
 // Min height preset
                 case PRESET1:
                     digitalWrite(DOWN_PIN, 1);
@@ -594,7 +617,7 @@ void loop()
 
 
 // update the LED
-    digitalWrite(LED_PIN, flags.want_led);
+    digitalWrite(STATUS_LED, !flags.want_led);
 }
 
 

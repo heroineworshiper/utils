@@ -35,17 +35,27 @@ catnums.c: cat files based on numbers in the filenames.  Used with segments2.c t
 change.c: replacement for chown & chgrp which fixes some bugs
 
 
-desk.pcb: transmitter & receiver circuit for the desk.
+desk.pcb: transmitter & receiver circuit for the desk using IR.
     Voltage must be over 3.3 for the hall effect sensor encoder to work.
 
-desk_tx.FCStd: enclosure for desk transmitter
+desk2.pcb: transmitter circuit for 433Mhz desk transmitter.  Receiver
+    circuit is replaced by an ESP8266
+
+desk_tx2.FCStd: enclosure for desk transmitter
     - detents must be printed with detent support
     - direction of the lines must be towards the detents, not tangential
     - a polar array might generate better support lines
     - print caps with print mask to use multiple color filament
+    TODO: overhang area for riveting hall effect sensor
+
 
 desk_tx.X
 desk_rx.X: mplab projects for the desk firmware
+
+desk_rx.FCStd: enclosure for IR desk receiver
+
+desk_rx2.FCStd: enclosure for ESP8266 based desk receiver
+
 
 
 diffdir.c: find changed files in 2 directories
