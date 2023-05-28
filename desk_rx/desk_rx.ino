@@ -68,12 +68,16 @@ os_timer_t ticker;
 #define NO_BUTTON 0
 // last button pressed
 uint8_t button = NO_BUTTON;
+// last ID
+uint8_t id = 0xff;
+uint8_t prev_id = 0xff;
 
 
+int got_tick = 0;
 // LED blinker
 uint16_t blink_tick = 0;
 // time since last button press
-uint8_t button_tick2 = 0;
+uint8_t button_tick = 0;
 
 // ticks before releasing all buttons
 #define BUTTON_TIMEOUT (HZ / 5)
@@ -169,6 +173,7 @@ void preset_bug()
                 {
                     uint16_t height = (status_code[2] << 8) |
                         status_code[3];
+//Serial.printf("WAIT_MOVE %d\n", height);
 // reached top
                     if(height >= MAX_HEIGHT)
                     {
@@ -273,7 +278,7 @@ void preset_bug()
 }
 
 
-
+// button timed out or was invalid
 void reset_buttons()
 {
     digitalWrite(DOWN_PIN, 1);
@@ -281,6 +286,7 @@ void reset_buttons()
     digitalWrite(RECALL_PIN, 1);
     digitalWrite(MODE_PIN, 1);
     flags.want_led = 0;
+    prev_id = id;
 }
 
 
@@ -289,17 +295,7 @@ void reset_buttons()
 void handle_tick(void* x)
 {
 //    digitalWrite(CONNECTION_LED,!(digitalRead(CONNECTION_LED)));
-
-    if(button_tick2 < BUTTON_TIMEOUT)
-        button_tick2++;
-    
-    if(led_tick < LED_TIMEOUT)
-        led_tick++;
-
-    if(preset_tick < PRESET_TIMEOUT)
-        preset_tick++;
-
-    blink_tick++;
+    got_tick = 1;
 }
 
 
@@ -425,6 +421,21 @@ void loop()
     }
 
 
+    if(got_tick)
+    {
+        got_tick = 0;
+        if(button_tick < BUTTON_TIMEOUT)
+            button_tick++;
+
+        if(led_tick < LED_TIMEOUT)
+            led_tick++;
+
+        if(preset_tick < PRESET_TIMEOUT)
+            preset_tick++;
+
+        blink_tick++;
+    }
+
     if(flags.have_serial)
     {
         flags.have_serial = 0;
@@ -494,19 +505,20 @@ void loop()
         int len = Udp.read(incomingPacket, BUFSIZE);
 
 // button code
-        if(len == 1)
+        if(len == 2)
         {
-            button = incomingPacket[0];
-            Serial.printf("BUTTON %02x\n", button);
+            id = incomingPacket[0];
+            button = incomingPacket[1];
+            Serial.printf("ID %02x BUTTON %02x\n", id, button);
+
+
 
 // abort height workaround on each button press
             preset_state = PRESET_IDLE;
-            button_tick2 = 0;
+            button_tick = 0;
             
             
 
-// abort height workaround on each button press
-            preset_state = PRESET_IDLE;
 
             switch(button)
             {
@@ -517,6 +529,7 @@ void loop()
                     digitalWrite(MODE_PIN, 1);
                     flags.want_led = 1;
                     break;
+
                 case DOWN:
                     digitalWrite(DOWN_PIN, 0);
                     digitalWrite(UP_PIN, 1);
@@ -524,22 +537,22 @@ void loop()
                     digitalWrite(MODE_PIN, 1);
                     flags.want_led = 1;
                     break;
+
                 case SET:
+// reject preset button after it timed out unless its ID changed
+                    if(id == prev_id) break;
+
                     digitalWrite(DOWN_PIN, 1);
                     digitalWrite(UP_PIN, 1);
                     digitalWrite(RECALL_PIN, 1);
                     digitalWrite(MODE_PIN, 0);
                     flags.want_led = 1;
                     break;
-//                 case ABORT:
-//                     digitalWrite(DOWN_PIN, 1);
-//                     digitalWrite(UP_PIN, 1);
-//                     digitalWrite(RECALL_PIN, 1);
-//                     digitalWrite(MODE_PIN, 0);
-//                     flags.want_led = 1;
-//                     break;
 // Min height preset
                 case PRESET1:
+// reject preset button after it timed out unless its ID changed
+                    if(id == prev_id) break;
+
                     digitalWrite(DOWN_PIN, 1);
                     digitalWrite(UP_PIN, 1);
                     digitalWrite(RECALL_PIN, 0);
@@ -551,6 +564,9 @@ void loop()
                     break;
 
                 case PRESET2:
+// reject preset button after it timed out unless its ID changed
+                    if(id == prev_id) break;
+
                     digitalWrite(DOWN_PIN, 0);
                     digitalWrite(UP_PIN, 1);
                     digitalWrite(RECALL_PIN, 0);
@@ -562,6 +578,9 @@ void loop()
                     break;
 
                 case PRESET3:
+// reject preset button after it timed out unless its ID changed
+                    if(id == prev_id) break;
+
                     digitalWrite(DOWN_PIN, 1);
                     digitalWrite(UP_PIN, 0);
                     digitalWrite(RECALL_PIN, 0);
@@ -574,6 +593,9 @@ void loop()
 
 // Max height preset
                 case PRESET4:
+// reject preset button after it timed out unless its ID changed
+                    if(id == prev_id) break;
+
                     digitalWrite(DOWN_PIN, 0);
                     digitalWrite(UP_PIN, 0);
                     digitalWrite(RECALL_PIN, 1);
@@ -592,9 +614,9 @@ void loop()
         }
     }
 
-    if(button_tick2 == BUTTON_TIMEOUT)
+    if(button_tick == BUTTON_TIMEOUT)
     {
-        button_tick2++;
+        button_tick++;
         reset_buttons();
     }
 

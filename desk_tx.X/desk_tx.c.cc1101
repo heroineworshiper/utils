@@ -61,8 +61,8 @@
 // debug rate is 1200 baud
 #define TIMER1_VALUE -(CLOCKSPEED / 4 / 1200 - 1)
 
-#define CODE_SIZE (KEYSIZE + 4)
-static uint8_t code[CODE_SIZE];
+#define TIMER0_VALUE -(CLOCKSPEED / 4 / 256 / 20 - 1)
+
 
 // debug UART
 #define UART_BUFSIZE 64
@@ -76,20 +76,41 @@ uint8_t uart_ready = 1;
 void uart_start();
 void (*uart_state)() = uart_start;
 
+// hardware UART
+#define IR_BUFSIZE 16
+uint8_t ir_buffer[IR_BUFSIZE];
+uint8_t ir_size = 0;
+uint8_t ir_position1 = 0;
+uint8_t ir_position2 = 0;
+
 // send a char on the hardware UART
-// void handle_uart()
-// {
-// // must use TRMT instead of TXIF on the 16F1508
-//     if(uart_size > 0 && TRMT)
-//     {
-//         TXREG = uart_buffer[uart_position2++];
-// 		uart_size--;
-// 		if(uart_position2 >= UART_BUFSIZE)
-// 		{
-// 			uart_position2 = 0;
-// 		}
-//     }
-// }
+void handle_ir()
+{
+// must use TRMT instead of TXIF on the 16F1508
+    if(ir_size > 0 && TRMT)
+    {
+        TXREG = ir_buffer[ir_position2++];
+		ir_size--;
+		if(ir_position2 >= IR_BUFSIZE)
+		{
+			ir_position2 = 0;
+		}
+    }
+}
+
+void send_ir(uint8_t c)
+{
+	if(ir_size < IR_BUFSIZE)
+	{
+		ir_buffer[ir_position1++] = c;
+		ir_size++;
+		if(ir_position1 >= IR_BUFSIZE)
+		{
+			ir_position1 = 0;
+		}
+	}
+}
+
 
 // send a char on the software UART
 void handle_uart()
@@ -103,15 +124,6 @@ void handle_uart()
     }
 }
 
-
-void send_ir(uint8_t c)
-{
-    while(!TRMT)
-    {
-    }
-    
-    TXREG = c;
-}
 
 void send_uart(uint8_t c)
 {
@@ -169,8 +181,6 @@ void main()
 // 2 Mhz internal clock
     OSCCON = 0b01100000;
 
-    LED_TRIS = 0;
-    LED_LAT = 1;
 
     ANSELA = 0;
     ANSELB = 0;
@@ -189,24 +199,10 @@ void main()
     TMR1IE = 1;
     TMR1 = TIMER1_VALUE;
 
-// debug delay
-//     OPTION_REG = 0b00001111;
-//     TMR0IF = 0;
-//     uint16_t tick = 0;
-//     while(tick < 2000)
-//     {
-//         if(TMR0IF) 
-//         {
-//             tick++;
-//             TMR0IF = 0;
-//         }
-//     }
+// packet timer
+    OPTION_REG = 0b00000111;
+    TMR0 = TIMER0_VALUE;    
 
-// enable PWM4/C1
-//     T2CON = 0b00000100;
-//     PR2 = 12;
-//     PWM4DCH = 6;
-//     PWM4CON = 0b11000000;
 
 
 // start transmitting
@@ -226,25 +222,78 @@ void main()
 // disable receive
     RCSTA = 0b10000000;
     BAUDCON = 0b00001000;
-// 2000 baud at 2Mhz
-    SPBRG = (CLOCKSPEED / 4 / 2000 - 1);
+// 4000 baud at 2Mhz
+    SPBRG = (CLOCKSPEED / 4 / 4000 - 1);
+
+
+    LED_TRIS = 0;
+    LED_LAT = 1;
+
+//    print_text("Welcome to desk TX\n");
+
+// get unique ID from flash
+#define ADDRESS 0x0f80
+    PMADRL = ADDRESS & 0x80;
+    PMADRH = ADDRESS >> 8;
+    PMCON1bits.CFGS = 0;
+    PMCON1bits.RD = 1;
+    asm("nop");
+    asm("nop");
+    uint8_t id = PMDATL;
+    uint8_t id2 = id + 1;
+
+// erase flash
+    PMCON1bits.CFGS = 0;
+    PMCON1bits.FREE = 1;
+    PMCON1bits.WREN = 1;
+
+    PMCON2 = 0x55;
+    PMCON2 = 0xaa;
+    PMCON1bits.WR = 1;
+    asm("nop");
+    asm("nop");
+    PMCON1bits.WREN = 0;
+
+// write new ID
+    PMCON1bits.CFGS = 0;
+    PMCON1bits.WREN = 1;
+    PMCON1bits.LWLO = 1;
+    PMDATL = id2;
+    PMDATH = id2;
+    PMCON2 = 0x55;
+    PMCON2 = 0xaa;
+    PMCON1bits.WR = 1;
+    asm("nop");
+    asm("nop");
+
+
+    PMCON1bits.LWLO = 0;
+    PMCON2 = 0x55;
+    PMCON2 = 0xaa;
+    PMCON1bits.WR = 1;
+    asm("nop");
+    asm("nop");
+    PMCON1bits.WREN = 0;
+
+//print_number(id);
+//print_text("\n");    
+
 
 // enable interrupts
     PEIE = 1;
     GIE = 1;
 
-
-
-//    print_text("Welcome to desk TX\n");
-
     uint8_t offset = 0;
     uint32_t analog_accum = 0;
     uint16_t analog_total = 0;
+    uint16_t analog_result = 0;
+    uint8_t have_analog = 0;
 #define ANALOG_TOTAL 32
     while(1)
     {
         asm("clrwdt");
         handle_uart();
+        handle_ir();
 
         if(ADIF)
         {
@@ -259,10 +308,27 @@ void main()
 // scale analog to 8 bits
                 analog_accum /= ANALOG_TOTAL;
                 analog_accum /= 4;
+                analog_result = analog_accum;
+                have_analog = 1;
+                analog_accum = 0;
+                analog_total = 0;
+            }
+        }
 
-if(uart_size == 0 && analog_accum < 255)
-{
-print_number(analog_accum);
+// send a code            
+        if(TMR0IF)
+        {
+            TMR0IF = 0;
+            TMR0 = TIMER0_VALUE;
+//LED_LAT = !LED_LAT;
+            
+            if(have_analog && ir_size == 0)
+            {
+                have_analog = 0;
+
+//if(uart_size == 0)
+//{
+//print_number(analog_accum);
 //                 print_number(RA0); // SET
 //                 print_number(RA1); // PRESET 2
 //                 print_number(RA2); // UP
@@ -271,73 +337,48 @@ print_number(analog_accum);
 //                 print_number(RB4); // PRESET 4
 //                 print_number(RB5); // DOWN
 //                 print_number(RB6); // PRESET 3
-print_text("\n");
-}
-                uint8_t selection = 0xff;
-                if(analog_accum < 60)
-                {
-                    selection = 3;
-                }
-                else
-                if(analog_accum < 130)
-                {
-                    selection = 2;
-                }
-                else
-                if(analog_accum < 200)
-                {
-                    selection = 1;
-                }
-                else
-                {
-                    selection = 0;
-                }
+//print_text("\n");
+//}
 
 
-                if(selection != 0xff)
-                {
+
 // Convert only 1 button to a code
-                    uint8_t button = 0;
-                    if(!RA0) button = 0x01; // UNUSED
-                    else
-                    if(!RA1) button = 0x02; // PRESET2
-                    else
-                    if(!RA2) button = 0x04; // UP
-                    else
-                    if(!RA4) button = 0x08; // PRESET1
-                    else
-                    if(!RA5) button = 0x10; // SET
-                    else
-                    if(!RB4) button = 0x20; // PRESET4
-                    else
-                    if(!RB5) button = 0x40; // DOWN
-                    else
-                    if(!RB6) button = 0x80; // PRESET3
-
-    // DEBUG
-    //selection = 0;
-                    const uint8_t *key = keys + selection * KEYSIZE;
-    // compute new code
-                    uint8_t i;
-                    for(i = 0; i < KEYSIZE; i++)
-                        code[i] = key[i];
-    // XOR the button with the 1st 4 bytes of the key
-                    for(i = 0; i < 4; i++)
-                    {
-                        code[KEYSIZE + i] = button ^ key[i];
-                    }
+                uint8_t button = 0;
+                if(!RA0) button = 0x01; // UNUSED
+                else
+                if(!RA1) button = 0x02; // PRESET2
+                else
+                if(!RA2) button = 0x04; // UP
+                else
+                if(!RA4) button = 0x08; // PRESET1
+                else
+                if(!RA5) button = 0x10; // SET
+                else
+                if(!RB4) button = 0x20; // PRESET4
+                else
+                if(!RB5) button = 0x40; // DOWN
+                else
+                if(!RB6) button = 0x80; // PRESET3
 
 
-
-    // send it
-                    for(i = 0; i < CODE_SIZE; i++)
-                    {
-                        send_ir(code[i]);
-                    }
-                }
-
-                analog_accum = 0;
-                analog_total = 0;
+// sync code + extra 0xff to align the start bit
+                send_ir(0xff);
+                send_ir(0xff);
+                send_ir(0x2d);
+                send_ir(0xd4);
+// data
+                send_ir(id ^ salt[0]);
+                send_ir(id ^ salt[1]);
+                send_ir(id ^ salt[2]);
+                send_ir(id ^ salt[3]);
+                send_ir(analog_result ^ salt[4]);
+                send_ir(analog_result ^ salt[5]);
+                send_ir(analog_result ^ salt[6]);
+                send_ir(analog_result ^ salt[7]);
+                send_ir(button ^ salt[8]);
+                send_ir(button ^ salt[9]);
+                send_ir(button ^ salt[10]);
+                send_ir(button ^ salt[11]);
             }
         }
     }

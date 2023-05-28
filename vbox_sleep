@@ -1,0 +1,25 @@
+#!/usr/bin/python
+
+# pause the virtual machines
+
+import os
+import sys
+import subprocess
+
+command = sys.argv[1]
+
+text = subprocess.check_output(['VBoxManage', 'list', 'runningvms'])
+lines = text.split('\n')
+for i in range(len(lines)):
+    words = lines[i].split(" {")
+    if len(words[0]) > 0:
+# strip the "
+        name = ""
+        for c in words[0]:
+            if c != '\"':
+                name += c
+        print("'" + command + "'ing " + name)
+        subprocess.call(['VBoxManage', 'controlvm', name, command])
+
+
+
