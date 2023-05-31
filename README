@@ -105,6 +105,8 @@ lens_cap.FCStd: lens cap for a gopro 4
 
 logcat.c: print debug output from android programs on the command line
 
+match.py: find the file with the matching md5sum
+
 pocket.FCSTd: pocket protector for keys
 
 push.c: push multiple files to an android directory
