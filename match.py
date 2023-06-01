@@ -2,6 +2,7 @@
 
 
 # what file in the search path contains the 1st argument's contents
+# searches for files in a certain directory, matching a regular expression
 
 import os
 import stat
@@ -11,23 +12,21 @@ import subprocess
 
 
 
-
+def md5sum(file):
+    statbuf = os.stat(file)
+    if not stat.S_ISDIR(statbuf.st_mode):
+        string = subprocess.check_output(['md5sum', file])
+        substrings = string.split(' ')
+        return substrings[0]
+    else:
+        return ''
 
 def test_file(file):
-    statbuf = os.stat(file)
-    
-    if stat.S_ISDIR(statbuf.st_mode):
-#        print(file)
-        text = subprocess.check_output(['find', file])
-        lines = text.split('\n')
-        for line in lines:
-            if line != file and line != '':
-                test_file(line)
-    else:
-        dst_md5 = subprocess.check_output(['md5sum', file])
+    dst_md5 = md5sum(file)
+#    print('%s %s' % (file, dst_md5))
 
-        if dst_md5 == src_md5:
-            print('%s matches\n' % file)
+    if dst_md5 == src_md5:
+        print('%s matches' % file)
 
 
 
@@ -45,19 +44,31 @@ def test_file(file):
 argc = len(sys.argv)
 files = []
 
-if argc < 3:
-    print('Usage %s <file> <search path>' % sys.argv[0])
-    print('Example: %s lens.stl *' % sys.argv[0])
-    exit
+if argc < 2:
+    print('Usage %s <file> <search path> [filename pattern]' % sys.argv[0])
+    print('Example: %s lens.stl . \'*.stl\'             # search the *.stl files' % sys.argv[0])
+    print('Example: %s lens.stl .                     # search all files' % sys.argv[0])
+    sys.exit()
 
-for i in range(1, argc):
-    if i == 1:
-        src_md5 = subprocess.check_output(['md5sum', sys.argv[i]])
-    else:
-        files.append(sys.argv[i])
 
-for file in files:
-    test_file(file)
+src_file = sys.argv[1]
+search_path = sys.argv[2]
+pattern = ''
+if argc >= 4:
+    pattern = sys.argv[3]
+src_md5 = md5sum(src_file)
+#print('SOURCE: %s %s' % (src_file, src_md5))
+
+if pattern != '':
+    text = subprocess.check_output(['find', search_path, '-name', pattern])
+else:
+    text = subprocess.check_output(['find', search_path])
+lines = text.split('\n')
+
+for file in lines:
+#    print(file)
+    if file != '':
+        test_file(file)
 
 
 
