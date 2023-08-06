@@ -45,6 +45,7 @@ argc = len(sys.argv)
 files = []
 
 if argc < 2:
+    print('What file in the search path contains the 1st argument's contents')
     print('Usage %s <file> <search path> [filename pattern]' % sys.argv[0])
     print('Example: %s lens.stl . \'*.stl\'             # search the *.stl files' % sys.argv[0])
     print('Example: %s lens.stl .                     # search all files' % sys.argv[0])

@@ -2,7 +2,7 @@
  * 433Mhz Transmitter for remote controlled GU24 bulb or anything
  * requiring a transmitter.
  *
- * Copyright (C) 2022 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2022-2024 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  * 
  */
+
+// Program it by connecting the battery terminals to the bench.  The ground loop
+// through the programmer should turn it on.  CLK & DAT are crossed
 
 // CONFIG1
 #pragma config FOSC = INTOSC    // Oscillator Selection Bits (INTOSC oscillator: I/O function on CLKIN pin)
@@ -57,11 +60,12 @@ uint8_t serial_in;
 #define LED_LAT LATB6
 #define LED_TRIS TRISB6
 
-uint8_t radio_tick = 0;
+//uint8_t radio_tick = 0;
 // transmit for this much time
 // shorter decreases the chance of a dropped packet misfiring it
 // but increases the chance of it never being received
-#define RADIO_TIMEOUT (HZ)
+//#define RADIO_TIMEOUT (HZ)
+// TODO: use a unique ID in every packet.  Requires a better button.
 
 static void delay()
 {
@@ -131,8 +135,8 @@ void main()
     {
         asm("clrwdt");
 
-        if(radio_tick < RADIO_TIMEOUT)
-        {
+//        if(radio_tick < RADIO_TIMEOUT)
+//        {
             if(offset < sizeof(key) - 4)
             {
                 send_uart(key[offset++]);
@@ -145,11 +149,11 @@ void main()
 
             if(offset >= sizeof(key))
                 offset = 0;
-        }
-        else
-        {
-            LED_LAT = 0;
-        }
+//        }
+//        else
+//        {
+//            LED_LAT = 0;
+//        }
 
 
 
@@ -180,8 +184,8 @@ void interrupt isr()
         if(TMR1IF)
         {
             TMR1IF = 0;
-            if(radio_tick < RADIO_TIMEOUT)
-                radio_tick++;
+//            if(radio_tick < RADIO_TIMEOUT)
+//                radio_tick++;
             interrupt_done = 0;
 
 //            TRISC1 = 0;
