@@ -23,6 +23,8 @@ DO_LEVELING = False
 # change nozzle & bed temperature after the 1st layer
 DO_TEMP_CHANGE = False
 
+# change layer height without changing extrusion
+DO_LAYER_CHANGE = True
 
 # temperature changes
 # this promotes layer adhesion without destroying the bed
@@ -30,6 +32,10 @@ NOZZLE_TEMP2 = 250
 # this lowers the bed temperature without causing shrinkage
 BED_TEMP2 = 0
 
+# new layer height
+LAYER_H = 0.36
+# number of layers to change
+LAYER_COUNT = 4
 
 # timelapse config
 # mm
@@ -67,6 +73,9 @@ lastLine = -1
 # last head position before timelapse
 lastG0 = ""
 totalLayers = 0
+newZ1 = 0
+origZ0 = 0
+origZ1 = 0
 
 # output file string
 dst = []
@@ -209,6 +218,8 @@ print '    RETRACT_DIST=', RETRACT_DIST
 print "BED LEVELING=" + str(DO_LEVELING)
 print "CHANGE TEMPS=" + str(DO_TEMP_CHANGE)
 print '    2nd temperature: bed:', BED_TEMP2, ' nozzle/:', NOZZLE_TEMP2
+print "CHANGE LAYERS=" + str(DO_LAYER_CHANGE)
+print '    LAYER_H=', LAYER_H, ' LAYER_COUNT=', LAYER_COUNT
 print '-----------------------------------------------'
 print 'displayed name:', strippedName
 print 'replacing temperature lines:', tempLine1, ' -', tempLine2
@@ -217,10 +228,11 @@ print 'last line:', lastLine
 print 'total layers:', totalLayers
 
 
-#value = raw_input('Press ENTER to proceed or ctrl-C to quit.')
-#if value != '':
-#    print('Giving up & going to a movie');
-#    exit()
+value = raw_input('Press ENTER to proceed or ctrl-C to quit.')
+if value != '':
+    print('Giving up & going to a movie');
+    exit()
+print('\n');
 
 
 # copy up to temperature lines
@@ -261,6 +273,19 @@ while True:
         skip = True
 
     if line.startswith('G0'):
+# recompute Z
+        if DO_LAYER_CHANGE:
+            words = line.split(' ')
+            lastWord = words[len(words) - 1]
+            if lastWord.startswith('Z'):
+                origZ1 = float(lastWord[1:])
+                if layer_number < LAYER_COUNT:
+                    newZ1 += LAYER_H
+                else:
+                    newZ1 += origZ1 - origZ0
+                origZ0 = origZ1
+                line = " ".join(words[:-1])
+                line += " Z%.02f\n" % newZ1
         lastG0 = line
 
     if DO_TEMP_CHANGE and 'LAYER:' in line:

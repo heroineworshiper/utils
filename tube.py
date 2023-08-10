@@ -45,6 +45,8 @@ class Movie:
 #EXE = 'youtube-dl'
 #EXE = '/root/yt-dlp/yt-dlp'
 EXE = '/usr/local/bin/yt-dlp'
+HACK1 = '--rm-cache-dir'
+HACK2 = '--no-mtime'
 VCODEC = 'avc1'
 # use VP9 only for highest resolution, since it's not seekable
 VCODEC_H = 'vp9@'
@@ -248,15 +250,17 @@ for movie in movies:
 for movie in movies:
     if want_video:
         command = [EXE, 
+            HACK1,
             '-f',
             str(movie.video_code) + '+' + str(movie.audio_code), 
-            '--no-mtime',
+            HACK2,
             movie.url]
     else:
         command = [EXE, 
+            HACK1,
             '-f',
             str(movie.audio_code), 
-            '--no-mtime',
+            HACK2,
             movie.url]
 
     print(' '.join(command))
