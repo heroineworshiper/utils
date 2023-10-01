@@ -279,6 +279,13 @@ while True:
             lastWord = words[len(words) - 1]
             if lastWord.startswith('Z'):
                 origZ1 = float(lastWord[1:])
+                
+                if origZ1 - origZ0 > LAYER_H:
+                    print 'New LAYER_H ' + str(LAYER_H) + \
+                        ' is thinner than old layer ' + str(origZ1 - origZ0)
+                    print 'Giving up & going to a movie'
+                    exit()
+                
                 if layer_number < LAYER_COUNT:
                     newZ1 += LAYER_H
                 else:

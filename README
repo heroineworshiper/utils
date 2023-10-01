@@ -49,6 +49,10 @@ desk_tx2.FCStd: enclosure for desk transmitter
     TODO: overhang area for riveting hall effect sensor
 
 desk_rx: ESP8266 firmware for the wifi desk receiver
+    Build in arduino
+    Select ESP8266 board, ttyUSB port
+    Press reset & GPIO0 buttons to put it in bootloader mode.
+
 
 desk_tx.X
 desk_rx.X: mplab projects for the desk firmware
@@ -63,6 +67,9 @@ diffdir.c: find changed files in 2 directories
 
 eos_rp_cable.FCStd: lens ribbon cable for an EOS RP
     - Must be converted to a kicad pcb file with stl_to_pcb.c & pcb_commands
+
+flashlight.FCStd: small 3D printed flashlight
+    .4 nozzle .20 layers .5mm extra prime
 
 fixcura.py: Add timelapse, bed leveling to Cura's gcode.
 
