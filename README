@@ -73,6 +73,8 @@ flashlight.FCStd: small 3D printed flashlight
 
 fixcura.py: Add timelapse, bed leveling to Cura's gcode.
 
+gphoto.wrapper: access the 1st Canon USB device with gphoto2
+
 grapher.c: Graph data from a file with continuous polling
 
 goog-hotas.c: Use the T flight Hotas with Goog Earth flight simulator

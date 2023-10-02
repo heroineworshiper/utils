@@ -1,0 +1,44 @@
+#!/usr/bin/python
+
+
+# access the 1st Canon USB device with gphoto2
+
+
+# usage: 
+# gphoto.wrapper -P
+# gphoto.wrapper -L
+
+
+import os
+import sys
+import subprocess
+
+
+
+
+text = subprocess.check_output(['lsusb'])
+lines = text.split('\n')
+gotIt = False
+for i in range(len(lines)):
+    print('line=%s' % lines[i])
+    words = lines[i].split(' ')
+    if words[0] == 'Bus' and \
+        words[2] == 'Device' and \
+        words[6].startswith('Canon'):
+        bus = words[1]
+        device = words[3].split(':')[0]
+        print('bus=%s device=%s' % (bus, device))
+        command = ['gphoto2', '--port=usb:%s,%s' % (bus, device)]
+        for j in range(1, len(sys.argv)):
+            command.append(sys.argv[j])
+        print(' '.join(command))
+        subprocess.call(command)
+        gotIt = True
+        break
+
+if not gotIt:
+    print('Camera not found')
+
+
+
+
