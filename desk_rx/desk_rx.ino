@@ -61,6 +61,7 @@ os_timer_t ticker;
 #define PRESET2 0x02
 #define PRESET3 0x80
 #define PRESET4 0x20
+#define FINE 0x01
 //#define ABORT 0x10
 #define SET 0x10
 #define UP 0x04
@@ -71,16 +72,21 @@ uint8_t button = NO_BUTTON;
 // last ID
 uint8_t id = 0xff;
 uint8_t prev_id = 0xff;
-
+// fine button pressed
+uint8_t fine = 0;
 
 int got_tick = 0;
 // LED blinker
 uint16_t blink_tick = 0;
 // time since last button press
 uint8_t button_tick = 0;
+// time since fine mode started
+uint8_t fine_tick = 0;
 
 // ticks before releasing all buttons
 #define BUTTON_TIMEOUT (HZ / 5)
+// ticks for fine button press
+#define FINE_TIMEOUT (HZ / 4)
 
 // buffer for the status code
 #define STATUS_SIZE 4
@@ -287,6 +293,7 @@ void reset_buttons()
     digitalWrite(MODE_PIN, 1);
     flags.want_led = 0;
     prev_id = id;
+    fine_tick = 0;
 }
 
 
@@ -424,6 +431,11 @@ void loop()
     if(got_tick)
     {
         got_tick = 0;
+        if(fine && 
+            fine_tick < FINE_TIMEOUT &&
+            (button == UP || button == DOWN))
+            fine_tick++;
+        
         if(button_tick < BUTTON_TIMEOUT)
             button_tick++;
 
@@ -492,6 +504,15 @@ void loop()
         flags.want_led = 0;
     }
 
+// turn off buttons in fine mode
+    if(fine && 
+        fine_tick >= FINE_TIMEOUT && 
+        (button == UP || button == DOWN))
+    {
+        digitalWrite(DOWN_PIN, 1);
+        digitalWrite(UP_PIN, 1);
+    }
+
 // button press overrides LED
     int packetSize = Udp.parsePacket();
     if (packetSize)
@@ -504,12 +525,19 @@ void loop()
             Udp.remotePort());
         int len = Udp.read(incomingPacket, BUFSIZE);
 
+// DEBUG light for all packets
+//flags.want_led = 1;
+
+
 // button code
         if(len == 2)
         {
             id = incomingPacket[0];
             button = incomingPacket[1];
             Serial.printf("ID %02x BUTTON %02x\n", id, button);
+// extract the fine button
+            fine = button & FINE;
+            button &= ~FINE;
 
 
 
@@ -524,86 +552,107 @@ void loop()
             {
                 case UP:
                     digitalWrite(DOWN_PIN, 1);
-                    digitalWrite(UP_PIN, 0);
                     digitalWrite(RECALL_PIN, 1);
                     digitalWrite(MODE_PIN, 1);
+                    if(fine_tick < FINE_TIMEOUT)
+                    {
+                        digitalWrite(UP_PIN, 0);
+                    }
                     flags.want_led = 1;
                     break;
 
                 case DOWN:
-                    digitalWrite(DOWN_PIN, 0);
                     digitalWrite(UP_PIN, 1);
                     digitalWrite(RECALL_PIN, 1);
                     digitalWrite(MODE_PIN, 1);
+                    if(fine_tick < FINE_TIMEOUT)
+                    {
+                        digitalWrite(DOWN_PIN, 0);
+                    }
                     flags.want_led = 1;
                     break;
 
                 case SET:
+                    if(!fine)
+                    {
 // reject preset button after it timed out unless its ID changed
-                    if(id == prev_id) break;
+                        if(id == prev_id) break;
 
-                    digitalWrite(DOWN_PIN, 1);
-                    digitalWrite(UP_PIN, 1);
-                    digitalWrite(RECALL_PIN, 1);
-                    digitalWrite(MODE_PIN, 0);
-                    flags.want_led = 1;
+                        digitalWrite(DOWN_PIN, 1);
+                        digitalWrite(UP_PIN, 1);
+                        digitalWrite(RECALL_PIN, 1);
+                        digitalWrite(MODE_PIN, 0);
+                        flags.want_led = 1;
+                    }
                     break;
 // Min height preset
                 case PRESET1:
+                    if(!fine)
+                    {
 // reject preset button after it timed out unless its ID changed
-                    if(id == prev_id) break;
+                        if(id == prev_id) break;
 
-                    digitalWrite(DOWN_PIN, 1);
-                    digitalWrite(UP_PIN, 1);
-                    digitalWrite(RECALL_PIN, 0);
-                    digitalWrite(MODE_PIN, 1);
-                    flags.want_led = 1;
-// trigger the preset workaround
-                    preset_state = WAIT_SAVED_PRESET;
-                    preset_tick = 0;
+                        digitalWrite(DOWN_PIN, 1);
+                        digitalWrite(UP_PIN, 1);
+                        digitalWrite(RECALL_PIN, 0);
+                        digitalWrite(MODE_PIN, 1);
+                        flags.want_led = 1;
+    // trigger the preset workaround
+                        preset_state = WAIT_SAVED_PRESET;
+                        preset_tick = 0;
+                    }
                     break;
 
                 case PRESET2:
+                    if(!fine)
+                    {
 // reject preset button after it timed out unless its ID changed
-                    if(id == prev_id) break;
+                        if(id == prev_id) break;
 
-                    digitalWrite(DOWN_PIN, 0);
-                    digitalWrite(UP_PIN, 1);
-                    digitalWrite(RECALL_PIN, 0);
-                    digitalWrite(MODE_PIN, 1);
-                    flags.want_led = 1;
-// trigger the preset workaround
-                    preset_state = WAIT_SAVED_PRESET;
-                    preset_tick = 0;
+                        digitalWrite(DOWN_PIN, 0);
+                        digitalWrite(UP_PIN, 1);
+                        digitalWrite(RECALL_PIN, 0);
+                        digitalWrite(MODE_PIN, 1);
+                        flags.want_led = 1;
+    // trigger the preset workaround
+                        preset_state = WAIT_SAVED_PRESET;
+                        preset_tick = 0;
+                    }
                     break;
 
                 case PRESET3:
+                    if(!fine)
+                    {
 // reject preset button after it timed out unless its ID changed
-                    if(id == prev_id) break;
+                        if(id == prev_id) break;
 
-                    digitalWrite(DOWN_PIN, 1);
-                    digitalWrite(UP_PIN, 0);
-                    digitalWrite(RECALL_PIN, 0);
-                    digitalWrite(MODE_PIN, 1);
-                    flags.want_led = 1;
-// trigger the preset workaround
-                    preset_state = WAIT_SAVED_PRESET;
-                    preset_tick = 0;
+                        digitalWrite(DOWN_PIN, 1);
+                        digitalWrite(UP_PIN, 0);
+                        digitalWrite(RECALL_PIN, 0);
+                        digitalWrite(MODE_PIN, 1);
+                        flags.want_led = 1;
+    // trigger the preset workaround
+                        preset_state = WAIT_SAVED_PRESET;
+                        preset_tick = 0;
+                    }
                     break;
 
 // Max height preset
                 case PRESET4:
+                    if(!fine)
+                    {
 // reject preset button after it timed out unless its ID changed
-                    if(id == prev_id) break;
+                        if(id == prev_id) break;
 
-                    digitalWrite(DOWN_PIN, 0);
-                    digitalWrite(UP_PIN, 0);
-                    digitalWrite(RECALL_PIN, 1);
-                    digitalWrite(MODE_PIN, 1);
-                    flags.want_led = 1;
-// trigger the preset workaround
-                    preset_state = WAIT_SAVED_PRESET;
-                    preset_tick = 0;
+                        digitalWrite(DOWN_PIN, 0);
+                        digitalWrite(UP_PIN, 0);
+                        digitalWrite(RECALL_PIN, 1);
+                        digitalWrite(MODE_PIN, 1);
+                        flags.want_led = 1;
+    // trigger the preset workaround
+                        preset_state = WAIT_SAVED_PRESET;
+                        preset_tick = 0;
+                    }
                     break;
 
                 default:

@@ -54,8 +54,9 @@ desk_rx: ESP8266 firmware for the wifi desk receiver
     Press reset & GPIO0 buttons to put it in bootloader mode.
 
 
-desk_tx.X
-desk_rx.X: mplab projects for the desk firmware
+desk_tx.X: mplab project for the desk transmitter
+
+desk_rx.X: mplab project for the IR desk receiver
 
 desk_rx.FCStd: enclosure for IR desk receiver
 
