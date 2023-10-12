@@ -32,8 +32,8 @@ NOZZLE_TEMP2 = 250
 # this lowers the bed temperature without causing shrinkage
 BED_TEMP2 = 0
 
-# new layer height
-LAYER_H = 0.36
+# amount to add to layer height.  Must be multiple of .04
+LAYER_H = 0.04
 # number of layers to change
 LAYER_COUNT = 4
 
@@ -79,7 +79,6 @@ origZ1 = 0
 
 # output file string
 dst = []
-
 
 def printTimelapse(retract, lastG0):
     dst.append(';TimeLapse Begin\n')
@@ -219,7 +218,7 @@ print "BED LEVELING=" + str(DO_LEVELING)
 print "CHANGE TEMPS=" + str(DO_TEMP_CHANGE)
 print '    2nd temperature: bed:', BED_TEMP2, ' nozzle/:', NOZZLE_TEMP2
 print "CHANGE LAYERS=" + str(DO_LAYER_CHANGE)
-print '    LAYER_H=', LAYER_H, ' LAYER_COUNT=', LAYER_COUNT
+print '    LAYER_H CHANGE=', LAYER_H, ' LAYER_COUNT=', LAYER_COUNT
 print '-----------------------------------------------'
 print 'displayed name:', strippedName
 print 'replacing temperature lines:', tempLine1, ' -', tempLine2
@@ -262,6 +261,9 @@ dst.append('M117 %s\n' % strippedName)
 
 # search for LAYER: lines
 layer_number = 0
+changed_layers = 0
+origZ0 = 0
+newZ0 = 0
 while True:
     line = file.readline()
     skip = False
@@ -279,20 +281,27 @@ while True:
             lastWord = words[len(words) - 1]
             if lastWord.startswith('Z'):
                 origZ1 = float(lastWord[1:])
-                
-                if origZ1 - origZ0 > LAYER_H:
-                    print 'New LAYER_H ' + str(LAYER_H) + \
-                        ' is thinner than old layer ' + str(origZ1 - origZ0)
-                    print 'Giving up & going to a movie'
-                    exit()
-                
-                if layer_number < LAYER_COUNT:
-                    newZ1 += LAYER_H
+                origH = origZ1 - origZ0
+
+
+#                if origH > LAYER_H:
+#                    print 'New LAYER_H ' + str(LAYER_H) + \
+#                        ' is thinner than old layer ' + str(origH)
+#                    print 'Giving up & going to a movie'
+#                    exit()
+
+                if changed_layers < LAYER_COUNT:
+                    newZ1 += origH + LAYER_H
+                    print("Layer %d height=%.2f new height=%.2f" % 
+                        (changed_layers, origH, newZ1 - newZ0))
                 else:
-                    newZ1 += origZ1 - origZ0
+                    newZ1 += origH
+
                 origZ0 = origZ1
+                newZ0 = newZ1
                 line = " ".join(words[:-1])
                 line += " Z%.02f\n" % newZ1
+                changed_layers += 1
         lastG0 = line
 
     if DO_TEMP_CHANGE and 'LAYER:' in line:
