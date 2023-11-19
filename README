@@ -62,9 +62,11 @@ desk_rx.FCStd: enclosure for IR desk receiver
 
 desk_rx2.FCStd: enclosure for ESP8266 based desk receiver
 
-
+download_x.py: hacky way to download X broadcasts
 
 diffdir.c: find changed files in 2 directories
+
+
 
 eos_rp_cable.FCStd: lens ribbon cable for an EOS RP
     - Must be converted to a kicad pcb file with stl_to_pcb.c & pcb_commands
