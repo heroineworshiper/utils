@@ -9,7 +9,7 @@
 
 # step 3: copy the URL of any .ts file after 1 to get the auth token
 
-
+# step 4: cat the .ts files into 1
 
 # run this program
 # download_x [output file] [URL of the .ts file] [.m3u8 file]
