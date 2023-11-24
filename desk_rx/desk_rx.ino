@@ -294,6 +294,7 @@ void reset_buttons()
     flags.want_led = 0;
     prev_id = id;
     fine_tick = 0;
+    button = NO_BUTTON;
 }
 
 
@@ -534,7 +535,10 @@ void loop()
         {
             id = incomingPacket[0];
             button = incomingPacket[1];
-            Serial.printf("ID %02x BUTTON %02x\n", id, button);
+            Serial.printf("ID=%02x BUTTON=%02x fine_tick=%d\n", 
+                id, 
+                button,
+                fine_tick);
 // extract the fine button
             fine = button & FINE;
             button &= ~FINE;
@@ -665,6 +669,7 @@ void loop()
 
     if(button_tick == BUTTON_TIMEOUT)
     {
+        Serial.printf("BUTTON_TIMEOUT\n");
         button_tick++;
         reset_buttons();
     }
