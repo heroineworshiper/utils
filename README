@@ -102,7 +102,7 @@ headset.pcb: self monitoring headset enclosure
 hextube.py: create hex cylinders in blender
 
 incense10.FCStd: starship incense holder
- - uses 6 3x6mm magnets, 2 2x14mm magnets, 7 m2.6 x 6mm screws
+ - uses 2 2x14mm magnets, 7 m2.6 x 6mm screws
  - 1 ball point pen spring
  - use 20% infill for booster, thrust, engines
  - 100% infill for the grids
@@ -174,7 +174,7 @@ symbol.py: find a symbol in a bunch of ELF files
 
 tampon3.FCStd: adjustible thing for standing a solar panel up in a car
 
-terminal.c: dumber terminal program which always saves a log & doesn't 
+terminal.c: Fake terminal program which always saves a log & doesn't 
     convert any formatting codes
 
 timelapse.FCStd: shutter protrusion which bolts on the Ender 3 hot end

@@ -36,6 +36,7 @@ BED_TEMP2 = 0
 LAYER_H = 0.04
 # number of layers to change
 LAYER_COUNT = 4
+#LAYER_COUNT = 9999
 
 # timelapse config
 # mm

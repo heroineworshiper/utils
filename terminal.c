@@ -1,8 +1,31 @@
-// A better alternative to minicom
+/*
+ * Fake terminal
+ * Copyright (C) 2017-2024  Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
+
+
 // Serial terminal with custom baud
 
 // cross compile: ./compile.sh terminal.c terminal
+// gcc -O2 -o terminal terminal.c
 
+// Hit ctrl-c a certain number of times to quit the terminal
 
 // sample XBee commands:
 // atbd13900
@@ -17,8 +40,6 @@
 //#define ADD_NEWLINES
 
 
-// delay between characters required for programming bluetooth
-int output_delay = 1000;
 
 #define LOG_FILE "terminal.cap"
 
@@ -32,11 +53,18 @@ int output_delay = 1000;
 #include <sys/ioctl.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <signal.h>
 #ifndef __clang__
 #include <linux/serial.h>
 #endif 
 
 
+// delay between characters required for programming bluetooth
+int output_delay = 1000;
+int send_sigint = 1;
+// quit the terminal after a certain number of sigint's
+int sigint_count = 0;
+#define MAX_SIGINTS 5
 int hex_output = 0;
 int ascii_output = 1;
 int local_echo = 0;
@@ -44,6 +72,7 @@ int send_cr = 1;
 
 void quit()
 {
+    printf("quit %d: Giving up & going to a movie\n", __LINE__);
 // reset the console
 	struct termios info;
 	tcgetattr(fileno(stdin), &info);
@@ -154,14 +183,15 @@ static int init_serial(char *path, int baud, int custom_baud)
 //    term.c_cflag |= CRTSCTS; // flow control
 	term.c_cc[VTIME] = 1;
 	term.c_cc[VMIN] = 1;
-/*
- * printf("init_serial: %d path=%s iflag=0x%08x oflag=0x%08x cflag=0x%08x\n", 
- * __LINE__, 
- * path, 
- * term.c_iflag, 
- * term.c_oflag, 
- * term.c_cflag);
- */
+
+// printf("init_serial: %d path=%s iflag=0x%08x lflag=0x%08x oflag=0x%08x cflag=0x%08x\n", 
+// __LINE__, 
+// path, 
+// term.c_iflag, 
+// term.c_lflag, 
+// term.c_oflag, 
+// term.c_cflag);
+
 	if(tcsetattr(fd, TCSANOW, &term))
 	{
 		printf("init_serial %d: path=%s %s\n", __LINE__, path, strerror(errno));
@@ -206,6 +236,24 @@ void write_char(int fd, unsigned char c)
 }
 
 
+// trap SIGINT
+static void sig_catch(int sig)
+{
+    sigint_count++;
+//    printf("sig_catch %d: sig=%d\n", __LINE__, sig);
+}
+
+static void help()
+{
+    printf("Usage: terminal [options] [tty path]\n");
+    printf("-c don't forward ctrl-c.  Otherwise hit ctrl-c %d times to quit the terminal\n",
+        MAX_SIGINTS);
+    printf("-e local echo\n");
+    printf("-b baud rate\n");
+    printf("-x hex output\n");
+    exit(0);
+}
+
 int main(int argc, char *argv[])
 {
 	int baud = 115200;
@@ -213,10 +261,21 @@ int main(int argc, char *argv[])
 	int custom_baud = 0;
 	char *path = 0;
 	int i;
+
 	if(argc > 1)
 	{
 		for(i = 1; i < argc; i++)
 		{
+            if(!strcmp(argv[i], "-h"))
+            {
+                help();
+            }
+            else
+            if(!strcmp(argv[i], "-c"))
+            {
+                send_sigint = 0;
+            }
+            else
 			if(!strcmp(argv[i], "-e"))
 			{
 				local_echo = 1;
@@ -265,14 +324,26 @@ int main(int argc, char *argv[])
 			break;
 	}
 
-	printf("Fake terminal.  Baud=%d hex_output=%d ascii_output=%d local_echo=%d send_cr=%d output_delay=%d\n", 
+	printf("Fake terminal.  baud=%d hex_output=%d local_echo=%d send_cr=%d send SIGINT=%d output_delay=%d\n", 
 		baud,
 		hex_output,
-		ascii_output,
 		local_echo,
         send_cr,
+        send_sigint,
         output_delay);
 	if(path) printf("path=%s\n", path);
+
+// This prevents ctrl-c from killing the terminal but doesn't allow us to
+// forward it to the serial port.
+//     sigset_t mask;
+//     sigemptyset(&mask);
+//     sigaddset(&mask, SIGINT);
+//     if (sigprocmask(SIG_BLOCK, &mask, NULL) < 0) {
+//         perror("Error masking SIGINT");
+//         return 1;
+//     }
+
+    signal(SIGINT, sig_catch);
 
 	FILE *fd = fopen(LOG_FILE, "w");
 	if(!fd)
@@ -344,6 +415,20 @@ int main(int argc, char *argv[])
 			&timeout);
 //printf("main %d serial_fd=%d result=%d\n", __LINE__, serial_fd, result);
 
+// got a signal.  
+// So far, we're just handling SIGINT so pass it through
+        if(result < 0) 
+        {
+            if(send_sigint)
+                write_char(serial_fd, 0x3);
+            if(sigint_count >= MAX_SIGINTS || !send_sigint)
+            {
+                quit();
+            }
+            continue;
+        }
+
+// data from serial port
 		if(FD_ISSET(serial_fd, &rfds))
 		{
 
@@ -686,12 +771,13 @@ printf("main %d\n", __LINE__);
 #endif
 		}
 
-// send input from console
+// data from console
 		if(FD_ISSET(0, &rfds))
 		{
 			int i;
 			int bytes = read(0, test_buffer, sizeof(test_buffer));
-			
+            sigint_count = 0;
+
 			for(i = 0; i < bytes; i++)
 			{
 				char c = test_buffer[i];

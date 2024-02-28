@@ -43,10 +43,12 @@ class Movie:
 
 
 #EXE = 'youtube-dl'
-#EXE = '/root/yt-dlp/yt-dlp'
-EXE = '/usr/local/bin/yt-dlp'
+EXE = '/root/yt-dlp/yt-dlp.sh'
+#EXE = '/usr/local/bin/yt-dlp'
 HACK1 = '--rm-cache-dir'
 HACK2 = '--no-mtime'
+HACK3 = '--remux-video'
+HACK4 = 'mp4'
 VCODEC = 'avc1'
 # use VP9 only for highest resolution, since it's not seekable
 VCODEC_H = 'vp9@'
@@ -254,6 +256,8 @@ for movie in movies:
             '-f',
             str(movie.video_code) + '+' + str(movie.audio_code), 
             HACK2,
+#            HACK3,
+#            HACK4,
             movie.url]
     else:
         command = [EXE, 

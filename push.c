@@ -22,6 +22,7 @@
 
 
 // push multiple files to a phone directory
+// TODO: match device with minimal number of chars
 // gcc -o push push.c
 
 #include <stdio.h>

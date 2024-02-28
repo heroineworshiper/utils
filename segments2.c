@@ -16,7 +16,8 @@ int main(int argc, char *argv[])
         printf("Download a segmented video file by replacing the formatting code with the number\n");
         printf("Usage: segments URL <start number> <end number inclusive> [step size]\n");
         printf(" -n dry run\n");
-        printf("Example: segments2 https://ga.video.cdn.pbs.org/videos/some_long_filename_%%05d.ts 1 268\n");
+        printf("Example: segments2 \"https://ga.video.cdn.pbs.org/videos/some_long_filename_%%05d.ts\" 1 268\n");
+        printf("Example: segments2 \"https://ga.video.cdn.pbs.org/videos/some_long_filename_%%08X.ts\" 1 268\n");
         exit(1);
     }
     

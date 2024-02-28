@@ -233,8 +233,17 @@ void main(int argc, char *argv[])
             }
             else
             {
+                struct stat ostat;
+                if(stat(path, &ostat))
+                {
+//                    printf("main %d: stat %s failed\n", __LINE__, path);
+//                    return;
+                }
+
 // do it in C for speed
-                lchown(path, uid, gid);
+                if(ostat.st_uid != uid ||
+                    ostat.st_gid != gid)
+                    lchown(path, uid, gid);
             }
             
             if(i > 0 && !(i % 1000)) 

@@ -15,11 +15,15 @@ STRETCH_LAYERS = True
 # amount to add to layer height.  Must be multiple of .04 on the Ender 3
 LAYER_H = 0.04
 # number of layers to change, not including the dropped layer
-# change 3 to get container panels to be 5mm
-LAYER_COUNT = 3
+# use 3 lines to get container panels to be 5mm
+# use 4 lines for a 1mm .32 shell + 1 extra .32 layer
+LAYER_COUNT = 4
 
 # drop a layer.  
 # Enable a raft & enable this to get it to vary the line width in layer 1
+# Set raft contact Z distance 0
+# Set speed of 1st layer over raft the same as first layer speed.
+# Set skirt to 2 layers to still print a skirt.
 DROP_LAYER1 = True
 
 
