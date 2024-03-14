@@ -5,12 +5,13 @@
 # step 1: download the .m3u8 playlist using 
 # https://fetchfile.me/en/download-twitter-broadcast/
 
-# step 2: play the video in the browser with network debugging
+# step 2: play the video in the browser with network debugging.
 
-# step 3: copy the URL of any .ts file after 1 to get the auth token
+# step 3: copy the URL of the highest resolution .ts file
+# This URL determines the resolution of the output
 
 # step 4: run this program
-# download_x [output file] [URL with the .ts file] [.m3u8 file]
+# download_x [URL with the .ts file] [.m3u8 file]
 
 # step 5: cat the .ts files into 1
 
@@ -24,9 +25,9 @@ import fileinput
 import subprocess
 
 
-outpath = sys.argv[1]
-ts_url = sys.argv[2]
-playlist_path = sys.argv[3]
+#outpath = sys.argv[1]
+ts_url = sys.argv[1]
+playlist_path = sys.argv[2]
 
 print 'Reading', playlist_path
 file = open(playlist_path, 'r')
