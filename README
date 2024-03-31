@@ -84,6 +84,11 @@ grapher.c: Graph data from a file with continuous polling
 
 goog-hotas.c: Use the T flight Hotas with Goog Earth flight simulator
 
+gopro_battery.FCStd: dummy battery enclosure for a gopro 7
+ - changing the lofts requires deleting the fillet, lofting, adding the fillet back
+   to work around a lofting bug.
+ - .4 nozzle .32 layers
+
 gopro_lens.FCStd: gopro 3 lens cover which holds a button instead of a lens
 
 gu24.FCStd
