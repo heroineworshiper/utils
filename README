@@ -98,6 +98,7 @@ gu24tx.FCStd
 gu24tx.X/: remote controlled GU-24 lightbulb
 
 
+headlamp.FCStd: head lamp for COB LED
 
 
 headset2.FCStd
