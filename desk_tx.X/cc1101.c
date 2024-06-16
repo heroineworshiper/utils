@@ -352,7 +352,7 @@ void cc1101_receiver()
 	write_reg(CC1101_ADDR, 0x0);
 // set channel
 	write_reg(CC1101_CHANNR, 0x0);
-// set carrier frequency
+// set carrier frequency.  page 75
     write_reg(CC1101_FREQ2, CC1101_DEFVAL_FREQ2_433);
     write_reg(CC1101_FREQ1, CC1101_DEFVAL_FREQ1_433);
     write_reg(CC1101_FREQ0, CC1101_DEFVAL_FREQ0_433);

@@ -60,7 +60,9 @@
 
 
 // delay between characters required for programming bluetooth
+// 0 to disable
 int output_delay = 1000;
+//int output_delay = 0;
 int send_sigint = 1;
 // quit the terminal after a certain number of sigint's
 int sigint_count = 0;
@@ -239,7 +241,7 @@ void write_char(int fd, unsigned char c)
 // trap SIGINT
 static void sig_catch(int sig)
 {
-    sigint_count++;
+    if(sig == SIGINT) sigint_count++;
 //    printf("sig_catch %d: sig=%d\n", __LINE__, sig);
 }
 
@@ -344,6 +346,7 @@ int main(int argc, char *argv[])
 //     }
 
     signal(SIGINT, sig_catch);
+    signal(SIGTSTP, sig_catch);
 
 	FILE *fd = fopen(LOG_FILE, "w");
 	if(!fd)
@@ -801,7 +804,7 @@ printf("main %d\n", __LINE__);
 					
 // delay to avoid overflowing a 9600 passthrough
 // doesn't print without local echo
-					usleep(output_delay);
+					if(output_delay) usleep(output_delay);
 					write_char(serial_fd, 0xa);
 				}
 				else
@@ -811,7 +814,7 @@ printf("main %d\n", __LINE__);
 				}
 
 // delay to avoid overflowing a 9600 passthrough
-				usleep(output_delay);
+				if(output_delay) usleep(output_delay);
 			}
 		}
 
