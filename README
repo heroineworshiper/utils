@@ -72,7 +72,12 @@ eos_rp_cable.FCStd: lens ribbon cable for an EOS RP
     - Must be converted to a kicad pcb file with stl_to_pcb.c & pcb_commands
 
 flashlight.FCStd: small 3D printed flashlight
-    .4 nozzle .20 layers .5mm extra prime
+    .4 nozzle .20 layers
+
+flashlight4.FCStd: large 3D printed flashlight for 60W equivalent LED
+    .8 nozzle .32 layers
+    wrench.FCStd: tool for installing a flashlight switch
+        .4 nozzle .32 layers
 
 fixcura.py: Add timelapse, bed leveling to Cura's gcode.
 
@@ -98,8 +103,10 @@ gu24tx.FCStd
 gu24tx.X/: remote controlled GU-24 lightbulb
 
 
-headlamp.FCStd: head lamp for COB LED
+headlamp.FCStd: head lamp for 3.5V COB LED
 
+headlamp5.FCStd: head lamp for 60W replacement LED
+headlamp_battery.FCStd: boost converter case for headlamp5
 
 headset2.FCStd
 headset3.sch
