@@ -106,7 +106,7 @@ gu24tx.X/: remote controlled GU-24 lightbulb
 headlamp.FCStd: head lamp for 3.5V COB LED
 
 headlamp5.FCStd: head lamp for 60W replacement LED
-headlamp_battery.FCStd: boost converter case for headlamp5
+headlamp_battery2.FCStd: boost converter case for headlamp5
 
 headset2.FCStd
 headset3.sch
