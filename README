@@ -99,7 +99,7 @@ gopro_lens.FCStd: gopro 3 lens cover which holds a button instead of a lens
 gu24.FCStd
 gu24.pcb
 gu24rx.X/
-gu24tx.FCStd
+gu24tx2.FCStd
 gu24tx.X/: remote controlled GU-24 lightbulb
 
 
