@@ -38,7 +38,8 @@
 //#define TEST_ADC
 //#define TEST_IR
 //#define ADD_NEWLINES
-
+// start with break enabled for boards which require it
+#define BREAK_START
 
 
 #define LOG_FILE "terminal.cap"
@@ -71,6 +72,8 @@ int hex_output = 0;
 int ascii_output = 1;
 int local_echo = 0;
 int send_cr = 1;
+int is_break = 0;
+int serial_fd = -1;
 
 void quit()
 {
@@ -245,6 +248,20 @@ static void sig_catch(int sig)
 //    printf("sig_catch %d: sig=%d\n", __LINE__, sig);
 }
 
+#ifdef BREAK_START
+void exit_break()
+{
+    if(is_break)
+    {
+        printf("exiting BRK\n");
+        is_break = 0;
+        int arg = 0;
+        ioctl(serial_fd, TIOCCBRK, &arg);
+    }
+}
+#endif
+
+
 static void help()
 {
     printf("Usage: terminal [options] [tty path]\n");
@@ -253,6 +270,7 @@ static void help()
     printf("-e local echo\n");
     printf("-b baud rate\n");
     printf("-x hex output\n");
+    printf("-t start with TX pin low to allow certain boards to boot\n");
     exit(0);
 }
 
@@ -293,6 +311,11 @@ int main(int argc, char *argv[])
 			{
 				hex_output = 1;
 				ascii_output = 0;
+			}
+			else
+			if(!strcmp(argv[i], "-t"))
+			{
+				is_break = 1;
 			}
 			else
 			{
@@ -354,11 +377,20 @@ int main(int argc, char *argv[])
 		printf("Couldn't open %s\n", LOG_FILE);
 	}
 
-	int serial_fd = -1;
+	serial_fd = -1;
 	if(path) serial_fd = init_serial(path, baud_enum, custom_baud);
 	if(serial_fd < 0) serial_fd = init_serial("/dev/ttyUSB0", baud_enum, custom_baud);
 	if(serial_fd < 0) serial_fd = init_serial("/dev/ttyUSB1", baud_enum, custom_baud);
 	if(serial_fd < 0) serial_fd = init_serial("/dev/ttyUSB2", baud_enum, custom_baud);
+
+#ifdef BREAK_START
+    if(is_break)
+    {
+        printf("entering BRK\n");
+        int arg = 10000;
+        ioctl(serial_fd, TIOCSBRK, &arg);
+    }
+#endif
 
 	int test_state = 0;
 	unsigned char test_buffer[32];
@@ -423,7 +455,13 @@ int main(int argc, char *argv[])
         if(result < 0) 
         {
             if(send_sigint)
+            {
+#ifdef BREAK_START
+                exit_break();
+#endif
                 write_char(serial_fd, 0x3);
+            }
+
             if(sigint_count >= MAX_SIGINTS || !send_sigint)
             {
                 quit();
@@ -455,6 +493,7 @@ int main(int argc, char *argv[])
 				fputc(c, fd);
 				fflush(fd);
 			}
+
 
 			if(hex_output)
 			{
@@ -785,6 +824,10 @@ printf("main %d\n", __LINE__);
 			{
 				char c = test_buffer[i];
 				
+
+#ifdef BREAK_START
+                exit_break();
+#endif
 				if(local_echo)
 				{
 					if(c < 0xa)
