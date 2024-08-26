@@ -1,0 +1,26 @@
+#!/usr/bin/python
+# Kill processes containing the name
+
+import os
+import sys
+import subprocess
+
+
+filename = sys.argv[1]
+
+text = subprocess.check_output(['ps', 'xa'])
+lines = text.split('\n')
+for line in lines:
+    if filename in line and \
+        'killname' not in line:
+        print line
+        id = line.split(' ')[0]
+        subprocess.check_output(['kill', '-9', id])
+
+
+
+
+
+
+
+
