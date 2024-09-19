@@ -27,6 +27,10 @@ bandwidth.c: show network usage
 battery.FCStd: dummy battery for an EOS RP.  Takes the circuit board
 from a wasabi battery.
 
+bluetooth.FCStd: bluetooth speaker using a driver from an Anker Soundcore Mini
+& electronicals from an 808 Canz 2.
+    - use .8mm nozzle, .32 layers
+
 catbps.c: print bits per second of stdin
 
 catnums.c: cat files based on numbers in the filenames.  Used with segments2.c to

@@ -36,7 +36,7 @@ BED_TEMP2 = 0
 LAYER_H = 0.04
 # number of layers to change
 LAYER_COUNT = 4
-#LAYER_COUNT = 9999
+#LAYER_COUNT = 9999  # change them all for TPE
 
 # timelapse config
 # mm
@@ -228,11 +228,11 @@ print 'last line:', lastLine
 print 'total layers:', totalLayers
 
 
-value = raw_input('Press ENTER to proceed or ctrl-C to quit.')
-if value != '':
-    print('Giving up & going to a movie');
-    exit()
-print('\n');
+#value = raw_input('Press ENTER to proceed or ctrl-C to quit.')
+#if value != '':
+#    print('Giving up & going to a movie');
+#    exit()
+#print('\n');
 
 
 # copy up to temperature lines
