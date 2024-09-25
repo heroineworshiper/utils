@@ -1,6 +1,6 @@
 /*
  * PUSH
- * Copyright (C) 2023 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2023-2024 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,7 +57,7 @@ int push_file(char *src, char *dst)
         if(S_ISDIR(ostat.st_mode))
 		{
 // create directory
-            sprintf(string, "adb %s shell mkdir %s/%s", 
+            sprintf(string, "adb %s shell mkdir \"%s/%s\"", 
                 device_text,
                 dst,
                 src);
@@ -120,7 +120,7 @@ int push_file(char *src, char *dst)
         }
         else
         {
-            sprintf(string, "adb %s push %s %s", device_text, src, dst);
+            sprintf(string, "adb %s push \"%s\" \"%s\"", device_text, src, dst);
             printf("%s\n", string);
             if(!dry_run) system(string);
         }
@@ -176,6 +176,7 @@ int main(int argc, char *argv[])
     
     for(i = first; i < argc - 1; i++)
     {
+//printf("main %d: %s\n", __LINE__, argv[i]);
         push_file(argv[i], dst);
     }
     

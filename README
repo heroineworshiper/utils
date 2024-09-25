@@ -45,7 +45,7 @@ desk.pcb: transmitter & receiver circuit for the desk using IR.
 desk2.pcb: transmitter circuit for 433Mhz desk transmitter.  Receiver
     circuit is replaced by an ESP8266
 
-desk_tx2.FCStd: enclosure for desk transmitter
+desk_tx3.FCStd: enclosure for desk transmitter
     - detents must be printed with detent support
     - direction of the lines must be towards the detents, not tangential
     - a polar array might generate better support lines
