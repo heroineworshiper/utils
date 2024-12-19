@@ -823,7 +823,8 @@ printf("main %d\n", __LINE__);
 			for(i = 0; i < bytes; i++)
 			{
 				char c = test_buffer[i];
-				
+//printf("main %d: i=%d c=%d\n", __LINE__, i, c);
+
 
 #ifdef BREAK_START
                 exit_break();
@@ -849,11 +850,12 @@ printf("main %d\n", __LINE__);
 // doesn't print without local echo
 					if(output_delay) usleep(output_delay);
 					write_char(serial_fd, 0xa);
+//printf("main %d: i=%d c=%d\n", __LINE__, i, c);
 				}
 				else
 				{
-				
 					write_char(serial_fd, c);
+//printf("main %d: i=%d c=%d\n", __LINE__, i, c);
 				}
 
 // delay to avoid overflowing a 9600 passthrough
