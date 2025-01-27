@@ -38,6 +38,11 @@ catnums.c: cat files based on numbers in the filenames.  Used with segments2.c t
     
 change.c: replacement for chown & chgrp which fixes some bugs
 
+cord6.FCStd: cord lock for water bottle shoelace
+
+cord5.FCStd: death star cord lock for no chafing
+
+cord4.FCStd: pacman cord lock
 
 desk.pcb: transmitter & receiver circuit for the desk using IR.
     Voltage must be over 3.3 for the hall effect sensor encoder to work.
@@ -165,6 +170,9 @@ push.c: push multiple files to an android directory
 rpn2.c: HP48 style RPN calculator for command line
 
 runout5.FCStd: filament runout sensor
+
+sandal_cord3.FCStd: cord lock for sandals.  Must print mirror images.
+    - bed side must face out
 
 segments2.c: download segmented video files by number
 
