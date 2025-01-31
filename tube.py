@@ -4,7 +4,7 @@
 
 #
 # Tube
-# Copyright (C) 2021 Adam Williams <broadcast at earthling dot net>
+# Copyright (C) 2021-2025 Adam Williams <broadcast at earthling dot net>
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -59,6 +59,22 @@ want_res = 1920
 want_samplerate = 48000
 want_video = True
 movies = []
+
+# read text from a given offset in a string backwards to the previous space
+def getbackwards(text, start):
+    if start > len(text):  # Ensure offset is within bounds
+        start = len(text)
+    start -= 1
+# skip the trailing spaces
+    while start >= 0 and text[start] == ' ':
+        start -= 1
+    if start >= 0 and text[start] != ' ':
+        start += 1
+    offset = start - 1
+# get the leading space
+    while offset >= 0 and text[offset] != ' ':
+        offset -= 1
+    return text[offset + 1:start]
 
 def isnumeric(text):
     for c in text:
@@ -151,45 +167,59 @@ for movie in movies:
     for line in lines:
         if not gotColumns:
             if line.startswith('ID '):
-                print('columns=%s' % line);
+#                print('getting columns: %s' % line);
+# discover start & end of the data fields
                 col1 = dict([
                     ('ID', line.find('ID ')),
                     ('EXT', line.find('EXT ')),
                     ('RESOLUTION', line.find('RESOLUTION ')),
                     ('BITRATE', line.find('TBR ')),
                     ('SAMPLERATE', line.find('ASR ')),
-                    ('VCODEC', line.find('VCODEC '))])
+                    ('VCODEC', line.find('VCODEC ')),
+                    ('INFO', line.find('MORE '))])
                 col2 = dict([
                     ('ID', line.find('EXT ')),
                     ('EXT', line.find('RESOLUTION ')),
                     ('RESOLUTION', line.find('FPS ')),
                     ('BITRATE', line.find('PROTO ')),
                     ('SAMPLERATE', line.find('MORE ')),
-                    ('VCODEC', line.find('VBR '))])
+                    ('VCODEC', line.find('VBR ')),
+                    ('INFO', len(line))])
+#                print('column1:')
+#                for key, value in col1.items():
+#                    print(key, ":", value)
+#                print('column2:')
+#                for key, value in col2.items():
+#                    print(key, ":", value)
                 gotColumns = True
             else:
                 continue
-            
-            
+
+
         #words = line.split()
+# extract strings for each field
         words = dict([
             ('ID', line[col1['ID']:col2['ID']].strip()),  
             ('EXT', line[col1['EXT']:col2['EXT']].strip()), 
             ('RESOLUTION', line[col1['RESOLUTION']:col2['RESOLUTION']].strip()), 
-            ('BITRATE', line[col1['BITRATE']:col2['BITRATE']].strip()),
-            ('SAMPLERATE', line[col1['SAMPLERATE']:col2['SAMPLERATE']].strip()),
-            ('VCODEC', line[col1['VCODEC']:col2['VCODEC']].strip())])
+            ('BITRATE', getbackwards(line, col2['BITRATE'])),
+            ('SAMPLERATE', getbackwards(line, col2['SAMPLERATE']).strip()),
+            ('VCODEC', line[col1['VCODEC']:col2['VCODEC']].strip()),
+            ('INFO', line[col1['INFO']:len(line)].strip())])
 # strip trailing -dash
-        id = toint(words['ID'])
+#       id = toint(words['ID'])
+# 1/31/25: dash ID's are now required but presence of a valid ID is still 
+# discovered by the presence of a number
+        id = words['ID']
 
 # got a format line
-        #print('ID=%d EXT=%s' % \
-        #    (id, words['EXT']))
-        if id >= 0 and \
+#        print('line=%s' % (line))
+#        print('id=%s EXT=%s BITRATE=%s SAMPLERATE=%s INFO=%s' % \
+#            (id, words['EXT'], words['BITRATE'], words['SAMPLERATE'], words['INFO']))
+        if toint(id) >= 0 and \
             (words['EXT'] == 'mp4' or words['EXT'] == 'm4a' or words['EXT'] == 'webm'):
             #print('ID=%d resolution=%s' % (id, words['RESOLUTION']))
             #print('vcodec=%s' % words['VCODEC'])
-
 
 
 # got audio
@@ -202,8 +232,10 @@ for movie in movies:
                 if words['SAMPLERATE'] == '44k':
                     new_samplerate = 44100
 # closer to desired format
-                #print('ID=%d new_samplerate=%d new_bitrate=%d' % \
-                #    (id, new_samplerate, new_bitrate))
+#                print('ID=%s best id=%s new_samplerate=%d want_samplerate=%d new_bitrate=%d best bitrate=%d' % \
+#                    (id, movie.audio_code, new_samplerate, want_samplerate, new_bitrate, movie.audio_bitrate))
+# this is picking the last of the multi language audio
+# TODO: need to rank English in words['INFO'] as highest
                 if movie.audio_code < 0 or \
                     (movie.got_samplerate != want_samplerate and new_bitrate > movie.audio_bitrate) or \
                     abs(new_samplerate - want_samplerate) <= abs(movie.got_samplerate - want_samplerate) or \
@@ -245,8 +277,11 @@ for movie in movies:
         print("No video format found");
         exit()
 
-    print("Using audio_code=%d video_code=%d res=%s samplerate=%d" % 
+    print("Using audio_code=%s video_code=%s res=%s samplerate=%d" % 
         (movie.audio_code, movie.video_code, movie.res_text, movie.got_samplerate))
+
+# DEBUG
+#exit()
 
 # download them
 for movie in movies:
