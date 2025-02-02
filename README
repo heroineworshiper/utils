@@ -35,14 +35,8 @@ catbps.c: print bits per second of stdin
 
 catnums.c: cat files based on numbers in the filenames.  Used with segments2.c to
     reconstruct segmented video files.
-    
+
 change.c: replacement for chown & chgrp which fixes some bugs
-
-cord6.FCStd: cord lock for water bottle shoelace
-
-cord5.FCStd: death star cord lock for no chafing
-
-cord4.FCStd: pacman cord lock
 
 desk.pcb: transmitter & receiver circuit for the desk using IR.
     Voltage must be over 3.3 for the hall effect sensor encoder to work.
@@ -80,12 +74,16 @@ diffdir.c: find changed files in 2 directories
 eos_rp_cable.FCStd: lens ribbon cable for an EOS RP
     - Must be converted to a kicad pcb file with stl_to_pcb.c & pcb_commands
 
+faucet.FCStd: handle & pliers for accessing a certain faucet
+    - .8mm nozzle .32 layers
+    - requires hot snot or rubber for the pliers to grip
+
 flashlight.FCStd: small 3D printed flashlight
     .4 nozzle .20 layers
 
 flashlight4.FCStd: large 3D printed flashlight for 60W equivalent LED
     .8 nozzle .32 layers
-    wrench.FCStd: tool for installing a flashlight switch
+    - wrench.FCStd: tool for installing a flashlight switch
         .4 nozzle .32 layers
 
 fixcura.py: Add timelapse, bed leveling to Cura's gcode.
@@ -170,9 +168,6 @@ push.c: push multiple files to an android directory
 rpn2.c: HP48 style RPN calculator for command line
 
 runout5.FCStd: filament runout sensor
-
-sandal_cord3.FCStd: cord lock for sandals.  Must print mirror images.
-    - bed side must face out
 
 segments2.c: download segmented video files by number
 
