@@ -1,6 +1,6 @@
 /*
  * UTILS
- * Copyright (C) 2021-2024 Adam Williams <broadcast at earthling dot net>
+ * Copyright (C) 2021-2025 Adam Williams <broadcast at earthling dot net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -161,6 +161,8 @@ logcat.c: print debug output from android programs on the command line
 
 match.py: find the file with the matching md5sum
 
+mouse2.FCStd: custom enclosure for a logitech M100 mouse with MHPS2283V buttons
+
 pocket.FCSTd: pocket protector for keys
 
 push.c: push multiple files to an android directory
@@ -227,6 +229,8 @@ udptest.c: transfer a file over UDP
 usb_hook.FCStd: USB hub on a pole
 
 vbox_sleep: send a command to all the virtual machines
+
+wifi.py: wifi script
 
 ARduinoISP: Arduino ISP hacked for 115200 baud.
 
