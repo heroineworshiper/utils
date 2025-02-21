@@ -161,7 +161,7 @@ logcat.c: print debug output from android programs on the command line
 
 match.py: find the file with the matching md5sum
 
-mouse2.FCStd: custom enclosure for a logitech M100 mouse with MHPS2283V buttons
+mouse3.FCStd: custom enclosure for a logitech M100 mouse with MHPS2283V buttons
 
 pocket.FCSTd: pocket protector for keys
 
