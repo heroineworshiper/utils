@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
     for(i = start_number; i <= end_number; i += step)
     {
         sprintf(url2, url, i);
-        sprintf(string2, "wget %s", url2);
+        sprintf(string2, "wget --no-check-certificate %s", url2);
         printf("main %d: %s\n", __LINE__, string2);
         if(!dry_run)
         {

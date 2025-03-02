@@ -38,6 +38,8 @@ catnums.c: cat files based on numbers in the filenames.  Used with segments2.c t
 
 change.c: replacement for chown & chgrp which fixes some bugs
 
+chapstick.FCStd: chapstick holder
+
 desk.pcb: transmitter & receiver circuit for the desk using IR.
     Voltage must be over 3.3 for the hall effect sensor encoder to work.
 
