@@ -131,6 +131,7 @@ gu24rx.X/
 gu24tx2.FCStd
 gu24tx.X/: remote controlled GU-24 lightbulb
 
+hdr.C: simple HDR stacking with opencv & floating point TIF
 
 headlamp.FCStd: head lamp for 3.5V COB LED
 
@@ -155,7 +156,7 @@ ipcclean.c: delete all the IPC objects Goog chrome leaves behind.
 key.FCStd: car key grip
 
 lens.FCStd: Improved tripod mount for the commlite EF to R lens
-adapter.  This bolts the lens as close as possible to the tripod.
+    adapter.  This bolts the lens as close as possible to the tripod.
 
 lens_cap.FCStd: lens cap for a gopro 4
 
