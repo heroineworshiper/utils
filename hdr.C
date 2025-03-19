@@ -1,4 +1,7 @@
-// HDR with floating point images
+// Merge aligned floating point images with different exposures 
+// into an HDR output image.  Note: gamma of source images must be
+// raised to avoid banding.
+// 
 // Copyright (C) 2025 Adam Williams <broadcast at earthling dot net>
 // 
 // This program is free software; you can redistribute it and/or modify
