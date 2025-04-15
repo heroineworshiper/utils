@@ -37,6 +37,7 @@
 
 #define TEXTLEN 1024
 char string[TEXTLEN];
+char device_name[TEXTLEN]  = { 0 };
 char device_text[TEXTLEN]  = { 0 };
 int dry_run = 0;
 
@@ -157,7 +158,45 @@ int main(int argc, char *argv[])
         if(!strcmp(argv[i], "-s"))
         {
             i++;
-            sprintf(device_text, "-s %s", argv[i]);
+            strcpy(device_name, argv[i]);
+
+// load all device names
+            sprintf(string, "adb devices");
+            int got_it = 0;
+            FILE *in = popen(string, "r");
+            if(!in)
+            {
+                printf("Failed to run %s to get device list\n", string);
+                exit(1);
+            }
+            
+            while(fgets(string, TEXTLEN, in))
+            {
+//                printf("main %d: %s", __LINE__, string);
+                if(strlen(string) && 
+                    string[0] != '\n' && 
+                    strncmp(string, "List of", 7) &&
+                    !strncmp(string, device_name, strlen(device_name)))
+                {
+// got matching chars in device name
+                    char *src = string;
+                    char *dst = device_name;
+                    while(*src != ' ' && *src != '\t' && *src != 0 && *src != '\n')
+                        *dst++ = *src++;
+                    *dst++ = 0;
+                    got_it = 1;
+                    printf("Using device %s\n", device_name);
+                    break;
+                }
+            }
+            fclose(in);
+            
+            if(!got_it)
+            {
+                printf("Found no device starting in %s\n", device_name);
+                exit(1);
+            }
+            sprintf(device_text, "-s %s", device_name);
         }
         else
         if(!strcmp(argv[i], "-n"))
