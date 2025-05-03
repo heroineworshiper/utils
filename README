@@ -40,6 +40,8 @@ change.c: replacement for chown & chgrp which fixes some bugs
 
 chapstick.FCStd: chapstick holder
 
+charger.FCStd: Timex R300 charger
+
 desk.pcb: transmitter & receiver circuit for the desk using IR.
     Voltage must be over 3.3 for the hall effect sensor encoder to work.
 
@@ -143,12 +145,6 @@ headset3.sch
 headset.pcb: self monitoring headset enclosure
 
 hextube.py: create hex cylinders in blender
-
-incense10.FCStd: starship incense holder
- - uses 2 2x14mm magnets, 7 m2.6 x 6mm screws
- - 1 ball point pen spring
- - use 20% infill for booster, thrust, engines
- - 100% infill for the grids
 
 
 ipcclean.c: delete all the IPC objects Goog chrome leaves behind.
