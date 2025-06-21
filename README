@@ -191,6 +191,7 @@ shower.FCStd: ultimate shower curtain ring
     - no support. .8mm nozzle x .32mm layers
 
 shower5.FCStd: hold the shower curtain against the sides
+    - .32mm layers .4mm nozzle
 
 skulterm.X: terminal output on an SPI LCD
 
