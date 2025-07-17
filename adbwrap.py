@@ -98,6 +98,7 @@ def print_devices():
 def init_console():
     global stdout_settings
     global stdin_settings
+#    signal.signal(signal.SIGINT, handler)
     stdout_settings = termios.tcgetattr(sys.stdout.fileno())
     stdin_settings = termios.tcgetattr(sys.stdin.fileno())
     tty.setraw(sys.stdout.fileno())
@@ -109,6 +110,7 @@ def reset_console():
     global stdin_settings
     termios.tcsetattr(sys.stdout.fileno(), termios.TCSADRAIN, stdout_settings)
     termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, stdin_settings)
+    print("reset_console()")
     
 
 def getch():
@@ -127,66 +129,88 @@ def getch():
 
         return ord(ch)
 
-# prompt the user for the device & try the command again with the -s argument
-# updates the global device_name
-def prompt_device():
+
+
+def get_device():
     global device_name
-    text = subprocess.check_output([ADB_EXEC, 'devices'])
-    lines = text.strip().splitlines()
-    device_ids = []
-    for line in lines:
-        if not "list of devices" in line.decode("utf-8").lower():
-            device_ids.append(line.decode("utf-8").split('\t')[0])
-    #print(device_ids)
-    print("Cursor over a device & hit enter or ctrl-c to quit:\r")
-    current_item = 0
-    first = True
-    ch_state = 0
+    got_it = False
+    text = subprocess.check_output([ADB_EXEC, "devices"])
 
-    while True:
-        if not first:
-            # cursor up
-            print("\033[%dA\r" % (len(device_ids) + 1))
-        first = False
-        for i in range(len(device_ids)):
-            if i == current_item:
-                # highlighted item
-                print("\033[07m%s\033[0m\r" % device_ids[i])
-            else:
-                # unhighlighted item
-                print("%s\r" % device_ids[i])
+# expand the device name
+    if len(device_name) > 0:
+        lines = text.split(b'\n')
+        for line in lines:
+            #print("%s" % line);
+            if len(line) > 0 and \
+                not line.startswith(b"List of") and \
+                line.startswith(device_name.encode('utf-8')):
+                    device_name = line.split(b'\t')[0]
+                    print("Using device %s" % device_name)
+                    got_it = True
+                    break
+        if not got_it:
+            print("Device %s not found." % device_name)
+# assume a valid name was passed & it's not connected yet
+    else:
+# prompt for the device
+        lines = text.strip().splitlines()
+        device_ids = []
+        for line in lines:
+            if not "list of devices" in line.decode("utf-8").lower():
+                device_ids.append(line.decode("utf-8").split('\t')[0])
+        #print(device_ids)
+        print("Cursor over a device & hit enter or ctrl-c to quit:\r")
+        current_item = 0
+        first = True
+        ch_state = 0
 
-        c = getch()
-# ctrl-c
-        if c == 3:
-            print("Giving up & going to a movie\r")
-            reset_console()
-            exit()
-# escape
-        if c == 27:
-            ch_state = 1
-# enter
-        elif c == 13:
-            device_name = device_ids[current_item]
-            break
-        elif ch_state == 1:
-# escape code
-            if c == 91:
-                ch_state = 2
-            else:
+        while True:
+            if not first:
+                # cursor up
+                print("\033[%dA\r" % (len(device_ids) + 1))
+            first = False
+            for i in range(len(device_ids)):
+                if i == current_item:
+                    # highlighted item
+                    print("\033[07m%s\033[0m\r" % device_ids[i])
+                else:
+                    # unhighlighted item
+                    print("%s\r" % device_ids[i])
+
+            c = getch()
+    # ctrl-c
+            if c == 3:
+                print("Giving up & going to a movie\r")
+#                reset_console()
+                exit()
+    # escape
+            if c == 27:
+                ch_state = 1
+    # enter
+            elif c == 13:
+                device_name = device_ids[current_item].encode("utf-8")
+                break
+            elif ch_state == 1:
+    # escape code
+                if c == 91:
+                    ch_state = 2
+                else:
+                    ch_state = 0
+            elif ch_state == 2:
                 ch_state = 0
-        elif ch_state == 2:
-            ch_state = 0
-# escape code
-            if c == 65:
-                current_item -= 1
-                if current_item < 0:
-                    current_item = len(device_ids) - 1
-            elif c == 66:
-                current_item += 1
-                if current_item > len(device_ids) - 1:
-                    current_item = 0
-#        print("%d" % c)
+    # escape code
+                if c == 65:
+                    current_item -= 1
+                    if current_item < 0:
+                        current_item = len(device_ids) - 1
+                elif c == 66:
+                    current_item += 1
+                    if current_item > len(device_ids) - 1:
+                        current_item = 0
+    #        print("%d" % c)
+        
+
+
 
 
 # handle multiple device error by forwarding stderr & testing it
@@ -195,7 +219,7 @@ def do_it(command):
 # insert the device option
     if len(device_name) > 0:
         command2.append("-s")
-        command2.append(device_name)
+        command2.append(device_name.decode("utf-8"))
 # insert the wait option.  must come after -s
     if do_wait:
         command2.append("wait-for-usb-device")
@@ -203,85 +227,14 @@ def do_it(command):
         command2.append(i)
 
     print(" ".join(command2) + "\r")
-    fd = subprocess.Popen(command2,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        stdin=subprocess.PIPE,
-        bufsize=0,
-        pipesize=0)
+    try:
+        subprocess.run(command2)
+    except OSError as e:
+#        reset_console()
+        exit()
 
-#    flags = fcntl.fcntl(fd.stdout.fileno(), fcntl.F_GETFL)
-#    print("flags=%x\r" % flags)
-#    fcntl.fcntl(fd.stdout.fileno(), fcntl.F_SETFL, flags | os.O_SYNC | os.O_NDELAY | os.O_NONBLOCK | os.O_DIRECT)
-#    flags2 = fcntl.fcntl(fd.stdout.fileno(), fcntl.F_GETFL)
-#    print("flags2=%x\r" % flags2)
+    
 
-    line = ""
-    got_it = True # flush after close
-    while fd.poll() is None or got_it:
-        try:
-            readable, writable, exceptional = select.select([fd.stdout, fd.stderr, sys.stdin], [], [], None)
-
-            got_it = False
-            if fd.stdout in readable:
-                c = fd.stdout.read(1).decode("utf-8")
-                if len(c) > 0:
-                    #print("stdout=%d\r" % ord(c))
-                    got_it = True
-                    if c == "\n":
-                        sys.stdout.write("\r")
-                    sys.stdout.write(c)
-                    sys.stdout.flush()
-
-            if fd.stderr in readable:
-                c = fd.stderr.read(1).decode("utf-8")
-                if len(c) > 0:
-                    got_it = True
-                    #print("stderr=%d\r" % ord(c))
-                    if c == "\n":
-                        sys.stdout.write("\r")
-                    sys.stdout.write(c)
-                    sys.stdout.flush()
-                    line += c
-                    if c == '\n':
-                        #print("stderr=%s" % line)
-                        if "more than one device" in line:
-                            #print_devices()
-                            prompt_device()
-                            do_it(command)
-                            #exit()
-                        line = ""
-
-            if sys.stdin in readable:
-                c = sys.stdin.read(1)
-                #print("Got stdin %d\r" % ord(c))
-                if ord(c) == 3:
-                    global break_counter
-                    break_counter += 1
-                    if break_counter >= 5 or not do_shell:
-                        print("Giving up & going to a movie\r")
-                        reset_console()
-                        exit()
-                else:
-                    break_counter = 0
-                fd.stdin.write(c.encode())
-                fd.stdin.flush()
-                got_it = True
-
-            if not got_it:
-                break
-
-        except select.error as e:
-            if e.args[0] == 4:
-                print("Select interrupted by signal, continuing...\r")
-                got_it = True
-                continue
-            else:
-                raise
-        except KeyboardInterrupt:
-            print("\nCtrl+C detected in except block! Exiting...\r")
-            reset_console()
-            exit()
 
 
 
@@ -380,22 +333,6 @@ for i in range(1, len(sys.argv)):
         i += 1
         skip = True
         device_name = sys.argv[i]
-        got_it = False
-        #print("device_name=%s" % device_name);
-        text = subprocess.check_output([ADB_EXEC, "devices"])
-        lines = text.split('\n')
-        for line in lines:
-            #print("%s" % line);
-            if len(line) > 0 and \
-                not line.startswith("List of") and \
-                line.startswith(device_name):
-                    device_name = line.split('\t')[0]
-                    print("Using device %s" % device_name);
-                    got_it = True
-                    break
-        if not got_it:
-            print("Device %s not found." % device_name)
-            exit()
     elif first and not have_mode():
         text_to_mode(sys.argv[i])
         #print("Mode %s do_push=%s do_get=%s do_shell=%s" % \
@@ -413,38 +350,38 @@ for i in range(1, len(sys.argv)):
 if do_devices:
     print_devices()
 
+if do_list or do_del or do_mkdir or do_push or do_get or do_shell:
+    get_device()
+
 if do_get:
     pass
 
 if do_push:
 # trap ctrl-C
-    signal.signal(signal.SIGINT, handler)
-    init_console()
+#    init_console()
     #for i in range(len(src_files)):
     #    print("src=%s " % src_files[i])
     #print("dst_path=%s" % dst_path)
 # this calls do_it later
     for i in range(len(src_files)):
         push_file(src_files[i], dst_path, True)
-    reset_console()
+#    reset_console()
     exit()
 
 if do_shell:
 # trap ctrl-C
-    signal.signal(signal.SIGINT, handler)
-    init_console()
+#    init_console()
     args = []
     args.append("shell")
     if command_start > 0:
         args += sys.argv[command_start:]
     if not dry_run: 
         do_it(args)
-    reset_console()
+#    reset_console()
     exit()
 
 if do_list:
-    signal.signal(signal.SIGINT, handler)
-    init_console()
+#    init_console()
     args = []
     args.append("shell")
     args.append("ls")
@@ -453,6 +390,6 @@ if do_list:
         args += sys.argv[command_start:]
     if not dry_run:
         do_it(args)
-    reset_console()
+#    reset_console()
     exit()
 

@@ -22,6 +22,8 @@ Random programs & CAD models.
 
 3dtouch.FCStd: Bracket for a 3D touch.
 
+adbwrap.py: adb wrapper
+
 bandwidth.c: show network usage
 
 battery.FCStd: dummy battery for an EOS RP.  Takes the circuit board
