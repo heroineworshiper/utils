@@ -159,6 +159,13 @@ def get_device():
             if not "list of devices" in line.decode("utf-8").lower():
                 device_ids.append(line.decode("utf-8").split('\t')[0])
         #print(device_ids)
+
+        if len(device_ids) == 0:
+            print("No devices found")
+            exit()
+        elif len(device_ids) == 1:
+            return
+
         print("Cursor over a device & hit enter or ctrl-c to quit:\r")
         current_item = 0
         first = True
