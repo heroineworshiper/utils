@@ -350,6 +350,8 @@ for i in range(1, len(sys.argv)):
             src_files.append(sys.argv[i])
         else:
             dst_path = sys.argv[i]
+    elif do_get:
+        src_files.append(sys.argv[i])
     elif do_shell or do_list:
         command_start = i
         break
@@ -361,6 +363,10 @@ if do_list or do_del or do_mkdir or do_push or do_get or do_shell:
     get_device()
 
 if do_get:
+    args = [ "pull" ]
+    for i in src_files:
+        args.append(i)
+    do_it(args)
     pass
 
 if do_push:

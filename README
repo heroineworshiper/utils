@@ -133,6 +133,11 @@ gopro4_to_wood2.FCStd: case for mounting a gopro 4 behind a sheet of wood
  - .2mm layers .4mm nozzle
  - support block the speaker hole
 
+gopro11.FCStd: case for mounting a gopro 11 mini on CF rod or wood
+
+
+
+
 gu24.FCStd
 gu24.pcb
 gu24rx.X/

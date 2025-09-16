@@ -1,23 +1,38 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 
 # access the 1st Canon USB device with gphoto2
-
+# execute a user supplied command or download all the files of known suffix 
+# if the arguments are blank
 
 # usage: 
+# download all the files:
 # gphoto.wrapper -P
+# list all the files:
 # gphoto.wrapper -L
+# get all the known file types:
+# gphoto.wrapper
 
 
 import os
 import sys
 import subprocess
 
-GOPRO_ID1 = "2672:0047"
-GOPRO_ID2 = "2672:000e"
+GOPRO_IDS = [
+    "2672:0047",
+    "2672:000e",
+    "2672:005a"
+]
 
+def get_num(x):
+    result = ""
+    for i in x:
+        if i.isdigit():
+            #print(i)
+            result += i
+    return result
 
-text = subprocess.check_output(['lsusb'])
+text = subprocess.check_output(['lsusb']).decode()
 lines = text.split('\n')
 gotIt = False
 for i in range(len(lines)):
@@ -25,15 +40,43 @@ for i in range(len(lines)):
     words = lines[i].split(' ')
     if words[0] == 'Bus' and \
         words[2] == 'Device' and \
-        (words[6].startswith('Canon') or words[5] == GOPRO_ID1 or words[5] == GOPRO_ID2):
+        (words[6].startswith('Canon') or words[5] in GOPRO_IDS):
         bus = words[1]
         device = words[3].split(':')[0]
         print('bus=%s device=%s' % (bus, device))
         command = ['gphoto2', '--port=usb:%s,%s' % (bus, device)]
-        for j in range(1, len(sys.argv)):
-            command.append(sys.argv[j])
-        print(' '.join(command))
-        subprocess.call(command)
+
+# execute a user supplied command
+        if len(sys.argv) > 1:
+            for j in range(1, len(sys.argv)):
+                command.append(sys.argv[j])
+            print(' '.join(command))
+            subprocess.call(command)
+        else:
+# download the mp4 files
+            command2 = command.copy()
+            command2.append("--list-files")
+            print(' '.join(command2))
+            print(command2)
+            lines = subprocess.check_output(command2).decode()
+            for line in lines.split('\n'):
+                words = line.split()
+                if len(words) > 0:
+                    index = get_num(words[0])
+                    if len(index) > 0:
+                        filename = words[1]
+                        if  filename.lower().endswith(".mp4") or \
+                            filename.lower().endswith(".jpg") or \
+                            filename.lower().endswith(".cr2") or \
+                            filename.lower().endswith(".cr3"):
+                            print(index + " " + words[1])
+                            command2 = command.copy()
+                            command2.append("--get-file")
+                            command2.append(index)
+                            #print(command2)
+                            subprocess.call(command2)
+
+
         gotIt = True
         break
 

@@ -26,6 +26,8 @@
 // gcc -O2 -o terminal terminal.c
 
 // Hit ctrl-c a certain number of times to quit the terminal
+// TODO: probably need interactive settings like minicom but without  
+// delays, status bars, line wrapping.
 
 // sample XBee commands:
 // atbd13900
@@ -242,9 +244,11 @@ void write_char(int fd, unsigned char c)
 
 
 // trap SIGINT
+int got_signal = -1;
 static void sig_catch(int sig)
 {
     if(sig == SIGINT) sigint_count++;
+    got_signal = sig;
 //    printf("sig_catch %d: sig=%d\n", __LINE__, sig);
 }
 
@@ -267,6 +271,8 @@ static void help()
     printf("Usage: terminal [options] [tty path]\n");
     printf("-c don't forward ctrl-c.  Otherwise hit ctrl-c %d times to quit the terminal\n",
         MAX_SIGINTS);
+    printf("-o set the output delay\n");
+    printf("-n don't add CR\n");
     printf("-e local echo\n");
     printf("-b baud rate\n");
     printf("-x hex output\n");
@@ -296,11 +302,22 @@ int main(int argc, char *argv[])
                 send_sigint = 0;
             }
             else
+            if(!strcmp(argv[i], "-n"))
+            {
+                send_cr = 0;
+            }
+            else
 			if(!strcmp(argv[i], "-e"))
 			{
 				local_echo = 1;
 			}
 			else
+            if(!strcmp(argv[i], "-o"))
+            {
+                output_delay = atoi(argv[i + 1]);
+                i++;
+            }
+            else
 			if(!strcmp(argv[i], "-b"))
 			{
 				baud = atoi(argv[i + 1]);
@@ -451,15 +468,21 @@ int main(int argc, char *argv[])
 //printf("main %d serial_fd=%d result=%d\n", __LINE__, serial_fd, result);
 
 // got a signal.  
-// So far, we're just handling SIGINT so pass it through
         if(result < 0) 
         {
-            if(send_sigint)
+            if(send_sigint && got_signal == 2)
             {
 #ifdef BREAK_START
                 exit_break();
 #endif
                 write_char(serial_fd, 0x3);
+                got_signal = -1;
+            }
+            else
+            if(got_signal = 20)
+            {
+                write_char(serial_fd, 0x1A);
+                got_signal = -1;
             }
 
             if(sigint_count >= MAX_SIGINTS || !send_sigint)
