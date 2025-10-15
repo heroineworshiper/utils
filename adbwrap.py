@@ -23,6 +23,9 @@
 # run 'adb devices' every time to check for multiple devices, then run the adb command
 # on the console.
 
+# TODO: better line wrap in adb
+
+
 import os
 import select
 import signal

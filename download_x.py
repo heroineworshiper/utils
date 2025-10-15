@@ -2,12 +2,14 @@
 
 # hacky way to download X broadcasts
 
-# step 1: download the .m3u8 playlist using 
-# https://fetchfile.me/en/download-twitter-broadcast/
+# step 1: download the .m3u8 playlist by loading the broadcast URL in a browser
+# play the highest resolution, which it currently does automatically
 
-# step 2: play the video in the browser with network debugging.
+# step 2: inspect the network log for a .m3u8 file & download it.
 
-# step 3: copy the URL of the highest resolution .ts file
+# step 2: inspect the network log for a .ts file
+
+# step 3: copy the URL of the .ts file
 # This URL determines the resolution of the output
 
 # step 4: run this program
@@ -59,5 +61,5 @@ print("Auth URL=%s" % auth_url)
 for i in range(len(playlist_files)):
     new_url = auth_url + '/' + playlist_files[i]
     print("Getting %s" % new_url)
-    text = subprocess.check_output(["wget", new_url])
+    text = subprocess.check_output(["wget", "--no-check-certificate", new_url])
     

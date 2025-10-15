@@ -49,6 +49,10 @@ HACK1 = '--rm-cache-dir'
 HACK2 = '--no-mtime'
 HACK3 = '--remux-video'
 HACK4 = 'mp4'
+HACK5 = '--retry-sleep'
+HACK6 = '1'
+HACK7 = '--fragment-retries'
+HACK8 = '10000'
 VCODEC = 'avc1'
 # use VP9 only for highest resolution, since it's not seekable
 VCODEC_H = 'vp9@'
@@ -291,8 +295,10 @@ for movie in movies:
             '-f',
             str(movie.video_code) + '+' + str(movie.audio_code), 
             HACK2,
-#            HACK3,
-#            HACK4,
+            HACK5,
+            HACK6,
+            HACK7,
+            HACK8,
             movie.url]
     else:
         command = [EXE, 
@@ -300,6 +306,10 @@ for movie in movies:
             '-f',
             str(movie.audio_code), 
             HACK2,
+            HACK5,
+            HACK6,
+            HACK7,
+            HACK8,
             movie.url]
 
     print(' '.join(command))
