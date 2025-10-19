@@ -41,6 +41,7 @@ FILE *cap = 0;
 FILE *fd = 0;
 char *keyword = 0;
 int pid = -1;
+char *device = 0;
 
 char types[TEXTLEN];
 
@@ -82,9 +83,10 @@ void main(int argc, char *argv[])
 
     if(argc < 2)
     {
-        printf("Usage: logcat [-iI] keyword\n");
+        printf("Usage: logcat [-iIs] keyword\n");
         printf(" -i - show only info & above.  Default is verbose\n");
         printf(" -I - show only info\n");
+        printf(" -s - device\n");
         printf(" keyword - keyword from the process table to attach to\n");
         exit(1);
     }
@@ -101,6 +103,12 @@ void main(int argc, char *argv[])
         {
             verbose = 0;
             info_only = 1;
+        }
+        else
+        if(!strcmp(argv[i], "-s"))
+        {
+            device = argv[i + 1];
+            i++;
         }
         else
         {
@@ -126,7 +134,10 @@ void main(int argc, char *argv[])
 
 
 // the debugging output
-    sprintf(string, "adb logcat"); 
+    if(device)
+        sprintf(string, "adb -s %s logcat", device);
+    else
+        sprintf(string, "adb logcat");
     fd = popen(string, "r");
     if(!fd)
     {
@@ -145,7 +156,11 @@ void main(int argc, char *argv[])
 
     while(1)
     {
-        sprintf(string, "adb shell ps | grep %s", keyword);
+        if(device)
+            sprintf(string, "adb -s %s shell ps | grep %s", device, keyword);
+        else
+            sprintf(string, "adb shell ps | grep %s", keyword);
+//        sprintf(string, "adb shell ps | grep %s", keyword);
         int new_pid = -1;
         FILE *ps_fd = popen(string, "r");
 

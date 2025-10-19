@@ -241,7 +241,10 @@ usb_hook.FCStd: USB hub on a pole
 
 vbox_sleep: send a command to all the virtual machines
 
-wifi.py: wifi script
+wifi.py: simple wifi auto restarter
+wifi2.py: public wifi auto restarter
+wifi_picker.py: find the optimum channel
+vpn.py: public wifi with VPN auto restarter
 
 ARduinoISP: Arduino ISP hacked for 115200 baud.
 
