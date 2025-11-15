@@ -6,10 +6,13 @@ import subprocess
 import time
 import os
 import psutil
-
+import filecmp
+import shutil
 
 INTERFACE = "wlan0"
 TARGET_SSID = "xfinitywifi"
+RESOLV1 = "/etc/resolv.conf"
+RESOLV2 = "/etc/resolv.conf.vpn"
 
 def is_process_running(process_name):
     for proc in psutil.process_iter(['name']):
@@ -64,7 +67,7 @@ while True:
 
 # start dhclient
     if not is_process_running('dhclient'):
-        subprocess.run(['dhclient', INTERFACE])
+        subprocess.Popen(['dhclient', INTERFACE])
         print("Started dhclient")
         time.sleep(1)
         continue
@@ -85,8 +88,8 @@ while True:
     if not is_process_running('openvpn'):
         print("Reached openvpn");
 # throttled login attempts
-        if False:
-            subprocess.run(['openvpn',
+        if True:
+            subprocess.Popen(['openvpn',
                 '--script-security', '2', 
                 '--config', '/root/node-us-142.protonvpn.net.udp.ovpn',
                 '--auth-user-pass', '/root/userpass', 
@@ -95,6 +98,14 @@ while True:
                 '--down-pre',
                 '--down', '/root/sinoff'])
             print("Started openvpn")
+    else:
+# VPN running.  Test if dhclient overwrote resolv.conf
+        if os.path.exists(RESOLV1) and \
+            os.path.exists(RESOLV2) and \
+            not filecmp.cmp(RESOLV1, RESOLV2, shallow=False):
+            print("rewriting %s" % RESOLV1)
+            shutil.copy(RESOLV2, RESOLV1)
+        
 
 # idle
     time.sleep(1)

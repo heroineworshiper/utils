@@ -53,6 +53,8 @@ HACK5 = '--retry-sleep'
 HACK6 = '1'
 HACK7 = '--fragment-retries'
 HACK8 = '10000'
+HACK9 = '--retries'
+HACK10 = '10000'
 VCODEC = 'avc1'
 # use VP9 only for highest resolution, since it's not seekable
 VCODEC_H = 'vp9@'
@@ -299,6 +301,8 @@ for movie in movies:
             HACK6,
             HACK7,
             HACK8,
+            HACK9,
+            HACK10,
             movie.url]
     else:
         command = [EXE, 
@@ -310,6 +314,8 @@ for movie in movies:
             HACK6,
             HACK7,
             HACK8,
+            HACK9,
+            HACK10,
             movie.url]
 
     print(' '.join(command))

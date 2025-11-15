@@ -69,12 +69,16 @@ for i in range(len(lines)):
                             filename.lower().endswith(".jpg") or \
                             filename.lower().endswith(".cr2") or \
                             filename.lower().endswith(".cr3"):
-                            print(index + " " + words[1])
-                            command2 = command.copy()
-                            command2.append("--get-file")
-                            command2.append(index)
-                            #print(command2)
-                            subprocess.call(command2)
+                            
+                            if os.path.exists(filename):
+                                print(index + " " + words[1] + " exists. skipping")
+                            else:
+                                print(index + " " + words[1])
+                                command2 = command.copy()
+                                command2.append("--get-file")
+                                command2.append(index)
+                                print(command2)
+                                subprocess.call(command2)
 
 
         gotIt = True

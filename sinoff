@@ -1,0 +1,7 @@
+#!/bin/sh
+echo "running sinoff"
+systemctl stop transmission-daemon
+# restore DNS
+cp /etc/resolv.conf.orig /etc/resolv.conf
+DEFAULT_ROUTE=$(grep "option routers" /var/lib/dhcp/dhclient.leases |tail -n 1 | awk '{print $NF}' | tr -d ';')
+route add default gw $DEFAULT_ROUTE

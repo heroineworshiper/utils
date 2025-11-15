@@ -1,0 +1,18 @@
+#!/bin/sh
+#echo sinon env variables:
+echo foreign_option_1=$foreign_option_1
+#echo foreign_option_2=$foreign_option_2
+#echo foreign_option_3=$foreign_option_3
+DNS=$(echo $foreign_option_1 | awk '{print $NF}')
+echo got DNS = $DNS
+
+route del default
+systemctl start transmission-daemon
+cp /etc/resolv.conf /etc/resolv.conf.orig
+cat > /etc/resolv.conf << EOF
+nameserver $DNS
+EOF
+# save a backup so we can defeat dhclient
+cat > /etc/resolv.conf.vpn << EOF
+nameserver $DNS
+EOF
