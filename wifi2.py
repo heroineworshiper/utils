@@ -5,16 +5,19 @@
 import subprocess
 import time
 import os
-import psutil
+#import psutil
 
 INTERFACE = "wlan0"
 TARGET_SSID = "xfinitywifi"
 
 
 def is_process_running(process_name):
-    for proc in psutil.process_iter(['name']):
-        if process_name.lower() in proc.info['name'].lower():
-            return True
+    text = subprocess.check_output(['ps', '-xa']).decode('utf-8')
+    if process_name in text:
+        return True
+#    for proc in psutil.process_iter(['name']):
+#        if process_name.lower() in proc.info['name'].lower():
+#            return True
     return False
 
 def kill_process(process_name):

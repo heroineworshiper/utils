@@ -64,6 +64,7 @@ MAX_RES = 65535
 want_res = 1920
 want_samplerate = 48000
 want_video = True
+want_audio = True
 movies = []
 
 # read text from a given offset in a string backwards to the previous space
@@ -109,6 +110,14 @@ def words_contain(array, text):
             return True
     return False
 
+def format_arg(movie):
+    if want_video and want_audio:
+        return str(movie.video_code) + '+' + str(movie.audio_code)
+    elif want_audio:
+        return str(movie.audio_code)
+    else:
+        return str(movie.video_code)
+
 
 argc = len(sys.argv)
 if argc < 3:
@@ -118,6 +127,7 @@ if argc < 3:
     print('tube m <URL>   download 1920x1080 quality');
     print('tube h <URL>   download best quality');
     print('tube a <URL>   download audio only at 44.1khz');
+    print('tube v <URL>   download video only in best quality');
     exit()
 
 quality = sys.argv[1]
@@ -134,6 +144,10 @@ elif quality == 'h':
 elif quality == 'a':
     want_samplerate = 44100
     want_video = False
+elif quality == 'v':
+    want_res = MAX_RES
+    want_audio = False
+
 
 # extract all the movies from a playlist
 if "&list=" in url:
@@ -157,11 +171,12 @@ else:
 
 # get format codes for each movie
 for movie in movies:
-    movie.title = subprocess.check_output([EXE, '-e', movie.url])
-    print(movie.title.strip("\n"))
+#    movie.title = subprocess.check_output([EXE, '-e', movie.url])
+#    print(movie.title.strip("\n"))
+    print(EXE + ' -F ' + movie.url)
     text = subprocess.check_output([EXE, '-F', movie.url])
 
-    #print('text=\n%s' % text)
+#    print('FORMATS:\n%s' % text)
 
     lines = text.split('\n')
 
@@ -229,7 +244,7 @@ for movie in movies:
 
 
 # got audio
-            if words['RESOLUTION'] == 'audio only':
+            if want_audio and words['RESOLUTION'] == 'audio only':
                 new_bitrate = toint(words['BITRATE'])
                 #print('ID=%d BITRATE=%s new_bitrate=%s' % \
                 #    (id, words['BITRATE'], new_bitrate))
@@ -257,7 +272,7 @@ for movie in movies:
                 #    (want_video, words['VCODEC'], VCODEC))
 
 # supported codec based on the desired resolution
-                if want_video and (VCODEC in words['VCODEC']or \
+                if want_video and (VCODEC in words['VCODEC'] or \
                     want_res == MAX_RES):
                     #(want_res == MAX_RES and words_contain(words['VCODEC'], VCODEC_H))):
 # get video resolution
@@ -275,7 +290,7 @@ for movie in movies:
                         #    (movie.video_code, movie.video_bitrate, movie.res_text))
 
 
-    if movie.audio_code < 0:
+    if want_audio and movie.audio_code < 0:
         print("No audio format found");
         exit()
 
@@ -291,32 +306,18 @@ for movie in movies:
 
 # download them
 for movie in movies:
-    if want_video:
-        command = [EXE, 
-            HACK1,
-            '-f',
-            str(movie.video_code) + '+' + str(movie.audio_code), 
-            HACK2,
-            HACK5,
-            HACK6,
-            HACK7,
-            HACK8,
-            HACK9,
-            HACK10,
-            movie.url]
-    else:
-        command = [EXE, 
-            HACK1,
-            '-f',
-            str(movie.audio_code), 
-            HACK2,
-            HACK5,
-            HACK6,
-            HACK7,
-            HACK8,
-            HACK9,
-            HACK10,
-            movie.url]
+    command = [EXE, 
+        HACK1,
+        '-f',
+        format_arg(movie),
+        HACK2,
+        HACK5,
+        HACK6,
+        HACK7,
+        HACK8,
+        HACK9,
+        HACK10,
+        movie.url]
 
     print(' '.join(command))
     subprocess.call(command)
