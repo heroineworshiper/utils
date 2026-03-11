@@ -20,7 +20,7 @@
 
 Random programs & CAD models.
 
-3dtouch.FCStd: Bracket for a 3D touch.
+3dtouch.FCStd: Bracket for a 3D touch bed leveler.
 
 adbwrap.py: adb wrapper
 
@@ -43,6 +43,10 @@ change.c: replacement for chown & chgrp which fixes some bugs
 chapstick.FCStd: chapstick holder
 
 charger.FCStd: Timex R300 charger
+
+clamp5.FCStd: Clamp cables to desk
+    - print with .4 nozzle & .32 layers
+    - requires long 4-40 bolts
 
 desk.pcb: transmitter & receiver circuit for the desk using IR.
     Voltage must be over 3.3 for the hall effect sensor encoder to work.
@@ -97,6 +101,8 @@ flashlight4.FCStd: large 3D printed flashlight for 60W equivalent LED
 fixcura.py: Add timelapse, bed leveling to Cura's gcode.
 
 fixusa.py: Stretch layers & drop 1st layer from Prusa gcode
+
+funnel.FCStd: adapt a funnel to a detergent
 
 killname: A version of killall that works
 

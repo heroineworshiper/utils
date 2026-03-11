@@ -66,6 +66,7 @@ for i in range(len(lines)):
                     if len(index) > 0:
                         filename = words[1]
                         if  filename.lower().endswith(".mp4") or \
+                            filename.lower().endswith(".mov") or \
                             filename.lower().endswith(".jpg") or \
                             filename.lower().endswith(".cr2") or \
                             filename.lower().endswith(".cr3"):

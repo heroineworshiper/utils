@@ -217,7 +217,7 @@ print '    PARK_DELAY=', PARK_DELAY, 'ms'
 print '    RETRACT_DIST=', RETRACT_DIST
 print "BED LEVELING=" + str(DO_LEVELING)
 print "CHANGE TEMPS=" + str(DO_TEMP_CHANGE)
-print '    2nd temperature: bed:', BED_TEMP2, ' nozzle/:', NOZZLE_TEMP2
+print '    2nd temperature: bed:', BED_TEMP2, ' nozzle:', NOZZLE_TEMP2
 print "CHANGE LAYERS=" + str(DO_LAYER_CHANGE)
 print '    LAYER_H CHANGE=', LAYER_H, ' LAYER_COUNT=', LAYER_COUNT
 print '-----------------------------------------------'
