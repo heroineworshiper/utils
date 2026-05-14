@@ -140,7 +140,11 @@ gopro4_to_wood2.FCStd: case for mounting a gopro 4 behind a sheet of wood
  - support block the speaker hole
 
 gopro11.FCStd: case for mounting a gopro 11 mini on CF rod or wood
-
+ - wood to cf + collar - adapt CF rod to wood
+ - cf base + CF rod to gopro 11
+ - cf fiducial - not printable
+ - fan holder 30mm
+ - strap
 
 
 
@@ -197,6 +201,12 @@ scratch5.FCStd: back scratcher
     - spike array must be booleaned in blender & exported with spike panel
     - spike array must be printed separately with 5mm retraction & no extra prime
 spikes.stl: latest spikes part
+
+scratch7.FCStd: latest grid fin back scratcher
+    - booleans with grid, borders, mask1
+    - sheer of .3 in blender
+    - mask2 boolean applied to grid to create the grid mesh
+    - .2 nozzle for grid
 
 shampoo.FCStd: voronoi shampoo holder
 

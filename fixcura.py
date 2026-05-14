@@ -17,6 +17,7 @@ import sys
 import fileinput
 
 # operations to perform
+# timelapse or pause for part cooling
 DO_TIMELAPSE = False
 # probe the bed before printing
 DO_LEVELING = False
@@ -28,7 +29,7 @@ DO_LAYER_CHANGE = True
 
 # temperature changes
 # this promotes layer adhesion without destroying the bed
-NOZZLE_TEMP2 = 250
+NOZZLE_TEMP2 = 260
 # this lowers the bed temperature without causing shrinkage
 BED_TEMP2 = 0
 

@@ -450,6 +450,9 @@ int main(int argc, char *argv[])
 	info.c_lflag &= ~ECHO;
 	tcsetattr(fileno(stdin), TCSANOW, &info);
 
+// test send pin
+    while(1) write_char(serial_fd, 'a');
+
 	fd_set rfds;
 
 	while(1)

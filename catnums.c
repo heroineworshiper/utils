@@ -3,15 +3,19 @@
 
 // gcc -O2 -o catnums catnums.c
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
+#include <sys/stat.h>
 
 
 
 
 
 #define TEXTLEN 1024
+#define BUFSIZE 65536
 
 int main(int argc, char *argv[])
 {
@@ -62,20 +66,44 @@ int main(int argc, char *argv[])
     int start_number1 = atoi(start_number);
     int end_number1 = atoi(end_number);
     char *filename2 = malloc(strlen(filename) + TEXTLEN);
-    char *string2 = malloc(strlen(filename) + TEXTLEN);
 
     for(i = start_number1; i <= end_number1; i++)
     {
         sprintf(filename2, filename, i);
-        sprintf(string2, "cat %s", filename2);
-        if(!dry_run)
+//        sprintf(string2, "cat \"%s\"", filename2);
+
+        FILE *fd = fopen(filename2, "r");
+        if(!fd)
         {
-            system(string2);
+            fprintf(stderr, "Failed to open %s: %s\n", filename2, strerror(errno));
+            exit(1);
         }
         else
         {
-            printf("main %d: %s\n", __LINE__, string2);
+            struct stat ostat;
+            stat(filename2, &ostat);
+            int64_t size = ostat.st_size;
+            fprintf(stderr, "Opened %s %ld bytes\n", filename2, (long)size);
+            if(!dry_run)
+            {
+                uint8_t buffer[BUFSIZE];
+                while(!feof(fd))
+                {
+                    int bytes_read = fread(buffer, 1, BUFSIZE, fd);
+                    if(bytes_read > 0)
+                    {
+                        fwrite(buffer, 1, bytes_read, stdout);
+                    }
+                    else
+                    {
+                        fprintf(stderr, "Failed to read.  %s\n", strerror(errno));
+                        break;
+                    }
+                }
+            }
         }
+        
+        fclose(fd);
     }
     
 }
