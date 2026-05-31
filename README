@@ -26,6 +26,8 @@ adbwrap.py: adb wrapper
 
 bandwidth.c: show network usage
 
+baseball2.FCStd: stackable base for acrylic baseball enclosure
+
 battery.FCStd: dummy battery for an EOS RP.  Takes the circuit board
 from a wasabi battery.
 
@@ -202,7 +204,7 @@ scratch5.FCStd: back scratcher
     - spike array must be printed separately with 5mm retraction & no extra prime
 spikes.stl: latest spikes part
 
-scratch7.FCStd: latest grid fin back scratcher
+scratch7.FCStd: starship grid fin back scratcher
     - booleans with grid, borders, mask1
     - sheer of .3 in blender
     - mask2 boolean applied to grid to create the grid mesh
