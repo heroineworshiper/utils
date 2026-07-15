@@ -169,6 +169,12 @@ headset.pcb: self monitoring headset enclosure
 
 hextube.py: create hex cylinders in blender
 
+hourglass.png, hourglass.cursor: vintage X11 hourglass.  
+    Convert with  'xcursorgen hourglass.cursor watch'
+    Copy watch to /usr/share/icons/cursorfont/cursors/
+    Add 'Xcursor.theme: cursorfont' to .Xresources
+    Run 'xrdb -merge ~/.Xresources'
+
 
 ipcclean.c: delete all the IPC objects Goog chrome leaves behind.
 
