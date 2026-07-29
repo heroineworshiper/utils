@@ -5,8 +5,6 @@
 # step 1: download the .m3u8 playlist by loading the broadcast URL in a browser
 # play the highest resolution, which it currently does automatically
 
-# step 2: inspect the network log for a .m3u8 file & download it.
-
 # step 2: inspect the network log for a .ts file
 
 # step 3: copy the URL of the .ts file
@@ -61,5 +59,5 @@ print("Auth URL=%s" % auth_url)
 for i in range(len(playlist_files)):
     new_url = auth_url + '/' + playlist_files[i]
     print("Getting %s" % new_url)
-    text = subprocess.check_output(["wget", "--no-check-certificate", new_url])
+    text = subprocess.check_output(["wget", "--no-check-certificate", "--tries=0", "--retry-connrefused", "--continue", new_url])
     
