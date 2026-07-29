@@ -1,0 +1,688 @@
+/*
+ * Generate AC waveform & feedback resistance for inverter
+ *
+ * Copyright (C) 2026 Adam Williams <broadcast at earthling dot net>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 
+ */
+
+
+// PIC18F458 Configuration Bit Settings
+
+// 'C' source line config statements
+
+// CONFIG1H
+#pragma config OSC = HS         // Oscillator Selection bits (HS oscillator)
+#pragma config OSCS = OFF       // Oscillator System Clock Switch Enable bit (Oscillator system clock switch option is disabled (main oscillator is source))
+
+// CONFIG2L
+#pragma config PWRT = ON        // Power-up Timer Enable bit (PWRT enabled)
+#pragma config BOR = ON         // Brown-out Reset Enable bit (Brown-out Reset enabled)
+#pragma config BORV = 45        // Brown-out Reset Voltage bits (VBOR set to 4.5V)
+
+// CONFIG2H
+#pragma config WDT = ON         // Watchdog Timer Enable bit (WDT enabled)
+#pragma config WDTPS = 128      // Watchdog Timer Postscale Select bits (1:128)
+
+// CONFIG4L
+#pragma config STVR = OFF       // Stack Full/Underflow Reset Enable bit (Stack Full/Underflow will not cause Reset)
+#pragma config LVP = OFF        // Low-Voltage ICSP Enable bit (Low-Voltage ICSP disabled)
+
+// CONFIG5L
+#pragma config CP0 = OFF        // Code Protection bit (Block 0 (000200-001FFFh) not code protected)
+#pragma config CP1 = OFF        // Code Protection bit (Block 1 (002000-003FFFh) not code protected)
+#pragma config CP2 = OFF        // Code Protection bit (Block 2 (004000-005FFFh) not code protected)
+#pragma config CP3 = OFF        // Code Protection bit (Block 3 (006000-007FFFh) not code protected)
+
+// CONFIG5H
+#pragma config CPB = OFF        // Boot Block Code Protection bit (Boot Block (000000-0001FFh) not code protected)
+#pragma config CPD = OFF        // Data EEPROM Code Protection bit (Data EEPROM not code protected)
+
+// CONFIG6L
+#pragma config WRT0 = OFF       // Write Protection bit (Block 0 (000200-001FFFh) not write protected)
+#pragma config WRT1 = OFF       // Write Protection bit (Block 1 (002000-003FFFh) not write protected)
+#pragma config WRT2 = OFF       // Write Protection bit (Block 2 (004000-005FFFh) not write protected)
+#pragma config WRT3 = OFF       // Write Protection bit (Block 3 (006000-007FFFh) not write protected)
+
+// CONFIG6H
+#pragma config WRTC = OFF       // Configuration Register Write Protection bit (Configuration registers (300000-3000FFh) not write protected)
+#pragma config WRTB = OFF       // Boot Block Write Protection bit (Boot Block (000000-0001FFh) not write protected)
+#pragma config WRTD = OFF       // Data EEPROM Write Protection bit (Data EEPROM not write protected)
+
+// CONFIG7L
+#pragma config EBTR0 = OFF      // Table Read Protection bit (Block 0 (000200-001FFFh) not protected from Table Reads executed in other blocks)
+#pragma config EBTR1 = OFF      // Table Read Protection bit (Block 1 (002000-003FFFh) not protected from Table Reads executed in other blocks)
+#pragma config EBTR2 = OFF      // Table Read Protection bit (Block 2 (004000-005FFFh) not protected from Table Reads executed in other blocks)
+#pragma config EBTR3 = OFF      // Table Read Protection bit (Block 3 (006000-007FFFh) not protected from Table Reads executed in other blocks)
+
+// CONFIG7H
+#pragma config EBTRB = OFF      // Boot Block Table Read Protection bit (Boot Block (000000-0001FFh) not protected from Table Reads executed in other blocks)
+
+// #pragma config statements should precede project file includes.
+// Use project enums instead of #define for ON and OFF.
+
+#include <xc.h>
+#include <pic18lf458.h>
+#include <stdint.h>
+#include <string.h>
+
+#define CLOCKSPEED 3600000
+// AC line frequency
+#define AC_HZ 60
+// timer ticks per 1/2 cycle
+#define PERIOD (CLOCKSPEED / 4 / AC_HZ / 2 - 128)
+// timer ticks for 1.4ms deadband
+#define DEADBAND (14 * CLOCKSPEED / 4 / 10000)
+#define ACTIVE (-PERIOD + DEADBAND)
+#define INACTIVE (-DEADBAND)
+
+#define AC_LAT0 LATB5
+#define AC_TRIS0 TRISB5
+#define AC_LAT1 LATB4
+#define AC_TRIS1 TRISB4
+
+typedef union 
+{
+	struct
+	{
+		unsigned is_active0 : 1;
+		unsigned is_active1 : 1;
+        unsigned got_ir : 1;
+        unsigned need_eeprom_write : 1;
+        unsigned led_phase : 1;
+        unsigned r_started : 1;
+        unsigned interrupt_done : 1;
+	};
+
+	uint8_t value;
+} flags_t;
+volatile flags_t flags;
+
+#define HZ 220
+
+// discard 1st byte
+const uint8_t left_data[] = 
+{ 1,1,0,1,0,1,1,1,1,0,1,0,1,0,0,0,0,1,1,0,0,0,1,0,0,0,0,1,1,1,0,1 };
+const uint8_t right_data[] = 
+{ 1,1,0,1,0,1,1,1,1,0,1,0,1,0,0,0,0,1,0,0,0,0,1,0,0,0,1,1,1,1,0,1 };
+const uint8_t power_data[] = 
+{ 1,1,0,1,0,1,1,1,1,0,1,0,1,0,0,0,0,1,0,0,1,1,1,0,0,0,1,1,0,0,0,1 };
+const uint8_t* ir_codes[] = { left_data, right_data, power_data };
+#define TOTAL_CODES 3  // sizeof with pointer array doesn't work
+
+#define LEFT 0
+#define RIGHT 1
+#define POWER 2
+#define CODE_SIZE sizeof(left_data)
+#define IR_TIMEOUT (120 * HZ / 1000)
+// high resolution time since last rise
+volatile uint16_t ir_time;
+// ticks remaneing until timeout. 120ms observed.
+uint8_t ir_timeout;
+uint8_t ir_code;
+uint8_t code_offset;
+uint8_t code_buffer[CODE_SIZE];
+// delay before 1st repeat
+uint8_t repeat_delay = 0;
+#define REPEAT_DELAY (HZ / 2)
+#define REPEAT_DELAY2 (HZ / 4)
+
+// the resistor value.  Generated by r_table.py
+const uint16_t r_table[] = {
+    640, // 0
+    678, // 1
+    716, // 2
+    754, // 3
+    793, // 4
+    831, // 5
+    869, // 6
+    908, // 7
+    946, // 8
+    984, // 9
+    1023, // 10
+};
+uint8_t r_index;
+#define MAX_R 10
+// location in EEPROM of state
+#define DATA_EE_ADDR 0x00
+// ticks before eeprom write
+uint8_t eeprom_countdown;
+#define EEPROM_COUNTDOWN HZ
+uint8_t startup_countdown;
+#define STARTUP_COUNTDOWN HZ
+
+// AD5231 resistor
+#define CLK_LAT LATD4
+#define CLK_TRIS TRISD4
+#define SDO_LAT LATD5
+#define SDO_TRIS TRISD5
+#define CS_LAT LATD7
+#define CS_TRIS TRISD7
+
+
+// the LED display
+// current 1 bits for each digit
+uint8_t latc_value[2];
+uint8_t latd_value[2];
+#define LED_MASKC 0b00011011
+#define LED_MASKD 0b00001111
+// port C, port D 1 bits for each digit
+const uint8_t led_digits[] = {
+	0b00011000, 0b00001111, // 0
+	0b00000000, 0b00000110, // 1
+	0b00010001, 0b00001011, // 2
+	0b00010001, 0b00000111, // 3
+	0b00001001, 0b00000110, // 4
+	0b00011001, 0b00000101, // 5
+	0b00011001, 0b00001101, // 6
+	0b00000000, 0b00000111, // 7
+	0b00011001, 0b00001111, // 8
+	0b00011001, 0b00000111, // 9
+};
+
+
+#define UART_BUFSIZE 64
+uint8_t uart_buffer[UART_BUFSIZE];
+uint8_t uart_size = 0;
+uint8_t uart_position1 = 0;
+uint8_t uart_position2 = 0;
+
+// send a UART char
+void handle_uart()
+{
+// must use TRMT instead of TXIF on the 16F1508
+    if(uart_size > 0 && TXIF)
+    {
+        TXIF = 0;
+        TXREG = uart_buffer[uart_position2++];
+		uart_size--;
+		if(uart_position2 >= UART_BUFSIZE)
+		{
+			uart_position2 = 0;
+		}
+    }
+}
+
+void flush_uart()
+{
+    while(uart_size > 0)
+        handle_uart();
+}
+
+
+void send_uart(uint8_t c)
+{
+	if(uart_size < UART_BUFSIZE)
+	{
+		uart_buffer[uart_position1++] = c;
+		uart_size++;
+		if(uart_position1 >= UART_BUFSIZE)
+		{
+			uart_position1 = 0;
+		}
+	}
+}
+
+static uint16_t number;
+static int force;
+void print_digit(uint16_t place)
+{
+	if(number >= place || force)
+	{ 
+		force = 1; 
+		send_uart('0' + number / place); 
+		number %= place; 
+	}
+}
+
+void print_number(uint16_t number_arg)
+{
+	number = number_arg;
+	force = 0;
+	print_digit(10000);
+	print_digit(1000);
+	print_digit(100);
+	print_digit(10);
+	send_uart('0' + (number % 10)); 
+	send_uart(' ');
+}
+
+void print_text(const uint8_t *s)
+{
+	while(*s != 0)
+	{
+		send_uart(*s);
+		s++;
+	}
+}
+
+
+#define delay() {}
+// void delay()
+// {
+//     asm("nop");
+//     asm("nop");
+//     asm("nop");
+//     asm("nop");
+//     asm("nop");
+//     asm("nop");
+//     asm("nop");
+//     asm("nop");
+// }
+
+void write_resistor()
+{
+    print_text("R=");
+    print_number(r_index);
+    print_text("\n");
+    
+// update display
+// digit 1
+    uint8_t digit = r_index % 10;
+    latc_value[1] = led_digits[digit * 2];
+    latd_value[1] = led_digits[digit * 2 + 1];
+
+// digit 0
+    digit = r_index / 10;
+    if(digit > 0)
+    {
+        latc_value[0] = led_digits[digit * 2];
+        latd_value[0] = led_digits[digit * 2 + 1];
+    }
+    else
+    {
+        latc_value[0] = 0;
+        latd_value[0] = 0;
+    }
+
+
+// write resistor register
+    uint32_t spi_buffer;
+    spi_buffer = ((uint32_t)0b10110000) << 16;
+    spi_buffer |= r_table[r_index];
+    uint8_t spi_counter = 0;
+    uint8_t i;
+    SDO_LAT = 0;
+    CS_LAT = 0;
+    delay();
+    for(i = 0; i < 24; i++)
+    {
+        CLK_LAT = 0;
+        delay();
+        if((spi_buffer & 0x800000)) 
+            SDO_LAT = 1;
+        else
+            SDO_LAT = 0;
+        spi_buffer <<= 1;
+        CLK_LAT = 1;
+        delay();
+    }
+    CLK_LAT = 1;
+    CS_LAT = 1;
+    delay();
+// send NOP to put it to sleep
+    SDO_LAT = 0;
+    CS_LAT = 0;
+    delay();
+    for(i = 0; i < 24; i++)
+    {
+        delay();
+        CLK_LAT = 0;
+        delay();
+        CLK_LAT = 1;
+    }
+    delay();
+    CS_LAT = 1;
+    SDO_LAT = 1;
+}
+
+void handle_ir_code()
+{
+// wait for startup countdown
+    if(!flags.r_started) return;
+    switch(ir_code)
+    {
+        case LEFT:
+//            print_text("L");
+            if(r_index > 0) r_index--;
+// in case of glitch, allow rewriting the same value
+            eeprom_countdown = EEPROM_COUNTDOWN;
+            flags.need_eeprom_write = 1;
+            write_resistor();
+            break;
+        case RIGHT:
+//            print_text("R");
+            if(r_index < MAX_R) r_index++;
+            eeprom_countdown = EEPROM_COUNTDOWN;
+            flags.need_eeprom_write = 1;
+            write_resistor();
+            break;
+    }
+}
+
+void main()
+{
+    flags.value = 0;
+
+// digital pin mode
+    ADCON1 = 0b00000111;
+// serial port
+    TXSTA = 0b00100100;
+    RCSTA = 0b10000000;
+// 115200 baud with 3.6 Mhz crystal.  page 187
+    SPBRG = 1;
+
+// rising edge IR interrupt
+    INT0IE = 1;
+    INT0IF = 0;
+    INTEDG0 = 1;
+// IR timer 16:1
+    T0CON = 0b10000011;
+// tick timer 16:1
+    T2CON = 0b00000111;
+    PR2 = 0xff;
+    ir_timeout = 0;
+    code_offset = 0;
+
+// init LED
+    LATC |= LED_MASKC;
+    LATD |= LED_MASKD;
+    TRISC &= ~LED_MASKC;
+    TRISD &= ~LED_MASKD;
+// digit select grounds
+    LATC2 = 0;
+    LATC5 = 0;
+    TRISC2 = 0;
+    TRISC5 = 0;
+
+// resistor
+    CLK_LAT = 1;
+    SDO_LAT = 1;
+    CS_LAT = 1;
+    CLK_TRIS = 0;
+    SDO_TRIS = 0;
+    CS_TRIS = 0;
+    startup_countdown = STARTUP_COUNTDOWN;
+
+    print_text("\n\n\n\nWelcome to inverter hacker\n");
+    flush_uart();
+
+// read gain from EEPROM
+    EEADR = DATA_EE_ADDR;
+    EEPGD = 0;
+    CFGS = 0;
+    EECON1bits.RD = 1;
+    r_index = EEDATA;
+    if(r_index > MAX_R) r_index = MAX_R;
+//    print_text("r_index=");
+//    print_number(r_index);
+//    print_text("\n");
+//    flush_uart();
+
+// the line frequency timer
+    T1CON = 0b10000001;
+    TMR1H = ACTIVE >> 8;
+    TMR1L = ACTIVE & 0xff;
+    TMR1IF = 0;
+    TMR1IE = 1;
+
+    AC_LAT0 = 1;
+    AC_LAT1 = 0;
+    AC_TRIS0 = 0;
+    AC_TRIS1 = 0;
+    flags.is_active0 = 1;
+
+// enable interrupts
+    GIE = 1;
+    PEIE = 1;
+
+    while(1)
+    {
+        asm("clrwdt");
+        handle_uart();
+        
+        if(flags.got_ir)
+        {
+            uint8_t value = 0;
+            if(ir_time > 96) 
+                value = 1;
+//send_uart('0' + value);
+//            print_number(ir_time);  // breaks the capture
+            flags.got_ir = 0;
+            ir_timeout = IR_TIMEOUT;
+            if(code_offset < CODE_SIZE)
+            {
+                code_buffer[code_offset++] = value;
+//print_number(value);
+                if(code_offset >= CODE_SIZE)
+                {
+                    uint8_t i, j;
+                    uint8_t got_it = 0;
+                    code_offset = 0;
+// print_text("*");
+// send_uart('0' + code_buffer[0]);
+// send_uart('0' + code_buffer[1]);
+// send_uart('0' + code_buffer[2]);
+// send_uart('0' + code_buffer[3]);
+// send_uart('0' + code_buffer[4]);
+//print_number(TOTAL_CODES);
+                    for(i = 0; i < TOTAL_CODES; i++)
+                    {
+                        const uint8_t *code = ir_codes[i];
+                        got_it = 1;
+                        for(j = 1; j < CODE_SIZE; j++)
+                        {
+                            if(code[j] != code_buffer[j])
+                            {
+                                got_it = 0;
+                                break;
+                            }
+                        }
+                        if(got_it) break;
+                    }
+
+                    if(got_it)
+                    {
+                        ir_code = i;
+// handle power without repeat
+                        if(ir_code == POWER)
+                        {
+//                            print_text("P");
+                            repeat_delay = 0;
+                            if(AC_TRIS0)
+                            {
+                                AC_TRIS0 = 0;
+                                AC_TRIS1 = 0;
+                            }
+                            else
+                            {
+                                AC_TRIS0 = 1;
+                                AC_TRIS1 = 1;
+                            }
+                        }
+                        else
+                        {
+                            repeat_delay = REPEAT_DELAY;
+                            handle_ir_code();
+                        }
+//                        print_text("CODE=");
+//                        print_number(ir_code);
+//                        print_text("\n");
+                    }
+                }
+            }
+        }
+
+// mane tick timer
+        if(TMR2IF)
+        {
+            TMR2IF = 0;
+            if(ir_timeout > 0) 
+            {
+                ir_timeout--;
+// stop IR operation
+                if(ir_timeout == 0)
+                {
+//                    print_text("timeout\n");
+                    code_offset = 0;
+                    repeat_delay = 0;
+                }
+                else
+                if(repeat_delay > 0)
+                {
+                    repeat_delay--;
+                    if(repeat_delay == 0)
+                    {
+                        repeat_delay = REPEAT_DELAY2;
+                        handle_ir_code();
+                    }
+                }
+            }
+            
+            
+            if(flags.need_eeprom_write)
+            {
+                eeprom_countdown--;
+                if(eeprom_countdown == 0)
+                {
+                    flags.need_eeprom_write = 0;
+			        EEIF = 0;
+			        EEADR = DATA_EE_ADDR;
+			        EEDATA = r_index;
+			        EEPGD = 0;
+			        CFGS = 0;
+			        WREN = 1;
+
+// disable interrupts
+                    GIE = 0;
+                    EECON2 = 0x55;
+                    EECON2 = 0xAA;
+                    EECON1bits.WR = 1;
+                    GIE = 1;
+// enable interrupts
+
+// wait for EEPROM flag
+                    while(!EEIF)
+                    {
+                        ;
+                    }
+                    
+                    print_text("Wrote settings\n");
+                }
+            }
+
+
+// init SPI
+            if(startup_countdown > 0)
+            {
+                startup_countdown--;
+                if(startup_countdown == 0)
+                {
+                    flags.r_started = 1;
+                    write_resistor();
+                }
+            }
+   
+// toggle LED
+// turn off
+            LATC &= ~LED_MASKC;
+            LATD &= ~LED_MASKD;
+            if(flags.led_phase)
+            {
+                flags.led_phase = 0;
+// digit 0
+                LATC |= latc_value[0];
+                LATD |= latd_value[0];
+                LATC2 = 1;
+                LATC5 = 0;
+            }
+            else
+            {
+                flags.led_phase = 1;
+// digit 1
+                LATC |= latc_value[1];
+                LATD |= latd_value[1];
+                LATC2 = 0;
+                LATC5 = 1;
+
+// period
+                if(AC_TRIS0)
+                {
+// power off
+                    LATC1 = 0;
+                }
+                else
+                {
+// power on
+                    LATC1 = 1;
+                }
+            }
+        }
+    }
+}
+
+void interrupt isr()
+{
+    while(!flags.interrupt_done)
+    {
+        asm("clrwdt");
+        flags.interrupt_done = 1;
+        if(TMR1IF)
+        {
+            flags.interrupt_done = 0;
+            if(AC_LAT0 || AC_LAT1)
+            {
+                AC_LAT0 = 0;
+                AC_LAT1 = 0;
+                TMR1H = INACTIVE >> 8;
+                TMR1L = INACTIVE & 0xff;
+            }
+            else
+            {
+                if(flags.is_active0)
+                {
+                    flags.is_active0 = 0;
+                    flags.is_active1 = 1;
+                    AC_LAT1 = 1;
+                }
+                else
+                if(flags.is_active1)
+                {
+                    flags.is_active0 = 1;
+                    flags.is_active1 = 0;
+                    AC_LAT0 = 1;
+                }
+                TMR1H = ACTIVE >> 8;
+                TMR1L = ACTIVE & 0xff;
+            }
+            TMR1IF = 0;
+        }
+
+        if(INT0IF)
+        {
+            flags.interrupt_done = 0;
+            INT0IF = 0;
+            flags.got_ir = 1;
+            ir_time = TMR0L;
+            ir_time |= TMR0H << 8;
+            TMR0H = 0;
+            TMR0L = 0;
+        }
+    }
+    flags.interrupt_done = 0;
+}
+
+
